@@ -10,6 +10,10 @@ $shortcodes =array();
 // Function to add a shortcode to the array
 function add_shortcode_to_list($shortcode) {
     global $shortcodes;
+    // Initialize $shortcodes as an array if it's not set
+    if (!is_array($shortcodes)) {
+        $shortcodes = array();
+    }
     if (!in_array($shortcode, $shortcodes)) {
         $shortcodes[] = $shortcode;
     }
