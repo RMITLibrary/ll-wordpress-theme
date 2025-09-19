@@ -1,283 +1,291 @@
 // START home-banner
 .home-banner {
-    position: relative;
-    
+  position: relative;
+
+  .background-image {
+    display: block;
+    width: 100%;
+    background-size: 0 0;
+    background-image: url("https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-default.png");
+  }
+
+  /* 16:9 background image hack */
+  .background-image:before {
+    content: "";
+    display: block;
+    padding-top: 56.25%;
+    background-image: inherit;
+    background-repeat: no-repeat;
+    background-size: cover;
+    border-radius: 0.5rem;
+  }
+
+  h1 {
+    margin-top: 1rem;
+  }
+
+  @include media-breakpoint-up(lg) {
     .background-image {
-        display: block;
-        width: 100%;
-        background-size: 0 0;
-        background-image:url('https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-default.png'); 
+      background-image: url("https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-wide.png");
     }
-	
-	
 
-    /* 16:9 background image hack */
+    /*Adjust image ratio to wide - 3:1 */
     .background-image:before {
-        content: '';
-        display: block;
-        padding-top: 56.25%;
-        background-image: inherit;
-        background-repeat: no-repeat;
-        background-size: cover;
-        border-radius: 0.5rem;
+      padding-top: 33.33%;
     }
-    
-    h1 {
-        margin-top: 1rem;
-    }
-    
-    @include media-breakpoint-up(lg) { 
 
-        .background-image {
-            background-image:url('https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-wide.png');
-        }
-         
-        /*Adjust image ratio to wide - 3:1 */
-        .background-image:before {
-            padding-top: 33.33%;
-        }
-        
-        /* Position title over image */
-        h1 { 
-            position: absolute;
-            width: 100%;
-            top: 3rem;
-            
-            margin: 0;
-            text-align: center;
-            font-size: 3rem;
-			
-			color: $rmit-blue;
-        }
+    /* Position title over image */
+    h1 {
+      position: absolute;
+      width: 100%;
+      top: 3rem;
+
+      margin: 0;
+      text-align: center;
+      font-size: 3rem;
+
+      color: $rmit-blue;
     }
-    
-    @include media-breakpoint-up(xl) {    
-        h1 { 
-            top: 3.5rem; 
-            font-size: 3.5rem;
-        }
+  }
+
+  @include media-breakpoint-up(xl) {
+    h1 {
+      top: 3.5rem;
+      font-size: 3.5rem;
     }
-    
-    @include media-breakpoint-up(xxl) {    
-        h1 { 
-            top: 4rem; 
-            font-size: 4.5rem;
-        }
-    }  
+  }
+
+  @include media-breakpoint-up(xxl) {
+    h1 {
+      top: 4rem;
+      font-size: 4.5rem;
+    }
+  }
 }
 // END home-banner
 
 // START home-intro
 .home-intro {
-    margin: 1rem auto;
+  margin: 1rem auto;
+  margin-bottom: 0;
+
+  .lead {
+    margin-top: 0;
+  }
+  .small {
     margin-bottom: 0;
-    
-    .lead { margin-top: 0; }   
-    .small { margin-bottom: 0; }
-    
+  }
+
+  form {
+    // margin-top: 2rem;
+    width: 100%;
+  }
+
+  label {
+    margin: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .mag-glass {
+    @include mag-glass;
+    width: 20px;
+    height: 20px;
+  }
+
+  button {
+    margin: 0;
+  }
+
+  @include media-breakpoint-up(md) {
     form {
-        margin-top: 2rem;
-        width: 100%;
+      display: flex;
+      gap: 1rem;
     }
-    
+
     label {
-        margin: 0;
-        margin-bottom: 0.5rem;
+      display: block;
+      margin: 0;
+      margin-top: 0.25rem;
     }
-    
-    .mag-glass {
-        @include mag-glass;
-        width: 20px;
-        height: 20px;
-    }
-    
-    button {
-        margin: 0;
-    }
-    
-    @include media-breakpoint-up(md) {
-        form {
-            display: flex;
-            gap: 1rem;
-        }
-        
-        label {
-            display: block;
-            margin: 0;
-            margin-top: 0.25rem;
-        }
-        
-    }
-    
-    @include media-breakpoint-up(lg) {
-		// Adjust this width as text changes to get a nice clean block with search box - max 40rem
-        width: 37rem;
-        margin-top: 1.5rem;   
-    }
+  }
+
+  @include media-breakpoint-up(lg) {
+    // Adjust this width as text changes to get a nice clean block with search box - max 40rem
+    width: 37rem;
+    margin-top: 1.5rem;
+  }
 }
 // END home-intro
 
 //START home-panel-container
 .home-panel-container {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    
-    margin-top: 3rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
 
-    .home-panel, .home-panel-no-img {
-        @include link-feature;
-        display: block;
-        
-        border-radius: 0.5rem;
-        background-color: var(--bs-primary-bg-subtle);
-        
-        img {
-            border-radius: 0.5rem 0.5rem 0 0;
-        }
-        
-        h2, p {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-        
-        h2 {
-            margin-top: 0.5rem;
-            margin-bottom: 0;
-            
-            font-size: 1.4375rem;
-        }
-        
-        p {
-            margin-top: 0.5rem;
-        }
-        
-        & > p:last-child {
-            margin-bottom: 1.5rem;
-        }
-    }
-	
-	.home-panel:hover, .home-panel-no-img:hover {
-        h2 {
-           @include link-feature-hover;
-        }
-        
-        p {
-            color: $link-color;
-        }
+  margin-top: 3rem;
+
+  .home-panel,
+  .home-panel-no-img {
+    @include link-feature;
+    display: block;
+
+    border-radius: 0.5rem;
+    background-color: var(--bs-primary-bg-subtle);
+
+    img {
+      border-radius: 0.5rem 0.5rem 0 0;
     }
 
+    h2,
+    p {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+
+    h2 {
+      margin-top: 0.5rem;
+      margin-bottom: 0;
+
+      font-size: 1.4375rem;
+    }
+
+    p {
+      margin-top: 0.5rem;
+    }
+
+    & > p:last-child {
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  .home-panel:hover,
+  .home-panel-no-img:hover {
+    h2 {
+      @include link-feature-hover;
+    }
+
+    p {
+      color: $link-color;
+    }
+  }
+
+  .home-panel-no-img {
+    h2 {
+      margin-top: 2rem;
+    }
+
+    border-radius: 0 0 0.5rem 0.5rem;
+    border-top: 0.25rem solid $accent-color;
+  }
+
+  @include media-breakpoint-up(md) {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    .home-panel,
     .home-panel-no-img {
-        
-        h2 {
-            margin-top: 2rem;
-        }
+      h2 {
+        font-size: 1.125rem;
+      }
 
-        border-radius: 0 0 0.5rem 0.5rem;
-        border-top: 0.25rem solid $accent-color;
+      p {
+        font-size: 1rem;
+      }
     }
+  }
 
-    @include media-breakpoint-up(md) {  
-        grid-template-columns: 1fr 1fr;   
-        gap: 1.5rem;
-        
-        .home-panel, .home-panel-no-img {
-            h2 {
-                font-size: 1.125rem;
-            }
-            
-            p {
-               font-size: 1rem;
-            }
-        }
+  @include media-breakpoint-up(lg) {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3rem 1.5rem;
+    margin-top: 4rem;
+
+    .home-panel,
+    .home-panel-no-img {
+      h2 {
+        margin-top: 1rem;
+        font-size: 1.4375rem;
+      }
     }
-    
-    @include media-breakpoint-up(lg) {  
-        grid-template-columns: 1fr 1fr 1fr;        
-        gap: 3rem 1.5rem;
-        margin-top: 4rem;
-        
-        .home-panel, .home-panel-no-img { 
-            h2 {
-                margin-top: 1rem;
-                font-size: 1.4375rem;
-            }
-            
-        }
+  }
+
+  @include media-breakpoint-up(xl) {
+    .home-panel,
+    .home-panel-no-img {
+      p {
+        font-size: 1.125rem;
+      }
     }
-    
-    @include media-breakpoint-up(xl) {     
-        .home-panel, .home-panel-no-img {
-            p {
-                font-size: 1.125rem;
-            }
-        }
+  }
+
+  @include media-breakpoint-up(xxl) {
+    .home-panel,
+    .home-panel-no-img {
+      h2 {
+        font-size: 1.75rem;
+      }
     }
-    
-    @include media-breakpoint-up(xxl) {        
-        .home-panel, .home-panel-no-img {
-            h2 {
-                font-size: 1.75rem;
-            }
-        }
-    }
+  }
 }
 //END home-panel-container
 
 //START 4-up grid option for home-panel-container
-@include media-breakpoint-up(xl) {  
-    .panel-4up {
-        grid-template-columns: 1fr 1fr 1fr 1fr;
-        background-color: none; 
+@include media-breakpoint-up(xl) {
+  .panel-4up {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    background-color: none;
 
-        .home-panel, .home-panel-no-img {
-            h2 {
-                font-size: 1.4375rem;
-            }
-        }
+    .home-panel,
+    .home-panel-no-img {
+      h2 {
+        font-size: 1.4375rem;
+      }
     }
+  }
 }
 
-@include media-breakpoint-up(xxl) {  
-    .panel-4up {
-        .home-panel, .home-panel-no-img {
-            h2 {
-                font-size: 1.4375rem;
-            }
-        }
+@include media-breakpoint-up(xxl) {
+  .panel-4up {
+    .home-panel,
+    .home-panel-no-img {
+      h2 {
+        font-size: 1.4375rem;
+      }
     }
+  }
 }
-
 
 #search {
-	border-color: $interface-grey;
+  border-color: $interface-grey;
 }
 
 //reduce brightness on dark mode
 @include color-mode(dark) {
-	.home-banner {
-		.background-image:before {
-			filter: brightness(0.9) contrast(0.9);
-		}
-	}
-    
-    .home-panel, .home-panel-no-img {
-        h2 {
-           color: $link-color-dark;
-        }
+  .home-banner {
+    .background-image:before {
+      filter: brightness(0.9) contrast(0.9);
     }
-    
-    .home-panel:hover, .home-panel-no-img:hover {
-        h2 {
-            color: $link-color-hover-dark;
-        }
-        
-        p {
-            color: $link-color-dark;
-        }
+  }
+
+  .home-panel,
+  .home-panel-no-img {
+    h2 {
+      color: $link-color-dark;
+    }
+  }
+
+  .home-panel:hover,
+  .home-panel-no-img:hover {
+    h2 {
+      color: $link-color-hover-dark;
     }
 
-    .home-panel-no-img {
-        border-top: 0.25rem solid $accent-color-dark;
+    p {
+      color: $link-color-dark;
     }
+  }
+
+  .home-panel-no-img {
+    border-top: 0.25rem solid $accent-color-dark;
+  }
 }

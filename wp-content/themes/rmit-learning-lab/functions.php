@@ -39,6 +39,17 @@ add_action( 'wp_enqueue_scripts', function() {
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED
 add_action( 'wp_enqueue_scripts', function() {
 
+    // Enqueue search functionality for home page
+    if (is_page('home')) {
+        wp_enqueue_script(
+            'search-home',
+            get_template_directory_uri() . '/js/search-home.js',
+            array(),
+            '1.0.0',
+            array('strategy' => 'defer', 'in_footer' => true)
+        );
+    }
+
     //UNCOMMENT next row to include the js/custom.js file globally
     //wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
 
