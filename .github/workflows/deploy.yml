@@ -1,25 +1,57 @@
 name: Deploy to WP Engine
+
 on:
   push:
     branches: [main, develop, staging]
   workflow_dispatch:
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install dependencies
-        run: npm install
+          cache: 'npm'
+
+      # If your package.json is at repo root; if it's inside the theme, see the "Theme-local package.json" variant below.
+      - name: Install deps
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm i; fi
+          # Ensure sass is available even if not in devDeps
+          npx --yes sass@1.77.6 --version
+
       - name: Build CSS
-        run: sass --load-path=node_modules wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --style=compressed --source-map
-      - uses: wpengine/github-action-wpe-site-deploy@v3
+        run: |
+          mkdir -p wp-content/themes/rmit-learning-lab/css-output
+          npx sass --load-path=node_modules \
+            wp-content/themes/rmit-learning-lab/sass/main.scss \
+            wp-content/themes/rmit-learning-lab/css-output/bundle.css \
+            --style=compressed --source-map
+
+      - name: Select WP Engine env
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          if [ "$BRANCH" = "main" ]; then
+            echo "WPE_ENV=${{ secrets.WPE_ENV_PRD }}" >> $GITHUB_ENV
+          elif [ "$BRANCH" = "develop" ]; then
+            echo "WPE_ENV=${{ secrets.WPE_ENV_DEV }}" >> $GITHUB_ENV
+          elif [ "$BRANCH" = "staging" ]; then
+            echo "WPE_ENV=${{ secrets.WPE_ENV_STG }}" >> $GITHUB_ENV
+          else
+            echo "Unsupported branch: $BRANCH"; exit 1
+          fi
+
+      - name: Deploy theme to WP Engine
+        uses: wpengine/github-action-wpe-site-deploy@v3
         with:
           WPE_SSHG_KEY_PRIVATE: ${{ secrets.WPE_SSHG_KEY_PRIVATE }}
-          WPE_ENV: ${{ github.ref == 'refs/heads/main' && secrets.WPE_ENV_PRD || github.ref == 'refs/heads/develop' && secrets.WPE_ENV_DEV || github.ref == 'refs/heads/staging' && secrets.WPE_ENV_STG || '' }}
-          SRC_PATH: 'wp-content/themes/'
-          REMOTE_PATH: '/wp-content/themes/'
+          WPE_ENV: ${{ env.WPE_ENV }}
+          SRC_PATH: 'wp-content/themes/rmit-learning-lab/'
+          REMOTE_PATH: '/wp-content/themes/rmit-learning-lab/'
           CACHE_CLEAR: true
