@@ -78,7 +78,7 @@ add_action('admin_bar_menu', function() {
     $wp_admin_bar->remove_node('ps-recompile-sass');
 }, 999);
 
-// REMOVE DEFAULT DASHBOARD WIDGETS
+// REMOVE DEFAULT DASHBOARD WIDGETS - MULTIPLE APPROACHES FOR RELIABILITY
 add_action('wp_dashboard_setup', function() {
     // Remove WordPress default widgets
     remove_meta_box('dashboard_primary', 'dashboard', 'side');        // WordPress Events and News
@@ -90,10 +90,49 @@ add_action('wp_dashboard_setup', function() {
     remove_meta_box('dashboard_plugins', 'dashboard', 'normal');      // Plugins
     remove_meta_box('dashboard_activity', 'dashboard', 'normal');     // Activity
 
-    // Remove AIOSEO widgets
+    // Remove AIOSEO widgets - try all possible IDs
     remove_meta_box('aioseo-overview', 'dashboard', 'normal');        // AIOSEO Overview
     remove_meta_box('aioseo-seo-news', 'dashboard', 'side');          // AIOSEO SEO News
+    remove_meta_box('aioseo-rss-feed', 'dashboard', 'side');          // AIOSEO RSS Feed
+    remove_meta_box('aioseo_rss_feed', 'dashboard', 'side');          // Alternative ID
+    remove_meta_box('aioseo-news', 'dashboard', 'side');              // Alternative ID
+    
+    // Remove any widget with 'aioseo' in the ID
+    global $wp_meta_boxes;
+    if (isset($wp_meta_boxes['dashboard'])) {
+        foreach (['normal', 'side'] as $context) {
+            if (isset($wp_meta_boxes['dashboard'][$context])) {
+                foreach ($wp_meta_boxes['dashboard'][$context] as $priority => $widgets) {
+                    foreach ($widgets as $widget_id => $widget) {
+                        if (strpos($widget_id, 'aioseo') !== false) {
+                            remove_meta_box($widget_id, 'dashboard', $context);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }, 999);
+
+// ADDITIONAL REMOVAL ATTEMPT WITH DIFFERENT HOOK
+add_action('admin_init', function() {
+    remove_meta_box('aioseo-rss-feed', 'dashboard', 'side');
+    remove_meta_box('aioseo_rss_feed', 'dashboard', 'side');
+}, 9999);
+
+// CSS APPROACH AS FALLBACK
+add_action('admin_head', function() {
+    if (get_current_screen()->base === 'dashboard') {
+        echo '<style>
+            #aioseo-rss-feed,
+            #aioseo_rss_feed,
+            .postbox[id*="aioseo"][id*="rss"],
+            .postbox[id*="aioseo"][id*="feed"] {
+                display: none !important;
+            }
+        </style>';
+    }
+});
 
 // ADD ANALYTICS DASHBOARDS OUTSIDE THE GRID
 add_action('admin_notices', function() {
