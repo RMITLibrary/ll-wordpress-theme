@@ -26,6 +26,11 @@ jobs:
           # Ensure sass is available even if not in devDeps
           npx --yes sass@1.77.6 --version
 
+      - name: Copy RFS from Bootstrap
+        run: |
+          mkdir -p wp-content/themes/rmit-learning-lab/sass/bootstrap5/vendor
+          cp node_modules/bootstrap/scss/vendor/_rfs.scss wp-content/themes/rmit-learning-lab/sass/bootstrap5/vendor/
+
       - name: Build CSS
         run: |
           mkdir -p wp-content/themes/rmit-learning-lab/css-output
