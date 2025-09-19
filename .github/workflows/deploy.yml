@@ -10,34 +10,90 @@ jobs:
     runs-on: ubuntu-latest
     env:
       THEME_DIR: wp-content/themes/rmit-learning-lab
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Detect lockfile location (root vs theme). If neither exists, no cache.
+      - name: Detect lockfile
+        id: detect_lockfile
+        run: |
+          if [ -f "package-lock.json" ]; then
+            echo "LOCKFILE=package-lock.json" >> $GITHUB_ENV
+            echo "has_lock=true" >> $GITHUB_OUTPUT
+          elif [ -f "${THEME_DIR}/package-lock.json" ]; then
+            echo "LOCKFILE=${THEME_DIR}/package-lock.json" >> $GITHUB_ENV
+            echo "has_lock=true" >> $GITHUB_OUTPUT
+          else
+            echo "LOCKFILE=" >> $GITHUB_ENV
+            echo "has_lock=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Use cache only if we actually found a lockfile
+      - name: Setup Node (cached)
+        if: steps.detect_lockfile.outputs.has_lock == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: ${{ env.THEME_DIR }}/package-lock.json
+          cache-dependency-path: ${{ env.LOCKFILE }}
 
-      - name: Install deps (theme)
-        working-directory: ${{ env.THEME_DIR }}
-        run: |
-          if [ -f package-lock.json ]; then npm ci; else npm i; fi
-          npm i -D sass@^1.77
-          npx sass --version
+      - name: Setup Node (no cache)
+        if: steps.detect_lockfile.outputs.has_lock != 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Sanity check vendor/rfs in theme
+      # Install deps where the lockfile (or package.json) actually is
+      - name: Install deps
         run: |
-          test -f "${THEME_DIR}/sass/bootstrap5/vendor/_rfs.scss" || { echo "Missing ${THEME_DIR}/sass/bootstrap5/vendor/_rfs.scss"; exit 65; }
+          if [ -f "package.json" ] && [ -f "package-lock.json" ]; then
+            npm ci
+            WORKDIR="."
+          elif [ -f "${THEME_DIR}/package.json" ]; then
+            cd "${THEME_DIR}"
+            if [ -f "package-lock.json" ]; then npm ci; else npm i; fi
+            WORKDIR="${THEME_DIR}"
+          else
+            echo "No package.json found at root or ${THEME_DIR}" >&2
+            exit 1
+          fi
+          echo "WORKDIR=${WORKDIR}" >> $GITHUB_ENV
+          npx --yes sass@1.77.6 --version
 
-      - name: Build CSS (theme, no external bootstrap)
-        working-directory: ${{ env.THEME_DIR }}
+      # Sanity check: ensure your theme's vendor/rfs exists (no npm bootstrap)
+      - name: Verify theme vendor/rfs
         run: |
-          mkdir -p css-output
+          test -f "${THEME_DIR}/sass/bootstrap5/vendor/_rfs.scss" || {
+            echo "Missing ${THEME_DIR}/sass/bootstrap5/vendor/_rfs.scss" >&2
+            echo "Fix the path or make the import relative: @import \"./vendor/rfs\";" >&2
+            exit 65
+          }
+
+      # Build CSS using ONLY your theme sources. Add include paths to theme sass dirs.
+      - name: Build CSS
+        working-directory: ${{ env.WORKDIR }}
+        run: |
+          # figure out source & out based on where we installed
+          if [ -f "sass/main.scss" ]; then
+            SRC="sass/main.scss"
+            OUT="css-output/bundle.css"
+            mkdir -p css-output
+            INCLUDE1="sass"
+            INCLUDE2="sass/bootstrap5"
+          else
+            SRC="${THEME_DIR}/sass/main.scss"
+            OUT="${THEME_DIR}/css-output/bundle.css"
+            mkdir -p "${THEME_DIR}/css-output"
+            INCLUDE1="${THEME_DIR}/sass"
+            INCLUDE2="${THEME_DIR}/sass/bootstrap5"
+          fi
+
           npx sass \
-            --load-path=sass \
-            --load-path=sass/bootstrap5 \
-            sass/main.scss css-output/bundle.css \
+            --load-path="${INCLUDE1}" \
+            --load-path="${INCLUDE2}" \
+            "${SRC}" "${OUT}" \
             --style=compressed --source-map
 
       - name: Select WP Engine env
@@ -61,3 +117,6 @@ jobs:
           SRC_PATH: '${{ env.THEME_DIR }}/'
           REMOTE_PATH: '/${{ env.THEME_DIR }}/'
           CACHE_CLEAR: true
+          # EXCLUDE: |
+          #   node_modules
+          #   **/*.map
