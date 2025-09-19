@@ -1,0 +1,24 @@
+name: Deploy to WP Engine
+on:
+  push:
+    branches: [main, develop, staging]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
+      - name: Build CSS
+        run: npm run build
+      - uses: wpengine/github-action-wpe-site-deploy@v3
+        with:
+          WPE_SSHG_KEY_PRIVATE: ${{ secrets.WPE_SSHG_KEY_PRIVATE }}
+          WPE_ENV: ${{ github.ref == 'refs/heads/main' && secrets.WPE_ENV_PRD || github.ref == 'refs/heads/develop' && secrets.WPE_ENV_DEV || github.ref == 'refs/heads/staging' && secrets.WPE_ENV_STG || '' }}
+          SRC_PATH: 'wp-content/themes/'
+          REMOTE_PATH: '/wp-content/themes/'
+          CACHE_CLEAR: true

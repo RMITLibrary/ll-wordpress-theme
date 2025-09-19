@@ -124,6 +124,44 @@ The repository ignores:
 2. Configure `wp-config.php` with your local database credentials
 3. Never commit `wp-config.php` to version control
 
+## Deployment
+
+This theme is hosted on WP Engine and uses GitHub Actions for automated deployment.
+
+### GitHub Actions Workflow
+
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically deploys theme changes to WP Engine environments on git pushes:
+
+- **main branch** → Production environment
+- **develop branch** → Development environment
+- **staging branch** → Staging environment
+
+### Setup
+
+1. **Configure Secrets in GitHub**:
+   - Go to your GitHub repository → Settings → Secrets and variables → Actions
+   - Add the following secrets:
+     - `WPE_SSHG_KEY_PRIVATE`: SSH private key for WP Engine access
+     - `WPE_ENV_PRD`: Production environment name (e.g., `yoursite-prd`)
+     - `WPE_ENV_DEV`: Development environment name (e.g., `yoursite-dev`)
+     - `WPE_ENV_STG`: Staging environment name (e.g., `yoursite-staging`)
+
+2. **SSH Key Setup**:
+   - Generate an SSH key pair if you haven't already
+   - Add the public key to your WP Engine account
+   - Store the private key as `WPE_SSHG_KEY_PRIVATE`
+
+3. **Deployment Process**:
+   - Push changes to the appropriate branch
+   - GitHub Actions will automatically deploy the `wp-content/themes/` directory to WP Engine
+   - Cache is cleared after each deployment
+
+### Manual Deployment
+
+If needed, you can manually deploy using Cyberduck or another SFTP client:
+- Connect to your WP Engine environment via SFTP
+- Upload the `wp-content/themes/` folder to `/wp-content/themes/`
+
 ## Contributing
 
 1. Create a feature branch
