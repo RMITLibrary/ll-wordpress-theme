@@ -36,6 +36,9 @@
 node_modules/
 vendor/
 
+# But allow the theme's vendor folder
+!wp-content/themes/rmit-learning-lab/sass/bootstrap5/vendor/
+
 
 # Build Files
 /wp-content/themes/rmit-learning-lab/css-output/bundle.css
