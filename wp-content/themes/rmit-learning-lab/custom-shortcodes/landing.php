@@ -42,13 +42,13 @@ function landing_banner_att($atts, $content = null) {
     
     $output .= '<div class="landing-banner">' . "\n";
     $output .= '<figure aria-labelledby="caption-text">' . "\n";
-    $output .= '<img src="' . $a['img'] . '" alt="' . $a['alt'] . '" />' . "\n";   
+    $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '" />' . "\n";   
     $output .= '</figure>' . "\n";
     $output .= '<div class="landing-content">' . "\n";
     $output .= '<div class="red-bar"></div>' . "\n";
-    $output .= '<h1>' . get_the_title() . '</h1>' . "\n";
-    $output .= '<p class="lead">' . $content  . '</p>' . "\n";
-    $output .= '<p class="small" id="caption-text">' . $a['caption']  . '</p>' . "\n";
+    $output .= '<h1>' . esc_html(get_the_title()) . '</h1>' . "\n";
+    $output .= '<p class="lead">' . wp_kses_post($content) . '</p>' . "\n";
+    $output .= '<p class="small" id="caption-text">' . wp_kses_post($a['caption']) . '</p>' . "\n";
     $output .= '</div></div>';
 
     return $output;
@@ -100,7 +100,7 @@ function landing_list_att($atts) {
     //this won't ever get used as there's no way of differentiating 
     //category while still using page list :(
     if($a['category'] != '') {
-		$output .= '<h2 class="h3">'. $a['category'] . '</h2>' . "\n";
+		$output .= '<h2 class="h3">'. esc_html($a['category']) . '</h2>' . "\n";
 	}
     
     //doChildrenList() is defined in functions.php
@@ -156,7 +156,17 @@ function home_panel_atts($atts, $content = null) {
     // Build the HTML output for a single home panel
     $output = '<a href="' . esc_url($atts['link']) . '" class="' . esc_attr($class) . '">';
     if (!empty($atts['img'])) {
-        $output .= '<img src="' . esc_url($atts['img']) . '" alt="">';
+        // Get image dimensions using WordPress function
+        $image_data = wp_get_attachment_image_src(attachment_url_to_postid($atts['img']), 'full');
+        $width_attr = '';
+        $height_attr = '';
+
+        if ($image_data) {
+            $width_attr = ' width="' . $image_data[1] . '"';
+            $height_attr = ' height="' . $image_data[2] . '"';
+        }
+
+        $output .= '<img src="' . esc_url($atts['img']) . '" alt=""' . $width_attr . $height_attr . '>';
     }
     $output .= '<h2 class="link-large">' . esc_html($atts['title']) . '</h2>';
     $output .= '<p>' . do_shortcode($content) . '</p>';
