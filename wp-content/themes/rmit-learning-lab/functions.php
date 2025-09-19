@@ -43,12 +43,8 @@ add_action( 'wp_enqueue_scripts', function() {
 }, 101);
 
 // REMOVE AIOSEO REDIRECTS FROM TOOLS MENU
+// Using admin_menu hook with very late priority to ensure it runs after plugin menus are added
 add_action('admin_menu', function() {
-    remove_submenu_page('tools.php', 'aioseo-redirects');
-}, 9999);
-
-// Alternative approach - remove after plugins load
-add_action('admin_init', function() {
     remove_submenu_page('tools.php', 'aioseo-redirects');
 }, 9999);
 
@@ -134,200 +130,8 @@ add_action('admin_head', function() {
     }
 });
 
-// ADD ANALYTICS DASHBOARDS OUTSIDE THE GRID
-add_action('admin_notices', function() {
-    $screen = get_current_screen();
-    if ($screen && $screen->base === 'dashboard') {
-        $dashboards = get_option('analytics_dashboards', array());
-
-        if ($dashboards) {
-            echo '<h1 style="font-size: 23px; font-weight: 400; margin: 0 0 20px 0; padding: 9px 0 4px 0; line-height: 1.3;">Analytics</h1>';
-
-            foreach ($dashboards as $index => $dashboard) {
-                if (!$dashboard['enabled']) continue;
-
-                $dashboard_id = 'analytics-dashboard-' . $index;
-                $title = esc_html($dashboard['title']);
-                $url = esc_url($dashboard['embed_url']);
-
-                echo '<div id="' . $dashboard_id . '" style="max-width: 100%; margin: 0 20px 20px 0; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">';
-                echo '<div style="padding: 12px; border-bottom: 1px solid #eee; background: #fafafa;">';
-                echo '<h2 style="margin: 0; font-size: 14px; font-weight: 600;">' . $title . '</h2>';
-                echo '</div>';
-
-                echo '<div id="' . $dashboard_id . '-container" style="padding: 0;">';
-                echo '<div id="' . $dashboard_id . '-button" style="padding: 40px; text-align: center; background: #f8f9fa; cursor: pointer; border-bottom: 1px solid #eee;">';
-                echo '<button type="button" class="button button-primary" onclick="loadDashboard(\'' . $dashboard_id . '\', \'' . $url . '\')">📊 Load ' . $title . '</button>';
-                echo '<p style="margin: 10px 0 0 0; color: #666; font-size: 12px;">Click to load dashboard</p>';
-                echo '</div>';
-                echo '<div id="' . $dashboard_id . '-iframe" style="display: none; position: relative; width: 100%; padding-bottom: 56.25%;">';
-                echo '<iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;" frameborder="0" allowfullscreen></iframe>';
-                echo '</div>';
-                echo '</div>';
-
-                echo '</div>';
-            }
-
-            echo '<script>
-                function loadDashboard(dashboardId, url) {
-                    const button = document.getElementById(dashboardId + "-button");
-                    const iframe = document.getElementById(dashboardId + "-iframe");
-                    const iframeElement = iframe.querySelector("iframe");
-
-                    button.style.display = "none";
-                    iframe.style.display = "block";
-                    iframeElement.src = url;
-                }
-            </script>';
-        } else {
-            echo '<h1 style="font-size: 23px; font-weight: 400; margin: 0 0 20px 0; padding: 9px 0 4px 0; line-height: 1.3;">Analytics</h1>';
-            echo '<div style="max-width: 100%; margin: 0 20px 20px 0; padding: 20px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04); text-align: center;">';
-            echo '<p><strong>No Analytics Dashboards Configured</strong></p>';
-            echo '<p>Go to <a href="' . admin_url('admin.php?page=analytics-dashboards') . '">Analytics Dashboards</a> to add your first dashboard.</p>';
-            echo '</div>';
-        }
-    }
-});
-
-
-// CREATE ANALYTICS DASHBOARDS SETTINGS PAGE (WordPress native)
-add_action('admin_menu', function() {
-    add_options_page(
-        'Analytics Dashboards',
-        'Analytics Dashboards',
-        'manage_options',
-        'analytics-dashboards',
-        'analytics_dashboards_page'
-    );
-});
-
-function analytics_dashboards_page() {
-    // Handle form submission
-    if (isset($_POST['submit'])) {
-        check_admin_referer('analytics_dashboards_nonce');
-
-        $dashboards = array();
-        if (isset($_POST['dashboards'])) {
-            foreach ($_POST['dashboards'] as $dashboard) {
-                if (!empty($dashboard['title']) && !empty($dashboard['embed_url'])) {
-                    $dashboards[] = array(
-                        'title' => sanitize_text_field($dashboard['title']),
-                        'embed_url' => esc_url_raw($dashboard['embed_url']),
-                        'enabled' => isset($dashboard['enabled']) ? 1 : 0
-                    );
-                }
-            }
-        }
-
-        update_option('analytics_dashboards', $dashboards);
-        echo '<div class="notice notice-success"><p>Analytics dashboards saved!</p></div>';
-    }
-
-    $dashboards = get_option('analytics_dashboards', array());
-    ?>
-    <div class="wrap">
-        <h1>Analytics Dashboards</h1>
-        <p>Add multiple analytics dashboards to display on the WordPress dashboard.</p>
-
-        <form method="post" action="">
-            <?php wp_nonce_field('analytics_dashboards_nonce'); ?>
-
-            <div id="dashboards-container">
-                <?php
-                if (empty($dashboards)) {
-                    $dashboards = array(array('title' => '', 'embed_url' => '', 'enabled' => 1));
-                }
-
-                foreach ($dashboards as $index => $dashboard):
-                ?>
-                <div class="dashboard-item" style="background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-bottom: 20px;">
-                    <h3>Dashboard <?php echo $index + 1; ?></h3>
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">Title</th>
-                            <td>
-                                <input type="text" name="dashboards[<?php echo $index; ?>][title]"
-                                       value="<?php echo esc_attr($dashboard['title'] ?? ''); ?>"
-                                       placeholder="e.g. Google Search Console Analytics"
-                                       class="regular-text" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Embed URL</th>
-                            <td>
-                                <input type="url" name="dashboards[<?php echo $index; ?>][embed_url]"
-                                       value="<?php echo esc_attr($dashboard['embed_url'] ?? ''); ?>"
-                                       placeholder="https://lookerstudio.google.com/embed/reporting/..."
-                                       class="large-text" />
-                                <p class="description">Get this from Looker Studio: Share → Embed report → Copy URL</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Enabled</th>
-                            <td>
-                                <label>
-                                    <input type="checkbox" name="dashboards[<?php echo $index; ?>][enabled]"
-                                           value="1" <?php checked($dashboard['enabled'] ?? 1, 1); ?> />
-                                    Show this dashboard
-                                </label>
-                            </td>
-                        </tr>
-                    </table>
-                    <?php if ($index > 0): ?>
-                    <button type="button" class="button button-secondary" onclick="this.parentElement.remove()">Remove Dashboard</button>
-                    <?php endif; ?>
-                </div>
-                <?php endforeach; ?>
-            </div>
-
-            <button type="button" id="add-dashboard" class="button button-secondary">Add Another Dashboard</button>
-            <br><br>
-            <?php submit_button('Save Analytics Dashboards'); ?>
-        </form>
-    </div>
-
-    <script>
-    document.getElementById('add-dashboard').addEventListener('click', function() {
-        const container = document.getElementById('dashboards-container');
-        const index = container.children.length;
-
-        const newDashboard = document.createElement('div');
-        newDashboard.className = 'dashboard-item';
-        newDashboard.style.cssText = 'background: #fff; border: 1px solid #ccd0d4; padding: 20px; margin-bottom: 20px;';
-        newDashboard.innerHTML = `
-            <h3>Dashboard ${index + 1}</h3>
-            <table class="form-table">
-                <tr>
-                    <th scope="row">Title</th>
-                    <td>
-                        <input type="text" name="dashboards[${index}][title]" placeholder="e.g. Google Search Console Analytics" class="regular-text" />
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Embed URL</th>
-                    <td>
-                        <input type="url" name="dashboards[${index}][embed_url]" placeholder="https://lookerstudio.google.com/embed/reporting/..." class="large-text" />
-                        <p class="description">Get this from Looker Studio: Share → Embed report → Copy URL</p>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row">Enabled</th>
-                    <td>
-                        <label>
-                            <input type="checkbox" name="dashboards[${index}][enabled]" value="1" checked />
-                            Show this dashboard
-                        </label>
-                    </td>
-                </tr>
-            </table>
-            <button type="button" class="button button-secondary" onclick="this.parentElement.remove()">Remove Dashboard</button>
-        `;
-
-        container.appendChild(newDashboard);
-    });
-    </script>
-    <?php
-}
+// ANALYTICS DASHBOARDS FUNCTIONALITY
+// Moved to separate file for better organization
 
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED 
 add_action( 'wp_enqueue_scripts', function() {	   
@@ -477,39 +281,32 @@ add_filter('tiny_mce_before_init', 'tags_tinymce_fix');
 function createBreadcrumbs($thePost)
 {
 	$parent = get_post_parent($thePost);
-	$grandParent = get_post_parent($parent);
-	$greatGrandParent = get_post_parent($grandParent);
-	
-//	Debug code
-//	echo('<p>id: ' . $greatGrandParent->ID . ' greatGrandParent: ' . $greatGrandParent->post_name . '<br/>');
-//	echo('id: ' . $grandParent->ID . ' grandParent: '. $grandParent->post_name . '<br/>');
-//	echo('id: ' . $parent->ID . ' parent: ' . $parent->post_name . '<br/>');
-//	echo("---</p>");
-	
+	$grandParent = $parent ? get_post_parent($parent) : null;
+	$greatGrandParent = $grandParent ? get_post_parent($grandParent) : null;
+
 	$output = '';
 
 	$output .= '<nav aria-label="breadcrumbs">' . "\n";
 	$output .= '<ul class="breadcrumbs">' . "\n";
-	
+
 	$output .= '<li><a href="/">Home</a></li>' . "\n";
-	
-	//	At one level $greatGrandParent and $parent have the same value. Due to bug?
-	//	Check that both $greatGrandParent and $grandParent have a value to solve this.
-	if($greatGrandParent->ID && $grandParent->ID) {
-		$output .= '<li><a href="/' . $greatGrandParent->post_name . '">' . formatAfterTheColon(get_the_title($greatGrandParent)) . '</a></li>' . "\n";
+
+	// Check that objects exist and have ID property before accessing
+	if($greatGrandParent && !empty($greatGrandParent->ID) && $grandParent && !empty($grandParent->ID)) {
+		$output .= '<li><a href="/' . esc_attr($greatGrandParent->post_name) . '">' . esc_html(formatAfterTheColon(get_the_title($greatGrandParent))) . '</a></li>' . "\n";
 	}
-	
-	if($grandParent->ID && $parent->ID) {
-		$output .= '<li><a href="/' . $grandParent->post_name . '">' . formatAfterTheColon(get_the_title($grandParent)) . '</a></li>' . "\n";
+
+	if($grandParent && !empty($grandParent->ID) && $parent && !empty($parent->ID)) {
+		$output .= '<li><a href="/' . esc_attr($grandParent->post_name) . '">' . esc_html(formatAfterTheColon(get_the_title($grandParent))) . '</a></li>' . "\n";
 	}
-	
-	if($parent->ID) {
-		$output .= '<li><a href="/' . $parent->post_name . '">' . formatAfterTheColon(get_the_title($parent)) . '</a></li>' . "\n";
+
+	if($parent && !empty($parent->ID)) {
+		$output .= '<li><a href="/' . esc_attr($parent->post_name) . '">' . esc_html(formatAfterTheColon(get_the_title($parent))) . '</a></li>' . "\n";
 	}
-	
+
 	$output .= '</ul>'  . "\n";
 	$output .= '</nav>';
-	return $output;	
+	return $output;
 }
 
 
@@ -612,11 +409,30 @@ function doChildrenList($pageId)
 	);
 }
 
-// We have slugs that don't hav the "/" in front and hence break once hierarcy is 
-// deplayed. To fix, let's add the slash in where appropriate.
+/**
+ * Prepend slash to relative URLs in content
+ *
+ * Fixes relative URLs that don't have a leading slash, which can break
+ * when site hierarchy is deployed. Only affects relative page links,
+ * not special protocols or anchors.
+ *
+ * @param string $content The post content
+ * @return string Modified content with fixed URLs
+ */
 function prepend_slash_to_relative_urls($content) {
-    // This regex will find all href attributes that do not start with a /, http, https, or #
-    $pattern = '/href="(?!\/|http|https|#)([^"]*)"/';
+    // Only process if content contains href attributes
+    if (strpos($content, 'href=') === false) {
+        return $content;
+    }
+
+    // More specific regex that excludes common protocols and special links
+    // Matches href="something" where something doesn't start with:
+    // - / (already absolute path)
+    // - # (anchor links)
+    // - http:// or https:// (external URLs)
+    // - mailto:, tel:, javascript:, data: (special protocols)
+    // - // (protocol-relative URLs)
+    $pattern = '/href="(?!\/\/|\/|https?:\/\/|#|mailto:|tel:|javascript:|data:)([a-zA-Z0-9][^"]*)"/i';
     $replacement = 'href="/$1"';
     $content = preg_replace($pattern, $replacement, $content);
     return $content;
@@ -704,4 +520,5 @@ add_filter("excerpt_length", function($in){
 include('includes/json-export.php');        // exports the site date to json. Required for search to function
 include('includes/redirect.php');           // redirect and 404 code for both admin and client side
 include('includes/seo-noindex-inheritance.php'); // noindex inheritance for work in progress pages
+include('includes/analytics-dashboards.php'); // Analytics dashboards functionality
 include('custom-shortcodes/_main.php');     // All shortcode code is included and added below
