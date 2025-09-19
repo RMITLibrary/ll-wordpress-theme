@@ -10,7 +10,7 @@
 ********************* RMIT LEARNING LAB WORDPRESS THEME *********************
 *                                                                           *
 * Built on Picostrap5 - Bootstrap 5.3.3 WordPress Starter Theme           *
-* Developed by Karl Ervine for RMIT Learning Lab                           *
+* Developed by Digital Learning Team for RMIT Learning Lab                *
 *                                                                           *
 ***************************************************************************
 */
