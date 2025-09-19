@@ -21,50 +21,51 @@ if (!defined('ABSPATH')) {
  * @param int $post_id The post ID
  * @return string The filtered text
  */
-add_filter('acf/fields/taxonomy/result', 'rmit_ll_acf_fields_taxonomy_result', 10, 4);
-function rmit_ll_acf_fields_taxonomy_result($text, $term, $field, $post_id) {
+add_filter('acf/fields/taxonomy/result', 'my_acf_fields_taxonomy_result', 10, 4);
+function my_acf_fields_taxonomy_result($text, $term, $field, $post_id) {
+    $text;
     return $text;
 }
 
-/**
- * Register Keywords Custom Taxonomy
- */
-if (!function_exists('rmit_ll_register_keywords_taxonomy')) {
-    function rmit_ll_register_keywords_taxonomy() {
-        $labels = array(
-            'name'                       => _x('Keywords', 'Taxonomy General Name', 'rmit-learning-lab'),
-            'singular_name'              => _x('Keyword', 'Taxonomy Singular Name', 'rmit-learning-lab'),
-            'menu_name'                  => __('Keywords', 'rmit-learning-lab'),
-            'all_items'                  => __('All Keywords', 'rmit-learning-lab'),
-            'parent_item'                => __('Parent Keyword', 'rmit-learning-lab'),
-            'parent_item_colon'          => __('Parent Keyword:', 'rmit-learning-lab'),
-            'new_item_name'              => __('New Keyword Name', 'rmit-learning-lab'),
-            'add_new_item'               => __('Add New Keyword', 'rmit-learning-lab'),
-            'edit_item'                  => __('Edit Keyword', 'rmit-learning-lab'),
-            'update_item'                => __('Update Keyword', 'rmit-learning-lab'),
-            'view_item'                  => __('View Keyword', 'rmit-learning-lab'),
-            'separate_items_with_commas' => __('Separate keywords with commas', 'rmit-learning-lab'),
-            'add_or_remove_items'        => __('Add or remove keywords', 'rmit-learning-lab'),
-            'choose_from_most_used'      => __('Choose from the most used', 'rmit-learning-lab'),
-            'popular_items'              => __('Popular Keywords', 'rmit-learning-lab'),
-            'search_items'               => __('Search Keywords', 'rmit-learning-lab'),
-            'not_found'                  => __('Not Found', 'rmit-learning-lab'),
-            'no_terms'                   => __('No keywords', 'rmit-learning-lab'),
-            'items_list'                 => __('Keywords list', 'rmit-learning-lab'),
-            'items_list_navigation'      => __('Keywords list navigation', 'rmit-learning-lab'),
-        );
+if ( ! function_exists( 'custom_taxonomy' ) ) {
 
-        $args = array(
-            'labels'                     => $labels,
-            'hierarchical'               => false,
-            'public'                     => true,
-            'show_ui'                    => true,
-            'show_admin_column'          => true,
-            'show_in_nav_menus'          => true,
-            'show_tagcloud'              => true,
-        );
+// Register Custom Taxonomy
+function custom_taxonomy() {
 
-        register_taxonomy('keywords', array('page'), $args);
-    }
-    add_action('init', 'rmit_ll_register_keywords_taxonomy', 0);
+    $labels = array(
+        'name'                       => _x( 'Keywords', 'Taxonomy General Name', 'text_domain' ),
+        'singular_name'              => _x( 'Keyword', 'Taxonomy Singular Name', 'text_domain' ),
+        'menu_name'                  => __( 'Taxonomy', 'text_domain' ),
+        'all_items'                  => __( 'All Items', 'text_domain' ),
+        'parent_item'                => __( 'Parent Item', 'text_domain' ),
+        'parent_item_colon'          => __( 'Parent Item:', 'text_domain' ),
+        'new_item_name'              => __( 'New Item Name', 'text_domain' ),
+        'add_new_item'               => __( 'Add New Item', 'text_domain' ),
+        'edit_item'                  => __( 'Edit Item', 'text_domain' ),
+        'update_item'                => __( 'Update Item', 'text_domain' ),
+        'view_item'                  => __( 'View Item', 'text_domain' ),
+        'separate_items_with_commas' => __( 'Separate items with commas', 'text_domain' ),
+        'add_or_remove_items'        => __( 'Add or remove items', 'text_domain' ),
+        'choose_from_most_used'      => __( 'Choose from the most used', 'text_domain' ),
+        'popular_items'              => __( 'Popular Items', 'text_domain' ),
+        'search_items'               => __( 'Search Items', 'text_domain' ),
+        'not_found'                  => __( 'Not Found', 'text_domain' ),
+        'no_terms'                   => __( 'No items', 'text_domain' ),
+        'items_list'                 => __( 'Items list', 'text_domain' ),
+        'items_list_navigation'      => __( 'Items list navigation', 'text_domain' ),
+    );
+    $args = array(
+        'labels'                     => $labels,
+        'hierarchical'               => false,
+        'public'                     => true,
+        'show_ui'                    => true,
+        'show_admin_column'          => true,
+        'show_in_nav_menus'          => true,
+        'show_tagcloud'              => true,
+    );
+    register_taxonomy( 'taxonomy', array( 'page' ), $args );
+
+}
+add_action( 'init', 'custom_taxonomy', 0 );
+
 }

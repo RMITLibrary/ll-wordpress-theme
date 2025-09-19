@@ -20,12 +20,12 @@ if (!defined('ABSPATH')) {
  *
  * @param WP_Query $query The main WordPress query
  */
-function rmit_ll_include_custom_post_types_in_search_results($query) {
+function tg_include_custom_post_types_in_search_results($query) {
     if ($query->is_main_query() && $query->is_search() && !is_admin()) {
         $query->set('post_type', array('post', 'page'));
     }
 }
-add_action('pre_get_posts', 'rmit_ll_include_custom_post_types_in_search_results');
+add_action('pre_get_posts', 'tg_include_custom_post_types_in_search_results');
 
 /**
  * Prepend slash to relative URLs in content
