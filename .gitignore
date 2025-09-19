@@ -1,0 +1,137 @@
+# WordPress Core Files (these come from WordPress installation)
+/index.php
+/license.txt
+/readme.html
+/wp-*.php
+/xmlrpc.php
+/wp-admin/
+/wp-includes/
+
+# WordPress Configuration
+/wp-config.php
+/wp-config-local.php
+
+# WordPress Content - Keep only themes
+/wp-content/*
+!/wp-content/
+!/wp-content/themes/
+/wp-content/themes/*
+!/wp-content/themes/rmit-learning-lab/
+!/wp-content/themes/picostrap5/
+
+# WordPress Debug & Logs
+*.log
+/wp-content/debug.log
+/wp-content/advanced-cache.php
+/wp-content/backup-db/
+/wp-content/backups/
+/wp-content/blogs.dir/
+/wp-content/cache/
+/wp-content/upgrade/
+/wp-content/uploads/
+/wp-content/wp-cache-config.php
+/wp-content/plugins/
+
+# Development Dependencies
+node_modules/
+vendor/
+composer.lock
+package-lock.json
+
+# Build Files
+/wp-content/themes/rmit-learning-lab/css-output/bundle.css
+/wp-content/themes/rmit-learning-lab/css-output/bundle.css.map
+*.css.map
+*.js.map
+
+# OS Files
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.fseventsd
+.TemporaryItems
+.apdisk
+
+# IDE Files
+.vscode/
+.idea/
+.claude/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+.project
+.settings/
+.metadata
+.classpath
+*.iml
+*.ipr
+*.iws
+.eclipse/
+.netbeans/
+nbproject/
+
+# Environment Files
+.env
+.env.local
+.env.*.local
+
+# Deployment
+*.zip
+*.tar.gz
+/wp-content/themes/rmit-learning-lab/picostrap5-child-base/
+
+# Documentation
+CLAUDE.md
+
+# Temporary Files
+*.tmp
+*.temp
+*.cache
+
+# Development Tool Files
+_notes/
+dwsync.xml
+**/dwsync.xml
+**/_notes/
+
+# Logs and Databases
+*.log
+*.sql
+*.sqlite
+*.sqlite3
+
+# Runtime Files
+*.pid
+*.seed
+*.lock
+
+# Additional Archive Types
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Debug Files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage Reports
+coverage/
+.nyc_output/

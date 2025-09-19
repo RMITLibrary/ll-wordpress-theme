@@ -1,0 +1,43 @@
+#embedModal {
+    .modal-dialog {
+        max-width: 672px;
+    }
+
+    .modal-content {
+        .modal-header {
+            border-bottom: 0;
+            padding-bottom: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 0 1rem 0.5rem 1rem;
+        }
+
+        .accordion-item {
+            border-bottom: 0;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+    }
+}
+
+.code-section {
+    width: 100%;
+    font-family: monospace;
+    overflow-x: auto;
+
+    border: 1px solid $interface-grey;
+    resize: none;
+    outline: none;
+    font-size: 1rem;
+
+    padding: 0.5rem 0.75rem;
+    
+  }
+
+  

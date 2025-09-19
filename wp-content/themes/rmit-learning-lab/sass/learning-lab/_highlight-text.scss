@@ -1,0 +1,110 @@
+// Used in highlight text activities with buttons. Find a better name
+.button-group {
+	.text-markup-btn, #showHideAll {
+		margin-bottom: 1rem;
+	}
+	
+	@include media-breakpoint-down(md) { 
+		.text-markup-btn, #showHideAll {
+			display: block;
+			width: 100%;
+		}
+	}
+}
+
+
+//Used in static highlighted text examples
+
+// Styles for the key 
+.key {
+    
+    // a bit of margin at bottom for eky on mobile. Desktop should be uneffected.
+    margin-bottom: 1.5rem;
+    
+    ul {
+        // Remove default list styling, margin, and padding
+        list-style-type: none;
+        margin: 0 !important;
+        padding: 0;	
+    }
+    
+    li {
+        // Display list items inline with rounded corners
+        display: inline-block;
+        margin: 0 0.5rem 0.5rem 0;
+        padding: 0.25rem;
+        border-radius: 0.25rem;
+    }
+}
+
+.highlight-text {
+
+    @include do-space(margin-top, md); 
+    @include do-space(margin-bottom, md); 
+
+    // Styles for the content 
+    .content {
+        
+        // Increase line height and letter spacing for readability
+        line-height: 2;
+        letter-spacing: 0.5px;
+        
+        .highlight-1, .highlight-2, .highlight-3,
+        .highlight-4, .highlight-5, .highlight-6, .highlight-7, .highlight-8, .highlight-9, .highlight-10 {
+            // Increase padding for highlighted spans
+            padding: 4px;
+        }
+    }
+
+    // Responsive styles for medium and larger screens
+    @include media-breakpoint-up(md) { 
+        // Use CSS Grid layout with defined columns and gap
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 1.5rem;
+
+        .key {
+            // Display key section second
+            order: 2;
+
+            li {
+                // Stack items with bottom margin
+                display: block;
+                margin-bottom: 1.75rem;
+            }
+        }
+
+        .content {
+            // Display content section first
+            order: 1;
+        }
+
+        .content > *:first-child {
+            // Remove top margin for the first child
+            margin-top: 0;
+        }
+    }
+}
+
+//add this class after highlight-text to position key above content
+.hl-one-column {
+    @include media-breakpoint-up(md) {  
+        display: block;
+
+        .key {
+            margin-bottom: 2rem;
+        }
+        .key li {
+            display: inline;
+        }
+    }
+}
+
+
+
+@include color-mode(dark) {
+    // dim colours lightly in dark mode
+	.highlight-grid {
+		filter: brightness(0.95) contrast(0.95);
+	}
+}

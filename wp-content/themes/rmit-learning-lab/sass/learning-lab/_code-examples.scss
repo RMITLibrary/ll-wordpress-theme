@@ -1,0 +1,26 @@
+.highlight {
+    @include do-space(margin-top, lg); 
+    @include do-space(margin-bottom, lg); 
+	
+    background-color: var(--bs-primary-bg-subtle);
+	
+	padding: 1rem;
+}
+
+.hljs-string {
+	color: $red;
+}
+
+pre {
+    margin: 0;
+}
+
+.wrap-code {
+  overflow: hidden; // Ensure no scrolling
+}
+
+.wrap-code pre {
+  white-space: pre-wrap; // Allow code to wrap
+  word-break: break-word; // Break long words if necessary
+  overflow: hidden; // Ensure no scrolling within pre
+}

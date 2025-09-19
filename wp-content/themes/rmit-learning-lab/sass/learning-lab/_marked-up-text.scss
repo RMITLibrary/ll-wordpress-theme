@@ -1,0 +1,65 @@
+//Retire these styles and markup
+// Replaced by _hightlight-text.scss
+
+// Used in highlight text activities with buttons. Find a better name
+.button-group {
+	.text-markup-btn, #showHideAll {
+		margin-bottom: 1rem;
+	}
+	
+	@include media-breakpoint-down(md) { 
+		.text-markup-btn, #showHideAll {
+			display: block;
+			width: 100%;
+		}
+	}
+}
+
+
+//Used in static highlighted text examples
+.highlight-grid {
+    
+    ul {
+        list-style-type: none;
+    }
+    
+    ul, li {
+        margin: 0;	
+    }
+    
+    li {
+        display: inline-block;
+        margin-right: 0.25rem;
+		padding: 0.25rem;
+		border-radius: 0.25rem;
+    }
+    
+    label, span {
+        display: inline;
+        padding: 4px;
+    }
+    
+    @include media-breakpoint-up(md) { 
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+        gap: 1.5rem;
+        
+        p { 
+			margin: 0;
+			line-height: 2;
+			letter-spacing: 0.5px;
+		}
+        
+        li {
+            display: block;
+            margin-bottom: 1.75rem;
+        }
+    }
+}
+
+@include color-mode(dark) {
+
+	.highlight-grid {
+		filter: brightness(0.95) contrast(0.95);
+	}
+}

@@ -1,0 +1,28 @@
+{
+  "name": "rmit-learning-lab-theme",
+  "version": "3.1.0",
+  "description": "RMIT Learning Lab WordPress theme development",
+  "main": "index.js",
+  "scripts": {
+    "sass": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --style=compressed --source-map",
+    "watch": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --watch --style=compressed --source-map",
+    "build": "npm run sass",
+    "dev": "npm run watch",
+    "clean": "rm -f wp-content/themes/rmit-learning-lab/css-output/bundle.css*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/ll-wordpress-theme.git"
+  },
+  "keywords": [
+    "wordpress",
+    "theme",
+    "rmit",
+    "learning-lab"
+  ],
+  "author": "Digital Learning Team",
+  "license": "GPL-2.0",
+  "devDependencies": {
+    "sass": "^1.83.2"
+  }
+}

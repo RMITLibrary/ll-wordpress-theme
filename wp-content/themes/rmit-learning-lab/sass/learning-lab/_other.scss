@@ -1,0 +1,98 @@
+//stops the wordpress admin bar from covering content
+/*
+.nav-fixed {
+    #wp-admin-bar-root-default {
+        top: -1.5rem !important;
+    } 
+}
+*/
+
+aside.visually-hidden-focusable div {
+    padding: 16px 24px;
+    
+    @include do-space(margin-top, sm);
+    @include do-space(margin-bottom, sm);
+    
+    border: 2px solid $red;
+    
+    & > :first-child {
+        margin-top: 0;
+    }
+    
+    & > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+//Style sidenote to resemble a blockquote
+
+.sidenote img, .marginnote img { 
+    max-width: 300px !important;
+}
+
+.sidenote {
+	display: block;
+	
+    //set responsive padding and margins for blockquote
+    @include do-space(margin-top, md); 
+    @include do-space(margin-bottom, md);
+    
+    @include do-space(padding-top, sm); 
+    @include do-space(padding-bottom, sm); 
+    
+    @include do-space(padding-left, md); 
+    @include do-space(padding-right, md); 
+    
+    border-radius: 0 0.5rem 0.5rem 0;
+    border-left: 0.25rem solid $accent-color;
+
+    background-color: var(--bs-primary-bg-subtle);
+	
+}
+
+.marginnote { 
+    float: right;
+    width: 300px;
+    font-size: 0.9em;
+    margin: 0 0 1em 2em;
+}
+
+.sidenote-number, .margin-toggle {
+    display: none; 
+}
+
+// Dark mode
+@include color-mode(dark) {
+	
+    .sidenote {
+		border-left: 0.25rem solid $accent-color-dark;
+	}
+}
+
+// Override .btn-nav-container styles to remove border-bottom at large breakpoints, 
+// due to the presence of keywords on every page.
+
+// Previous and next buttons
+.btn-nav-container {
+	//At a large breakpoint, add in a seperator line
+    @include media-breakpoint-down(xl) {
+        border: 0;
+        padding: 0;
+    }
+}
+
+//wrapper to align embed button to right of keywords (remove at small screen sizes
+.keyword-embed-contain {
+    display: flex;
+    justify-content: space-between;
+
+    .keywords { margin: 0; }
+
+    @include media-breakpoint-down(md) {
+        .btn-embed { display: none; }
+    }
+}
+
+.btn-embed {
+    flex-shrink: 0;
+}

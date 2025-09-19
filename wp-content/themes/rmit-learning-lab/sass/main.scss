@@ -1,0 +1,83 @@
+///////////////////////////////////////////////////
+// MAIN.SCSS
+// THIS IS THE MAIN SCSS PIPELINE START
+//////////////////////////////////////////////////
+ 
+//IMPORT BOOTSTRAP.
+/*
+Note theme_variables.scss is now loaded by bootstrap-loader but can be important for customisation.
+*/
+@import "design-system/colour";
+
+@import "bootstrap-loader"; 
+
+
+// THE THEME STUFF 
+@import "wp_basic_styles";      
+@import "picostrap";  
+@import "woocommerce";
+
+
+// CUSTOM CSS
+//Everything that doesn't fit elsewhere
+@import "design-system/utilities";
+
+//Visual language
+@import "design-system/space";
+@import "design-system/typography";
+@import "design-system/links";
+@import "design-system/focus";
+@import "design-system/forms";
+
+
+//Simple components
+@import 'design-system/button';
+@import 'design-system/button-icon';
+@import "design-system/accordion";
+@import "design-system/blockquote";
+@import 'design-system/table';
+
+//Complex components
+@import 'design-system/footer';
+@import "design-system/breadcrumbs";
+@import "design-system/navigation";
+@import "design-system/top-nav";
+@import 'design-system/video-image';
+
+@import 'design-system/layout';
+@import 'design-system/title-icon';
+
+//Switcher from light to dark mode
+@import 'design-system/theme-switcher';
+
+
+
+//Replaces custom styles defined via customize / additonal styles
+@import "learning-lab/old-site-styles";
+@import "learning-lab/lightweight-accordion";   //could be removed?
+
+@import "learning-lab/nav-additions";           //adds additional styles for right nav and breadcrumbs
+
+@import "learning-lab/landing-banner";
+@import "learning-lab/home-page";
+
+@import "learning-lab/highlight-text";
+@import "learning-lab/search";
+
+@import "learning-lab/code-examples";
+
+@import "learning-lab/modal";       //for embed moal, positioning of button in other currently
+@import "learning-lab/end-of-section";   //end of section panel styles
+@import "learning-lab/other";       //other styles that don't fit into a category
+@import "learning-lab/iframe-support";    //styles to cope with embeds like sketchfab
+
+    
+//Any final custom styles can go here
+@import "custom";
+
+/* 
+    Note: Wordpress seems to cache this file.
+    Changes can take anywhere between 10-30mins to be recognised by the online sass compiler.
+    Make any minimal changes in a linked file (suchas _custom.scss).
+*/
+

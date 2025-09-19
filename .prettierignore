@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+vendor/
+
+# WordPress Core (don't format)
+/index.php
+/license.txt
+/readme.html
+/wp-*.php
+/xmlrpc.php
+/wp-admin/
+/wp-includes/
+
+# WordPress Content - exclude most
+/wp-content/plugins/
+/wp-content/uploads/
+/wp-content/cache/
+/wp-content/debug.log
+
+# Build output
+/wp-content/themes/rmit-learning-lab/css-output/
+*.min.js
+*.min.css
+*.map
+
+# Generated/compiled files
+bundle.css
+bundle.js
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
+.claude/
+_notes/
+
+# Version control
+.git/

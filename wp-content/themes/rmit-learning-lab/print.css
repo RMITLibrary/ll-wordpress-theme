@@ -1,0 +1,75 @@
+/* START header and containers */
+header, .col-xl-4, .btn-nav-container {
+    display: none;
+}
+
+.container {
+    max-width: 100%;
+}
+
+html.nav-fixed #page-content {
+    padding-top: 1.5rem;
+}
+
+.col-xl-8 {
+    width: 100%;
+}
+/* END header and containers */
+
+/* START breadcrumbs */
+ul.breadcrumbs li {
+    display: inline-block;
+}
+
+ul.breadcrumbs li:first-child {
+    display: none;
+}
+
+ul.breadcrumbs li:last-child::before {
+    content: "";
+    padding-right: 0;
+}
+/* END breadcrumbs */
+
+
+/* START accordions */
+.collapse:not(.show) {
+    display: block;
+}
+
+.accordion-item .accordion-button::before {
+    transform: rotate(-90deg);
+}
+
+.transcript {
+    display: none;
+}
+/* END accordions */
+
+/* START floated images */
+.float-right {
+    float: right;
+    margin: .5rem 0 1rem 2rem;
+    width: 18.5rem
+}
+/* END floated images */
+
+/* START footers */
+#additional-info, .ask-container, footer  {
+    display: none;
+}
+
+.footer-container {
+    margin-top: 1.5rem;
+    border-top: 1px solid #bfbfbf;
+}
+
+.acknowledgement {
+    background-color: #ffffff;
+}
+
+.acknowledgement a {
+    display: none;
+}
+/* END footers */
+

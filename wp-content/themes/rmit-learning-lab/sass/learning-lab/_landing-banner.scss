@@ -1,0 +1,203 @@
+.landing-banner {
+	
+	figure {
+		margin: 0;
+		max-width: 100%;
+	}
+	
+	img {
+		border-radius: 0.5rem 0.5rem 0 0;
+		border-bottom: 0.25rem solid $accent-color;
+	}
+	
+	h1 {
+		margin-top: 1rem;
+		margin-bottom: 1rem;
+	}
+	
+	.small { margin-bottom: 0; }
+	
+	@include media-breakpoint-up(lg) { 
+		display: flex;
+		align-items: flex-start;
+		gap: 1.5rem;
+		
+		figure {
+			flex-shrink: 0;
+			width: 24rem;
+			order: 2;
+		}
+		
+		img {
+			border-radius: 0.5rem;
+			border-bottom: 0;
+		}
+		
+		.landing-content {
+			order: 1;
+		}
+		
+		h1 {
+			margin-top: 1.5rem;
+		}
+		
+		.red-bar {
+			border-top: 4px solid $accent-color;
+			max-width: 32rem;
+		}	
+	}
+	
+	@include media-breakpoint-up(xl) { 
+		align-items: flex-end;
+		//margin-top: -40px;
+		
+		figure {
+			width: 32rem;
+		}
+	}
+	
+	@include media-breakpoint-up(xxl) { 
+		gap: 2.5rem;
+		margin-top: -2rem;
+		
+		figure {
+			width: 39.75rem;
+		}
+	}
+	
+}
+
+.landing-column-container {
+	display: grid;
+	margin-top: 3rem;
+	margin-bottom: 1.5rem;
+	
+	@include media-breakpoint-up(lg) { 
+		//set up 3 column layout at large breakpoints, adjust spacing
+		grid-template-columns: 1fr 1fr 1fr;
+		margin-top: 4rem;
+		margin-bottom: 2.5rem;
+	}
+}
+
+.landing-column-inner {
+	//background-color: $underlay-grey;
+	border-top: 1px solid $interface-grey;
+	margin-top: 1.5rem;
+	padding-top: 1.5rem;
+	max-width: 28rem;
+
+	//set heading margin to zero
+	h2, .link-list { margin-top: 0; }
+	.link-list { margin-bottom: 0 !important; }
+
+	h3 {
+		margin-top: 3.5rem;
+	}
+	
+	//narrow margin for first subheading 
+	h3:first-of-type {
+        margin-top: 2rem;
+    }
+}
+
+//remove margin-top for 1st list
+.landing-column:first-child .landing-column-inner {
+	margin-top: 0;	
+}
+
+@include media-breakpoint-up(lg) { 
+
+	.landing-column-inner {
+		margin: 0 0.75rem 0 0.75rem;
+		padding-top: 1rem;
+	}
+
+	//remove margin-left for 1st column
+	.landing-column:first-child .landing-column-inner {
+		margin-left: 0;	
+	}
+
+	//remove margin-right for last column
+	.landing-column:last-child .landing-column-inner {
+		margin-right: 0;
+	}
+
+	//if divider class is present, hide top border, show right broder
+	.divider {
+		border-top: 0;
+		border-right: 1px solid $interface-grey;
+		margin: 0 0.75rem 0 0.75rem;
+		padding-top: 0rem;
+		padding-right: 0.75rem;
+	}
+
+	//hide border for last column
+	.landing-column:last-child .divider {
+		border-right: 0;	
+	}
+}
+
+//Legacy styles, phase out
+.landing-list-container {
+	
+	.landing-list {
+		width: 100%;
+		max-width: 26.125rem;
+		margin-top: 3rem;
+		border-top: 1px solid $interface-grey;
+		padding-top: 0.5rem;
+	}
+	
+	h2 {
+		margin-top: 1rem;
+	}
+	
+	@include media-breakpoint-up(md) { 
+		display: flex;
+		gap: 1.5rem;
+		margin-top: 1.5rem;
+		
+		.link-list {
+			margin-bottom: 0 !important;
+		}
+	}
+	
+	@include media-breakpoint-up(lg) { 
+		.landing-list {
+			max-width: 26.125rem;
+		}
+		
+		.landing-list > *:last-child {
+			margin-bottom: 0px;
+		}
+	}
+
+
+}
+
+// Dark mode
+@include color-mode(dark) {
+    
+    .landing-banner {
+        
+        img {
+			border-radius: 0.5rem 0.5rem 0 0;
+			border-bottom: 0.25rem solid $accent-color-dark;
+		}
+    }
+	
+	@include media-breakpoint-up(lg) { 
+		.landing-banner {
+			img {
+				border-radius: 0.5rem;
+				border-bottom: 0;
+			}
+
+			.red-bar {
+				border-top: 4px solid $accent-color-dark;
+				max-width: 32rem;
+			}	
+		}
+	}
+}

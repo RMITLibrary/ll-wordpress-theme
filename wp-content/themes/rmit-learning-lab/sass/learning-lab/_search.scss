@@ -1,0 +1,228 @@
+.search-container {
+    max-width: 34rem;
+    margin-top: 2rem;
+
+    .mag-glass {
+        @include mag-glass;
+        width: 20px;
+        height: 20px;
+    }
+    
+    button {
+        margin: 0;
+    }
+
+    input {
+        flex: 1; /* Allows it to take up available space */
+        height: 46px;
+        border: 1px solid $link-color;
+        padding: 0.5rem 1rem;
+
+    }
+
+    input::placeholder {
+        color: $body-color;
+        opacity: 0.8; 
+    }
+}
+
+//add class to put label to the side of input and search button
+.label-side {
+    @include media-breakpoint-up(md) {
+        
+        display: flex;
+        max-width: 100%;
+        gap: 1rem;
+        
+        label {
+            display: block;
+            margin: 0;
+            margin-top: 0.5rem;
+        }
+
+        h2 {
+            margin: 0;
+        }
+        
+    }
+}
+
+#results-title:focus {
+    outline: none;
+}
+
+
+
+#results, #keywords {
+    li.result-item {
+        overflow: hidden;
+        max-height: 14rem;
+        position: relative; // Make sure the li has positioning context
+
+        // Add a pseudo-element for the fade effect
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2.5rem; // Adjust this height to control the fade length
+            background: linear-gradient(to bottom, transparent, $body-bg); // Set your background color here
+            pointer-events: none; // Ensure the overlay doesn't block interactions
+        }
+
+        .breadcrumbs { 
+            display: none; 
+            margin-top: 0.5rem;
+        }
+
+        @include media-breakpoint-up(lg) {
+            max-height: 11rem;
+
+            .breadcrumbs { 
+                display: block; 
+            
+                li:first-child { padding: 0; }
+	
+                li {
+                    padding-left: 0.5rem;
+                }
+                
+                li::after {
+                    content: '/';
+                    padding-left: 0.5rem;
+                }
+                
+                li:last-child::after { 
+                    content: none;
+                    padding: 0;
+                }
+            }
+        }
+    }   
+}
+
+#keywords {
+    li.result-item {
+
+        @include media-breakpoint-up(lg) {
+
+            .breadcrumbs { 	
+                li {
+                    padding-left: 0.25rem;
+                }
+            }
+        }
+    }   
+}
+
+// column layout for keywords
+.keyword-listing {
+    ul {
+        column-count: 2;
+
+        list-style-type: none;
+        padding: 0;
+
+        li { padding: 0; }
+        
+        @include media-breakpoint-up(md) { 
+            column-count: 3;
+        }
+        
+        @include media-breakpoint-up(lg) { 
+            column-count: 4;
+        }
+    }
+}
+
+// search-debug is turned on via query string - debug=true
+.search-debug {
+    display: none;
+
+    div {
+        display: flex;
+        margin-top: 1rem;
+        gap: 1rem;
+        
+        label {
+            width: 6rem;
+        }
+
+        input {
+            width: 6rem;
+        }
+    }
+}
+
+// Dark mode
+@include color-mode(dark) {
+	
+    .search-container {
+        input {
+            border: 1px solid $link-color-dark;
+        }
+    
+       input::placeholder {
+            color: $body-color-dark;
+            opacity: 0.8; 
+        }
+
+        button {
+            background-color: $link-color-dark;
+            border-color: $link-color-dark;
+    
+            .icon {
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26' fill='%23333'%3e%3cpath d='M26 24.7152L18.2522 17.0455C21.8 12.7856 21.3825 6.47376 17.3048 2.72326C13.2271 -1.02725 6.93433 -0.887297 3.02572 3.04082C-0.88289 6.96895 -1.02215 13.2932 2.70973 17.3912C6.44161 21.4893 12.7221 21.9088 16.9609 18.3433L24.7087 26L26 24.7152ZM10.5044 18.9403C5.84741 18.9403 2.07218 15.1462 2.07218 10.466C2.07218 5.78575 5.84741 1.99168 10.5044 1.99168C15.1614 1.99168 18.9366 5.78575 18.9366 10.466C18.9332 12.7282 18.0313 14.8955 16.4312 16.4867C14.831 18.0778 12.6649 18.961 10.414 18.9403H10.5044Z'/%3e%3c/svg%3e");
+            }
+        }
+    }
+
+    #results, #keywords {
+        li {
+            // make fade effect dark
+            &::after {
+                background: linear-gradient(to bottom, transparent, $body-bg-dark);
+            }
+        }
+    }
+}
+
+// Google search box styles
+/*
+.search-box-container {
+    max-width: 34rem;
+}
+
+// Search box styles
+#___gcse_0 {
+    .gsc-control-cse, table, tr, td {
+        border: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .gsc-input {
+        font-size: 18px;
+    }
+
+    .gsc-input-box {
+        padding: 0.5rem 1rem;
+    }
+
+    //hide clear search button, too small, too close to search button
+    .gsst_b {
+        width: 0;
+        height: 0;
+        overflow: hidden;
+    }
+
+    background-color: $red;
+}
+
+.blerghness {
+    height: 40px;
+    width: 40px;
+    background-color: aqua;
+}
+    */

@@ -1,0 +1,76 @@
+/* Restyle lightwieght accordion */
+
+/* === Accordion =============================== */
+
+/*.lightweight-accordion {
+  margin-bottom: 2em !important;
+}*/
+
+.lightweight-accordion .lightweight-accordion-title {
+  background: none !important;
+}
+
+.lightweight-accordion {
+    border-bottom: solid 1px $interface-grey;
+    max-width: 40rem;
+    color: $rmit-blue;
+    
+    .lightweight-accordion-title {
+        position: relative;
+        display: flex !important;
+        align-items: center;
+        width: 100%;
+        padding: 0.5rem 0 0.5rem 0 !important;
+        text-align: left;
+        text-decoration: underline;
+    }
+    
+    .lightweight-accordion-title::before {
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        margin-right: 0.5rem;
+        content: "";
+        @include carat;
+        transition: transform .2s ease-in-out;
+    }
+    
+    .lightweight-accordion-title::after {
+        display: none;
+    }
+    
+    .lightweight-accordion-title:hover, .lightweight-accordion-title:not(.collapsed):hover {
+		@include link-feature-hover;
+        text-decoration: none;
+    }
+    details[open] > .lightweight-accordion-title::before {
+         transform: rotate(-180deg);
+    }
+
+    .open.lightweight-accordion-title::before {
+        transform: rotate(-180deg);
+    }
+    
+    .lightweight-accordion-body, .lightweight-accordion-body p {
+        font-size: 0.9375rem !important;
+        color: $dark-grey;
+    }
+    
+    .lightweight-accordion-body > *:first-child {
+        margin-top: 0px;
+    }
+
+    .lightweight-accordion-body > *:last-child {
+        margin-bottom: 0px;
+    }
+}
+
+figure .lightweight-accordion {
+	border-bottom: 0px;	/* Border included in figure itself */
+}
+
+.transcript {
+    .lightweight-accordion {
+        border-bottom: 0px;
+    }
+}

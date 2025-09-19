@@ -1,0 +1,104 @@
+.end-of-section {
+	display: block;
+	
+    //set responsive padding and margins for blockquote
+    @include do-space(margin-top, md); 
+    @include do-space(margin-bottom, md);
+    
+    @include do-space(padding-top, sm); 
+    @include do-space(padding-bottom, sm); 
+    
+    @include do-space(padding-left, md); 
+    @include do-space(padding-right, md); 
+    
+    border-radius: 0 0.5rem 0.5rem 0;
+    border-left: 0.25rem solid $accent-color;
+
+    background-color: var(--bs-primary-bg-subtle);
+	
+    .eos-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+ 
+        p { 
+            @include type-small;
+            font-weight: 500;
+            margin: 0; 
+        }
+
+        h2 {
+            @include type-h3;
+            margin-top: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        &::before {
+            content: url("data:image/svg+xml,%3C?xml version='1.0' encoding='UTF-8'?%3E %3Csvg enable-background='new 0 0 96 96' version='1.1' viewBox='0 0 96 96' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle type='text/css'%3E 	.st0{fill:none;stroke:%23000054;stroke-width:2.3984;stroke-miterlimit:10;} 	.st1{fill:none;stroke:%23000054;stroke-width:2.3811;stroke-miterlimit:10;} 	.st2{fill:none;stroke:%23000054;stroke-width:2.35;stroke-miterlimit:10;} 	.st3{fill:none;stroke:%23E61F2A;stroke-width:2.2;stroke-miterlimit:10;} %3C/style%3E %3Cpolyline class='st0' points='29.59 78.02 29.59 69.17 66.65 69.17 66.65 82.82'/%3E %3Cline class='st1' x1='25.35' x2='70.65' y1='82.82' y2='82.82'/%3E %3Cpath class='st2' d='m26.94 13.25c-1.29 0-2.42 1.01-2.63 2.41-1.2 7.97 1.03 16.41 6.69 22.55 9.37 10.14 24.56 10.12 33.95-0.03 5.67-6.13 7.91-14.56 6.74-22.51-0.21-1.4-1.34-2.42-2.63-2.42h-42.12z'/%3E %3Cpath class='st2' d='m45.82 64.51h4.36v-3.3c1.5-0.65 2.53-1.93 2.53-3.42s-1.03-2.77-2.53-3.42v-3.3h-4.36'/%3E %3Cpath class='st2' d='m72.68 32.64c0.67 0.18 1.37 0.28 2.09 0.28 4.55 0 8.24-3.69 8.24-8.24 0-4.33-3.35-7.88-7.6-8.2'/%3E %3Cpath class='st2' d='M20.61,16.48C16.36,16.8,13,20.34,13,24.68c0,4.55,3.69,8.24,8.24,8.24c0.71,0,1.39-0.1,2.05-0.27'/%3E %3Cline class='st3' x1='27.63' x2='36.57' y1='19.23' y2='19.23'/%3E %3Cline class='st3' x1='29.63' x2='36.57' y1='24.62' y2='24.62'/%3E %3Cline class='st3' x1='31.63' x2='36.57' y1='30.01' y2='30.01'/%3E %3C/svg%3E");
+            flex-shrink: 0;
+            width: 5rem;
+            height: 5rem;
+            margin-left: -0.75rem;
+            margin-right: 0.5rem;   
+        }            
+    }
+
+    .eos-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+
+        @include type-default;
+
+        // .eos-left-content, .eos-right-content {
+        //     ul, p {
+        //         margin: 0;
+        //     }
+        // }
+
+        .eos-left-title, .eos-right-title {
+            font-weight: 500;
+            margin-top: 0rem;
+            margin-bottom: 0.5rem;
+        }
+
+        li { margin-bottom: 0.25rem; }
+
+        @include media-breakpoint-up(md) { 
+            flex-direction: row;
+            gap: 2.5rem;
+        }
+    }
+
+    
+	
+	/* 
+    Ensure the first child has no top margin 
+    and last child has no margin bottom (usually paragraph tags).
+	This covers 
+    */
+    .eos-right-content > *:first-child, .eos-left-content > *:first-child {
+        margin-top: 0px;
+    }
+
+    .eos-right-content > *:last-child, .eos-left-content > *:last-child {
+        margin-bottom: 0px !important;
+    }
+}
+
+// Dark mode
+@include color-mode(dark) {
+	
+    //Make side bar yellow???
+	.end-of-section {
+		border-left: 0.25rem solid $accent-color-dark;
+        
+       
+    }
+
+    .eos-title {
+        &::before {
+            content: url("data:image/svg+xml,%3C?xml version='1.0' encoding='UTF-8'?%3E %3Csvg enable-background='new 0 0 96 96' version='1.1' viewBox='0 0 96 96' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'%3E %3Cstyle type='text/css'%3E 	.st0{fill:none;stroke:%236FB7FF;stroke-width:2.3984;stroke-miterlimit:10;} 	.st1{fill:none;stroke:%236FB7FF;stroke-width:2.3811;stroke-miterlimit:10;} 	.st2{fill:none;stroke:%236FB7FF;stroke-width:2.35;stroke-miterlimit:10;} 	.st3{fill:none;stroke:%23E6636A;stroke-width:2.2;stroke-miterlimit:10;} %3C/style%3E %3Cpolyline class='st0' points='29.59 78.02 29.59 69.17 66.65 69.17 66.65 82.82'/%3E %3Cline class='st1' x1='25.35' x2='70.65' y1='82.82' y2='82.82'/%3E %3Cpath class='st2' d='m26.94 13.25c-1.29 0-2.42 1.01-2.63 2.41-1.2 7.97 1.03 16.41 6.69 22.55 9.37 10.14 24.56 10.12 33.95-0.03 5.67-6.13 7.91-14.56 6.74-22.51-0.21-1.4-1.34-2.42-2.63-2.42h-42.12z'/%3E %3Cpath class='st2' d='m45.82 64.51h4.36v-3.3c1.5-0.65 2.53-1.93 2.53-3.42s-1.03-2.77-2.53-3.42v-3.3h-4.36'/%3E %3Cpath class='st2' d='m72.68 32.64c0.67 0.18 1.37 0.28 2.09 0.28 4.55 0 8.24-3.69 8.24-8.24 0-4.33-3.35-7.88-7.6-8.2'/%3E %3Cpath class='st2' d='M20.61,16.48C16.36,16.8,13,20.34,13,24.68c0,4.55,3.69,8.24,8.24,8.24c0.71,0,1.39-0.1,2.05-0.27'/%3E %3Cline class='st3' x1='27.63' x2='36.57' y1='19.23' y2='19.23'/%3E %3Cline class='st3' x1='29.63' x2='36.57' y1='24.62' y2='24.62'/%3E %3Cline class='st3' x1='31.63' x2='36.57' y1='30.01' y2='30.01'/%3E %3C/svg%3E");
+        }
+    }
+}
