@@ -1,11 +1,21 @@
 <?php
+/**
+ * Custom Shortcodes Manager
+ *
+ * Manages all custom shortcodes for the RMIT Learning Lab theme.
+ * Auto-discovers and includes shortcode files from the custom-shortcodes directory.
+ *
+ * @package RMIT_Learning_Lab
+ */
 
-//specific shortcode files included at the bottom of this file.
-
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 // Define an array to hold the shortcodes
-// this is used by the_content_filter to remove unwanted br and emtpy p tags
-$shortcodes =array();
+// this is used by the_content_filter to remove unwanted br and empty p tags
+$shortcodes = array();
 
 // Function to add a shortcode to the array
 function add_shortcode_to_list($shortcode) {
@@ -67,28 +77,34 @@ function strip_tags_before_echo($content) {
 }
 
 
-// include files with code for specific shortcodes. 
-// Shortcodes are added in these files via add_shortcode('name, 'function').
+// Auto-include all shortcode files
+// Automatically discovers and includes all PHP files in the custom-shortcodes directory
+// except _main.php and any files starting with underscore
 
-include('accordion.php');	      //handles ll-accordion and transcript
-include('nav_panel.php');	      //handles nav-panel shortcode
+$shortcode_dir = get_stylesheet_directory() . '/custom-shortcodes';
+$shortcode_files = glob($shortcode_dir . '/*.php');
 
-include('image.php');	          //handles ll-image shortcode
-include('video.php');	          //handles ll-video shortcode
-include('alert_banner.php');	  //handles alert-banner shortcode
+foreach ($shortcode_files as $file) {
+    $filename = basename($file);
 
-include('landing.php');	          //handles landing-banner, landing-list 
-include('code_example.php');	  //handles code example shortcode
-include('attribution.php');	       //handles external caption/attribution
+    // Skip this main file and any files starting with underscore (private/utility files)
+    if ($filename === '_main.php' || strpos($filename, '_') === 0) {
+        continue;
+    }
 
-include('card.php');               //handles card
-include('layout.php');               //handles grid, image-text and icon-text
-include('highlight-text.php');      //handles highlight text
+    // Skip deprecated/excluded files
+    $excluded_files = array(
+        'redirect-listing.php', // DEPRECATED - consider renaming to _redirect-listing.php
+        // Add more files to exclude here as needed
+        // 'example-old-shortcode.php',
+    );
 
-include('horizontal-scroll-panel.php');      //handles horizontal scroll panel
-include('title_icon.php');      //handles horizontal scroll panel
+    if (in_array($filename, $excluded_files)) {
+        continue; // Skip excluded files
+    }
 
-//include('redirect-listing.php');    // DEPRECATED allows us to list every redirect via a shortcode
+    include_once($file);
+}
 
 function custom_line_break() {
     return '<br />';
