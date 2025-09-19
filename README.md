@@ -47,15 +47,16 @@ npm run dev
 # Build production CSS (minified)
 npm run build
 
-# One-time compile with expanded output
-npm run sass:dev
+# Clean generated CSS files
+npm run clean
 ```
 
 ## Available Scripts
 
-- `npm run dev` - Watch SASS files and auto-compile on changes
-- `npm run build` - Build compressed CSS with source maps
+- `npm run dev` - Watch SASS files and auto-compile on changes (alias for `watch`)
+- `npm run build` - Build compressed CSS with source maps (alias for `sass`)
 - `npm run sass` - Single compile with compressed output and source maps
+- `npm run watch` - Watch SASS files and auto-compile on changes
 - `npm run clean` - Remove generated CSS files
 
 ## Project Structure
@@ -73,10 +74,21 @@ ll-wordpress-theme/
 │           ├── css-output/       # Compiled CSS output
 │           │   └── bundle.css    # Main compiled CSS
 │           ├── js/               # JavaScript files
+│           ├── includes/         # Modular PHP functionality
+│           │   ├── admin-customizations.php
+│           │   ├── analytics-dashboards.php
+│           │   ├── breadcrumbs-navigation.php
+│           │   ├── content-filters.php
+│           │   ├── custom-shortcodes.php
+│           │   ├── custom-taxonomy.php
+│           │   ├── helper-utils.php
+│           │   ├── json-export.php
+│           │   ├── redirect.php
+│           │   └── seo-noindex-inheritance.php
 │           ├── page-templates/   # Custom page templates
 │           ├── custom-shortcodes/# Custom WordPress shortcodes
 │           ├── acf-json/         # ACF field definitions
-│           └── functions.php     # Theme functions
+│           └── functions.php     # Theme functions (modular)
 ├── package.json                  # Node dependencies and scripts
 ├── .nvmrc                        # Node version specification
 └── README.md                     # This file
@@ -92,7 +104,7 @@ This is a WordPress child theme setup:
 
 1. Edit SASS files in `wp-content/themes/rmit-learning-lab/sass/`
 2. Main entry point is `sass/main.scss`
-3. Custom styles go in `sass/_custom.scss`
+3. Site-specific styles go in `sass/learning-lab/` directory
 4. Compiled output goes to `css-output/bundle.css` (compressed with source maps)
 5. All builds produce consistent compressed CSS matching the parent theme compiler
 
