@@ -29,7 +29,7 @@ jobs:
       - name: Build CSS
         run: |
           mkdir -p wp-content/themes/rmit-learning-lab/css-output
-          npx sass --load-path=node_modules \
+          npx sass \
             wp-content/themes/rmit-learning-lab/sass/main.scss \
             wp-content/themes/rmit-learning-lab/css-output/bundle.css \
             --style=compressed --source-map
