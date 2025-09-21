@@ -99,6 +99,86 @@ $keywords = get_terms(array(
 if (!empty($keywords) && !is_wp_error($keywords)) {
     $current_letter = ''; // Initialize variable to track the current starting letter
 
+    // Pre-compute whether each keyword has at least one qualifying post
+    $keyword_status_map = array();
+    $keyword_ids = wp_list_pluck($keywords, 'term_id');
+    $keyword_lookup = array_fill_keys($keyword_ids, true);
+
+    if (!empty($keyword_ids)) {
+        // Fetch all pages attached to any of the keywords in one request
+        $keyword_posts = get_posts(
+            array(
+                'post_type'      => 'page',
+                'post_status'    => 'publish',
+                'posts_per_page' => -1,
+                'fields'         => 'ids',
+                'tax_query'      => array(
+                    array(
+                        'taxonomy'         => 'keyword',
+                        'field'            => 'term_id',
+                        'terms'            => $keyword_ids,
+                        'include_children' => false,
+                    ),
+                ),
+            )
+        );
+
+        if (!empty($keyword_posts)) {
+            $terms_for_posts = wp_get_object_terms(
+                $keyword_posts,
+                'keyword',
+                array(
+                    'orderby' => 'term_id',
+                    'fields'  => 'all_with_object_id',
+                )
+            );
+
+            $terms_indexed = array();
+            if (!is_wp_error($terms_for_posts)) {
+                foreach ($terms_for_posts as $term) {
+                    $object_id = (int) $term->object_id;
+                    if (!isset($terms_indexed[$object_id])) {
+                        $terms_indexed[$object_id] = array();
+                    }
+                    $terms_indexed[$object_id][] = $term;
+                }
+
+                // Determine which keywords have qualifying posts (non-Archive, non work-in-progress URL)
+                foreach ($keyword_posts as $post_id) {
+                    $post_terms = isset($terms_indexed[$post_id]) ? $terms_indexed[$post_id] : array();
+
+                    if (empty($post_terms)) {
+                        continue;
+                    }
+
+                    $has_archive_term = false;
+                    foreach ($post_terms as $term) {
+                        if (strcasecmp($term->name, 'Archive') === 0) {
+                            $has_archive_term = true;
+                            break;
+                        }
+                    }
+
+                    if ($has_archive_term) {
+                        continue;
+                    }
+
+                    $post_url = get_permalink($post_id);
+                    if ($post_url && stripos($post_url, 'work-in-progress') !== false) {
+                        continue;
+                    }
+
+                    foreach ($post_terms as $term) {
+                        $term_id = (int) $term->term_id;
+                        if (isset($keyword_lookup[$term_id])) {
+                            $keyword_status_map[$term_id] = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Loop through each keyword
     foreach ($keywords as $keyword) {
         // Get the first letter of the keyword name and convert to uppercase
@@ -125,47 +205,8 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
 
         // Output the keyword as a list item with a link, exclude "Documentation" and "Archive"
         if ($keyword->name != "Documentation" && $keyword->name != "Archive") {
-            // Query posts associated with the current keyword
-            $query_args = array(
-                'post_type' => 'page', // Adjust post type if needed
-                'tax_query' => array(
-                    array(
-                        'taxonomy' => 'keyword',
-                        'field'    => 'slug',
-                        'terms'    => $keyword->slug,
-                    ),
-                ),
-                'fields' => 'ids', // Only retrieve post IDs for efficiency
-            );
+            $has_valid_post = !empty($keyword_status_map[$keyword->term_id]);
 
-            $posts = get_posts($query_args);
-            $has_valid_post = false;
-
-            // Check if there's at least one post without the "Archive" term and "work-in-progress" in the URL
-            foreach ($posts as $post_id) {
-                $post_terms = get_the_terms($post_id, 'keyword');
-                $has_archive_term = false;
-                
-                if ($post_terms) {
-                    foreach ($post_terms as $term) {
-                        if ($term->name == "Archive") {
-                            $has_archive_term = true;
-                            break; // Break the loop if the "Archive" term is found
-                        }
-                    }
-                }
-                
-                // Check if the post URL contains "work-in-progress"
-                $post_url = get_permalink($post_id);
-                if ($has_archive_term || stripos($post_url, 'work-in-progress') !== false) {
-                    continue; // Skip this post if it has the "Archive" term or "work-in-progress" in the URL
-                }
-                
-                $has_valid_post = true;
-                break; // Exit loop if a valid post is found
-            }
-
-            // Output the keyword link if a valid post is found
             if ($has_valid_post) {
                 echo '<li><a href="..' . esc_url($relative_link) . '">' . esc_html($keyword->name) . '</a></li>';
             }
