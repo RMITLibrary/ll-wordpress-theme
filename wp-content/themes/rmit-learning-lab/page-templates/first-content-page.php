@@ -32,7 +32,7 @@ get_header();
                     the_content();
                 endwhile;
             else :
-                _e( 'Sorry, no posts matched your criteria.', 'textdomain' );
+                _e( 'Sorry, no posts matched your criteria.', 'rmit-learning-lab' );
             endif;
             ?>
 			<?php 
@@ -50,4 +50,3 @@ get_header();
 </div>
 
 <?php get_footer();
-

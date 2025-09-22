@@ -13,9 +13,10 @@ if (!empty($additional_resources)) {
     echo '<hr class="margin-top-xl">' . "\n";
 
     if (!empty($additional_resources_title)) {
-        echo '<h2>' . $additional_resources_title . '</h2>' . "\n";
+        echo '<h2>' . esc_html($additional_resources_title) . '</h2>' . "\n";
     }
 
-    echo strip_tags_before_echo($additional_resources);
+    $sanitized_resources = strip_tags_before_echo($additional_resources);
+    echo wp_kses_post($sanitized_resources);
 } 
 ?>
