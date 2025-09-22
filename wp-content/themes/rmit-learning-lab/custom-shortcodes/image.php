@@ -74,87 +74,58 @@ function image_att ($atts, $content = null) {
         'classes' => ''
     );
     $a = shortcode_atts($default, $atts);
-    $content = do_shortcode($content);
-            
-    //START Build figure tag
-    $figureTag = '<figure class="';
-            
-    //if align = center or centre, add class to align image to the centre
-    if ($a['align'] == 'center' || $a['align'] == 'centre') {
-        $figureTag .= 'centre '; 
-    }
-      
-    //check for border
-    if($a['border'] == 'true') { 
-        $figureTag .= 'my-border '; 
-    } 
+    $content = wp_kses_post(do_shortcode($content));
 
-    //check for shadow
-    if($a['shadow'] == 'true') { 
-        $figureTag .= 'drop-shadow '; 
-    } 
+    $figure_classes = array();
 
-    //check for rounded corners
-    if($a['rounded'] == 'true') { 
-        $figureTag .= 'round-corners '; 
-    } 
-    
-	//check for floated
-    if($a['float'] == 'true' || $a['float'] == "right") {
-		if($a['size'] == 'sm')
-        {
-			$figureTag .= 'float-right-sm ';  
-        }
-        else
-        {
-            $figureTag .= 'float-right ';  
-        }   
-    } 
-	
-	//check for hide-sm
-    if($a['hide-sm'] == 'true') {
-		$figureTag .= 'hide-sm ';  
-    } 
-            
-    //if portrait is, add a class
-    if($a['portrait'] == 'true') { 
-        
-        if($a['size'] == 'sm')
-        {
-            $figureTag .= 'portrait-small '; 
-        }
-        else
-        {
-            $figureTag .= 'portrait '; 
-        } 
+    if ($a['align'] === 'center' || $a['align'] === 'centre') {
+        $figure_classes[] = 'centre';
     }
-    //add size attribute if required and portrait or float not specified       
-    else if($a['size'] != '' && $a['float'] == '') { 
 
-        if($a['size'] == 'wide')
-        {
-            $figureTag .= 'wide '; 
-        }
-        else
-        {
-            $figureTag .= 'img-width-' . $a['size'] . ' '; 
-        } 
+    if ($a['border'] === 'true') {
+        $figure_classes[] = 'my-border';
     }
-    
-    
-    //if there's anything in clesses, add it (don't document this, for web devs only)
-    if($a['classes'] != '') { 
-        $figureTag .= $a['classes'] . ' '; 
-    } 
-    
-    //If caption-id has a value, add it as an aria-labelledby
-    if($a['attribution-id'] != '') { 
-        $figureTag .= '" aria-labelledby="' . $a['attribution-id']; 
-    } 
-    
-    $figureTag .= '">';
-    //END Build figure tag 
-            
+
+    if ($a['shadow'] === 'true') {
+        $figure_classes[] = 'drop-shadow';
+    }
+
+    if ($a['rounded'] === 'true') {
+        $figure_classes[] = 'round-corners';
+    }
+
+    if ($a['float'] === 'true' || $a['float'] === 'right') {
+        $figure_classes[] = $a['size'] === 'sm' ? 'float-right-sm' : 'float-right';
+    }
+
+    if ($a['hide-sm'] === 'true') {
+        $figure_classes[] = 'hide-sm';
+    }
+
+    if ($a['portrait'] === 'true') {
+        $figure_classes[] = $a['size'] === 'sm' ? 'portrait-small' : 'portrait';
+    } elseif ($a['size'] !== '' && $a['float'] === '') {
+        $figure_classes[] = $a['size'] === 'wide' ? 'wide' : 'img-width-' . sanitize_html_class($a['size']);
+    }
+
+    if (!empty($a['classes'])) {
+        $extra_classes = preg_split('/\s+/', $a['classes'], -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($extra_classes as $class_token) {
+            $figure_classes[] = sanitize_html_class($class_token);
+        }
+    }
+
+    $figure_attributes = array();
+    if (!empty($figure_classes)) {
+        $figure_attributes[] = 'class="' . esc_attr(implode(' ', array_filter($figure_classes))) . '"';
+    }
+
+    if (!empty($a['attribution-id'])) {
+        $figure_attributes[] = 'aria-labelledby="' . esc_attr($a['attribution-id']) . '"';
+    }
+
+    $figureTag = '<figure' . (!empty($figure_attributes) ? ' ' . implode(' ', $figure_attributes) : '') . '>';
+
     //Wrapper div not required for most cases
     $wrapperDiv = '';
     $wrapperDivEnd = '';
@@ -166,24 +137,20 @@ function image_att ($atts, $content = null) {
     }
             
     $figCaptionTag = '';
-    
-    if($a['caption'] != '') { 
-        //check to see if we want to add the default attribution
-        $caption = addAttribution($a['caption']);
 
-        //add in classs to incresae gap if attribute is set
-        if($a['caption-gap'] != '') {
-            $figCaptionTag .= '<figcaption class="gap-lg">' . $caption . '</figcaption>' . "\n"; 
+    if ($a['caption'] !== '') {
+        $caption = wp_kses_post(addAttribution($a['caption']));
+
+        if ($a['caption-gap'] !== '') {
+            $figCaptionTag .= '<figcaption class="gap-lg">' . $caption . '</figcaption>' . "\n";
+        } else {
+            $figCaptionTag .= '<figcaption>' . $caption . '</figcaption>' . "\n";
         }
-        else
-        {
-            $figCaptionTag .= '<figcaption>' . $caption . '</figcaption>' . "\n"; 
-        }
-    }       
+    }
              
             
     //Build <img> tag with alt tag, add border if present
-    $imageTag = '<img src="' . $a['url'] . '" alt="' . $a['alt'] . '" />' . "\n";
+    $imageTag = '<img src="' . esc_url($a['url']) . '" alt="' . esc_attr($a['alt']) . '" />' . "\n";
            
  
     //Start output phase       
