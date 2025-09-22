@@ -138,13 +138,26 @@
 <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/main-body.js?v=1.0.9"></script>
 
 <!-- Code to handle resizing iframes on this page -->
-<script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/iframeResizer.min.js"></script>
-    <script type="text/javascript">
-        iFrameResize({log:true});
-    </script>
+<?php
+	$theme_js_uri   = get_stylesheet_directory_uri() . '/js/';
+	$iframe_enabled = isset( $_GET['iframe'] ) && 'true' === $_GET['iframe'];
+?>
 
-<!-- Code to handle this page being resized by other wordpress pages, e.g. embed mode described in main-body.js -->
-<script src="<?php echo get_stylesheet_directory_uri(); ?>/js/iframeResizer.contentWindow.min.js"></script>
-<script src="<?php echo get_stylesheet_directory_uri(); ?>/js/ltiTriggerResize.js"></script>
+<script type="text/javascript" src="<?php echo esc_url( $theme_js_uri . 'iframeResizer.min.js' ); ?>"></script>
+<script type="text/javascript">
+	(function () {
+		var selector = 'iframe[data-rmit-resize="host"]';
+		var candidates = document.querySelectorAll(selector);
+		if (candidates.length) {
+			iFrameResize({ warningTimeout: 0 }, selector);
+		}
+	})();
+</script>
+
+<?php if ( $iframe_enabled ) : ?>
+	<!-- Code to handle this page being resized when embedded inside other platforms -->
+	<script src="<?php echo esc_url( $theme_js_uri . 'iframeResizer.contentWindow.min.js' ); ?>"></script>
+	<script src="<?php echo esc_url( $theme_js_uri . 'ltiTriggerResize.js' ); ?>"></script>
+<?php endif; ?>
 </body>
 </html>
