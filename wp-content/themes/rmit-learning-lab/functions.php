@@ -26,7 +26,19 @@ add_action( 'wp_enqueue_scripts', function() {
 
     //wp_enqueue_script( 'bootstrap5-childtheme', get_stylesheet_directory_uri() . "/js/bootstrap.bundle.min.js#deferload", array(), null, true );
 	//LC replaced the enqueue script above with the line below... to fix a problem with picostrap theme and the latest version of WordPress
-    wp_enqueue_script( 'bootstrap5-childtheme', get_stylesheet_directory_uri() . "/js/bootstrap.bundle.min.js", array(), null, array('strategy' => 'defer', 'in_footer' => true) );
+	$bootstrap_path    = get_stylesheet_directory() . '/js/bootstrap.bundle.min.js';
+	$bootstrap_version = file_exists( $bootstrap_path ) ? filemtime( $bootstrap_path ) : null;
+
+	wp_enqueue_script(
+		'bootstrap5-childtheme',
+		get_stylesheet_directory_uri() . '/js/bootstrap.bundle.min.js',
+		array(),
+		$bootstrap_version,
+		array(
+			'strategy'  => 'defer',
+			'in_footer' => true,
+		)
+	);
 
     //optional: lottie (maybe...)
     //wp_enqueue_script( 'lottie-player', 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js#deferload', array(), null, true );
@@ -40,14 +52,20 @@ add_action( 'wp_enqueue_scripts', function() {
 add_action( 'wp_enqueue_scripts', function() {
 
     // Enqueue search functionality for home page
-    if (is_page('home')) {
-        wp_enqueue_script(
-            'search-home',
-            get_template_directory_uri() . '/js/search-home.js',
-            array(),
-            '1.0.0',
-            array('strategy' => 'defer', 'in_footer' => true)
-        );
+    if ( is_front_page() ) {
+		$search_home_path    = get_stylesheet_directory() . '/js/search-home.js';
+		$search_home_version = file_exists( $search_home_path ) ? filemtime( $search_home_path ) : null;
+
+		wp_enqueue_script(
+			'search-home',
+			get_stylesheet_directory_uri() . '/js/search-home.js',
+			array(),
+			$search_home_version,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
     }
 
     //UNCOMMENT next row to include the js/custom.js file globally
@@ -77,13 +95,15 @@ add_filter( 'wp_is_application_passwords_available', '__return_false' );
 // THEME FUNCTIONALITY INCLUDES
 // Organized into separate files for better maintainability
 
-include('includes/helper-utils.php');           // Common utility functions
-include('includes/admin-customizations.php');   // WordPress admin customizations
-include('includes/breadcrumbs-navigation.php'); // Breadcrumbs and navigation functions
-include('includes/content-filters.php');        // Content filtering and query modifications
-include('includes/custom-taxonomy.php');        // Custom taxonomy registration and ACF filters
-include('includes/custom-shortcodes.php');      // Custom shortcodes manager - auto-discovers shortcode files
-include('includes/json-export.php');            // Exports the site data to json. Required for search to function
-include('includes/redirect.php');               // Redirect and 404 code for both admin and client side
-include('includes/seo-noindex-inheritance.php'); // Noindex inheritance for work in progress pages
-include('includes/analytics-dashboards.php');   // Analytics dashboards functionality
+$theme_includes_dir = get_stylesheet_directory() . '/includes/';
+
+require_once $theme_includes_dir . 'helper-utils.php';           // Common utility functions
+require_once $theme_includes_dir . 'admin-customizations.php';   // WordPress admin customizations
+require_once $theme_includes_dir . 'breadcrumbs-navigation.php'; // Breadcrumbs and navigation functions
+require_once $theme_includes_dir . 'content-filters.php';        // Content filtering and query modifications
+require_once $theme_includes_dir . 'custom-taxonomy.php';        // Custom taxonomy registration and ACF filters
+require_once $theme_includes_dir . 'custom-shortcodes.php';      // Custom shortcodes manager - auto-discovers shortcode files
+require_once $theme_includes_dir . 'json-export.php';            // Exports the site data to json. Required for search to function
+require_once $theme_includes_dir . 'redirect.php';               // Redirect and 404 code for both admin and client side
+require_once $theme_includes_dir . 'seo-noindex-inheritance.php'; // Noindex inheritance for work in progress pages
+require_once $theme_includes_dir . 'analytics-dashboards.php';   // Analytics dashboards functionality

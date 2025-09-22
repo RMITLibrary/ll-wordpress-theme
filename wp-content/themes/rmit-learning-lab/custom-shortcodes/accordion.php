@@ -127,7 +127,6 @@ function doAccordion($type, $atts, $content = null) {
     $buttonState = 'collapsed';
     $ariaExpanded = 'false';
     $bodyState  = '';
-    $id = '';
     
     //if we have a attribute of open=true, set variable to make this happen
     if($a['open'] == 'true')
@@ -135,12 +134,6 @@ function doAccordion($type, $atts, $content = null) {
         $buttonState = '';
         $ariaExpanded = 'true';
         $bodyState = 'show';
-    }
-    
-    //if we have an id add it.
-    if($a['id'] != '')
-    {
-        $id = 'id="' . $a['id'] .'"';    
     }
     
     //if type is transcript, adjust some of the tags to style differently
@@ -171,15 +164,42 @@ function doAccordion($type, $atts, $content = null) {
     } 
     
     //output the html markup
+    $labelTag   = tag_escape( $labelTag );
+    $content    = wp_kses_post( $content );
+    $accordionClasses = trim( 'accordion-item ' . $extraClass );
+    $buttonClasses    = trim( 'accordion-button ' . $buttonState );
+    $collapseClasses  = trim( 'accordion-collapse collapse ' . $bodyState );
+
+    $buttonAttributes = array(
+        'class' => $buttonClasses,
+        'type' => 'button',
+        'data-bs-toggle' => 'collapse',
+        'data-bs-target' => '#' . $bodyId,
+        'aria-expanded' => $ariaExpanded,
+        'aria-controls' => $bodyId,
+    );
+
+    if ( $a['id'] !== '' ) {
+        $buttonAttributes['id'] = $a['id'];
+    }
+
+    $buttonAttrString = '';
+    foreach ( $buttonAttributes as $attr => $value ) {
+        if ( $value === '' ) {
+            continue;
+        }
+        $buttonAttrString .= sprintf( ' %s="%s"', esc_attr( $attr ), esc_attr( $value ) );
+    }
+
     $output = '';
-    
-    $output .= '<div class="accordion-item ' . $extraClass . '">' . "\n";
-    $output .= '<' . $labelTag .' class="accordion-header" id="' . $headId .'">' . "\n";
-    $output .= '<button class="accordion-button ' . $buttonState . '" type="button" data-bs-toggle="collapse" data-bs-target="#' . $bodyId . '" aria-expanded="'. $ariaExpanded . '" aria-controls="' . $bodyId . '" ' . $id . '>';    
-    $output .= $a['title'];
+
+    $output .= '<div class="' . esc_attr( $accordionClasses ) . '">' . "\n";
+    $output .= '<' . $labelTag . ' class="accordion-header" id="' . esc_attr( $headId ) . '">' . "\n";
+    $output .= '<button' . $buttonAttrString . '>';
+    $output .= esc_html( $a['title'] );
     $output .= '</button>' . "\n";
     $output .= '</' . $labelTag . '>' . "\n";
-    $output .= '<div id="' . $bodyId . '" class="accordion-collapse collapse ' . $bodyState . '" aria-labelledby="' . $headId . '">' . "\n";
+    $output .= '<div id="' . esc_attr( $bodyId ) . '" class="' . esc_attr( $collapseClasses ) . '" aria-labelledby="' . esc_attr( $headId ) . '">' . "\n";
     $output .= '<div class="accordion-body">' . $content . '</div></div></div>';
 
     return $output;
