@@ -194,11 +194,13 @@ defined('ABSPATH') || exit;
               <?php
               //Identify the page ids of each landing page, doContextMenuAccordion
               //will generate the accordion code and list of child pages.
-              echo doContextMenuAccordion('University essentials', 6823);
-              echo doContextMenuAccordion('Writing fundamentals', 6825);
-              echo doContextMenuAccordion('Assessments', 6828);
-              echo doContextMenuAccordion('Referencing', 2545);
-              echo doContextMenuAccordion('Digital skills', 15640);
+              if (function_exists('doContextMenuAccordion')) {
+                echo doContextMenuAccordion('University essentials', 6823);
+                echo doContextMenuAccordion('Writing fundamentals', 6825);
+                echo doContextMenuAccordion('Assessments', 6828);
+                echo doContextMenuAccordion('Referencing', 2545);
+                echo doContextMenuAccordion('Digital skills', 15640);
+              }
               ?>
               <!-- START Subject support
                         special case. Effectively each of the child pages here is a section page. For the nav, however, we want toshow these under the banner of subject support. -->
