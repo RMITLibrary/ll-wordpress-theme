@@ -26,6 +26,12 @@ $parent = '';				// Second-level page - i.e. child of top-level e.g. 'Writing pr
 							// Note: there should not be any further levels than these 4
 */
 
+global $post;
+
+if (!($post instanceof WP_Post)) {
+    return;
+}
+
 // Get the lineage of the current page (if any)
 // Note: a page may not have a parent, grandparent or great-grandparent depending on it's position in the navigation hierarcy
 $parent = get_post_parent($post);
@@ -40,7 +46,7 @@ $greatGrandParent = get_post_parent($grandParent);
 	
 // There are 4 possible scenarios to display in the sidebar navigation panel:
 
-if($greatGrandParent->ID && $grandParent->ID) {
+if($greatGrandParent && !empty($greatGrandParent->ID) && $grandParent && !empty($grandParent->ID)) {
 	// if the current page has a great-grandparent (i.e. third-level page)
 	// show the following headings for great-grandparent and grandparent
 	// then recursively output current page siblings (there should be no children at this level)
@@ -48,7 +54,7 @@ if($greatGrandParent->ID && $grandParent->ID) {
 	echo doNavHeading($grandParent, 'h3');
 	outputChildNav($grandParent->ID, $post, $parent);
 } 
-elseif($grandParent->ID && $parent->ID) {
+elseif($grandParent && !empty($grandParent->ID) && $parent && !empty($parent->ID)) {
 	// if the current page doesn't have a great-grandparent but has a grandparent (i.e. second-level page)
 	// show the following headings for grandparent and parent
 	// then recursively output current page siblings and children
@@ -56,7 +62,7 @@ elseif($grandParent->ID && $parent->ID) {
 	echo doNavHeading($parent, 'h3');
 	outputChildNav($parent->ID, $post);
 }
-elseif ($parent->ID) {
+elseif ($parent && !empty($parent->ID)) {
     // if the current page doesn't have a great-grandparent or grandparent (i.e. top-level page)
     // show the heading for parent
     echo doNavHeading($parent, 'h2');
@@ -165,7 +171,9 @@ function outputChildNav($parent_id, $thePost, $thePostParent = null)
 				}
 			}
             
-			if($thePost->ID == get_the_ID()) {
+			$current = ($thePost instanceof WP_Post) && ($thePost->ID === get_the_ID());
+
+			if($current) {
                 // If the post ID matches with the current page, output the selected code and then output the child nav if there are children (recursively)
 				// This only outputs the children of the current page and not the children of the current page siblings
 				// If the title has a colon, implement the formatAfterTheColon() function to shorten the title
@@ -179,7 +187,7 @@ function outputChildNav($parent_id, $thePost, $thePostParent = null)
                 // If thePostParent->ID exists, we are in a subpage.
 				// If thePostParent->ID matches the loop item, do children pages (recursively)
 				// This only outputs the siblings of the current page and not the children of the current page
-                if($thePostParent->ID == get_the_ID())
+				if($thePostParent instanceof WP_Post && $thePostParent->ID == get_the_ID())
                 {
                     outputChildNav($thePostParent->ID, $thePost);
                 }
@@ -199,24 +207,18 @@ function outputChildNav($parent_id, $thePost, $thePostParent = null)
 // This function builds the correct HTML for H2 and H3 navigation items whether selected or not selected
 function doNavHeading($myPost, $tag, $selected = null)
 {
-	// Create the variable for the output
-	$output = '';
-    
-	// Set the title and slug for the navigation item
-	$title = get_the_title($myPost);
-	$slug = $myPost->post_name;
-
-	$post_url = get_permalink($myPost->ID);
-    
-	// If the item ins selected, set the class to "selected"
-	if($selected == true) {
-		$output .= '<' . $tag . ' class="selected">' . $title . '</' . $tag . '>';
+	if (!($myPost instanceof WP_Post)) {
+		return '';
 	}
-	else {
-		$output .= '<' . $tag . '><a href="' . $post_url . '">' . $title . '</a></' . $tag . '>';
-	}	
-		
-	return $output;
+
+	$title = get_the_title($myPost);
+	$post_url = get_permalink($myPost->ID);
+
+	if($selected == true) {
+		return '<' . $tag . ' class="selected">' . esc_html($title) . '</' . $tag . '>';
+	}
+
+	return '<' . $tag . '><a href="' . esc_url($post_url) . '">' . esc_html($title) . '</a></' . $tag . '>';
 }
 
 ?>
