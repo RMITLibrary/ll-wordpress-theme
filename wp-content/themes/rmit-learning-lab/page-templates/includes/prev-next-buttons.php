@@ -40,10 +40,13 @@ function doRelativeURL($myId)
 }
 
 ?>
-<nav class="btn-nav-container <?php if($is_first_page == 'true') { echo 'no-prev-button'; } ?>" aria-label="Previous and next links">
+<?php
+$is_first_page = (bool) get_query_var('is_first_page');
+$is_last_page = (bool) get_query_var('is_last_page');
+?>
+<nav class="btn-nav-container <?php echo $is_first_page ? 'no-prev-button' : ''; ?>" aria-label="Previous and next links">
 <?php 
-$is_first_page = get_query_var('is_first_page');
-if (!empty($prevID && $is_first_page != 'true')) { ?>
+if (!empty($prevID) && !$is_first_page) { ?>
 <h2 class="btn-nav-prev">
     <a href="<?php echo $prevURL; ?>">
         <span aria-hidden="true"><?php echo $prevTitle ; ?></span>
@@ -53,8 +56,7 @@ if (!empty($prevID && $is_first_page != 'true')) { ?>
     
 
 <?php }
-$is_last_page = get_query_var('is_last_page');
-if (!empty($nextID && $is_last_page != 'true')) { 
+if (!empty($nextID) && !$is_last_page) { 
 
 ?>
 
