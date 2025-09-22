@@ -32,7 +32,7 @@ get_header();
                     the_content();
                 endwhile;
             else :
-                _e( 'Sorry, no posts matched your criteria.', 'textdomain' );
+                _e( 'Sorry, no posts matched your criteria.', 'rmit-learning-lab' );
             endif;
 
             //add last page panel
@@ -42,7 +42,7 @@ get_header();
 			$left_title = get_field('end_section_lc_title');
 			$left_content = get_field('end_section_lc_content');
 
-			$show_right = get_field('end_section_show_rc');
+			$show_right = filter_var(get_field('end_section_show_rc'), FILTER_VALIDATE_BOOLEAN);
 			$right_title = get_field('end_section_rc_title');
 			$right_content = get_field('end_section_rc_content');
 
@@ -54,7 +54,7 @@ get_header();
 				echo '<div class="eos-title">' . "\n";
 				echo '<div>' . "\n";
 				echo '<p>Well done! You’ve finished:</p>' . "\n";
-				echo '<h2>' . $section_title . '</h2>' . "\n";
+			echo '<h2>' . esc_html($section_title) . '</h2>' . "\n";
 				echo '</div>' . "\n";
 				echo '</div>' . "\n";
 				//END title
@@ -64,25 +64,25 @@ get_header();
 
 				//START left
 				echo '<div class="left">' . "\n";
-				echo '<p class="eos-left-title">' . $left_title . '</p>' . "\n";
+			echo '<p class="eos-left-title">' . esc_html($left_title) . '</p>' . "\n";
 
 				//START left content
 				echo '<div class="eos-left-content">' . "\n";
-				echo $left_content . "\n";
+			echo wp_kses_post($left_content) . "\n";
 				echo '</div>' . "\n";
 				//END left content
 
 				echo '</div>' . "\n";
 				//END left
 
-				if($show_right == 'true') {
+			if ($show_right) {
 					//START right
 					echo '<div class="right">' . "\n";
-					echo '<p class="eos-right-title">' . $right_title . '</p>' . "\n";
+					echo '<p class="eos-right-title">' . esc_html($right_title) . '</p>' . "\n";
 
 					//START right content
 					echo '<div class="eos-right-content">' . "\n";
-					echo $right_content . "\n";
+					echo wp_kses_post($right_content) . "\n";
 					echo '</div>' . "\n";
 					//END right content
 
@@ -137,4 +137,3 @@ get_header();
 -->
 
 <?php get_footer();
-

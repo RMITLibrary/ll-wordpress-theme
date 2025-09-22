@@ -27,7 +27,7 @@ get_header();
                     the_content();
                 endwhile;
             else :
-                _e( 'Sorry, no posts matched your criteria.', 'textdomain' );
+                _e( 'Sorry, no posts matched your criteria.', 'rmit-learning-lab' );
             endif;
             ?>
 			<?php get_template_part( 'page-templates/includes/prev-next-buttons', 'page' ); ?>
