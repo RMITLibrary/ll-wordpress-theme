@@ -138,26 +138,37 @@
 <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/main-body.js?v=1.0.9"></script>
 
 <!-- Code to handle resizing iframes on this page -->
-<?php
-	$theme_js_uri   = get_stylesheet_directory_uri() . '/js/';
-	$iframe_enabled = isset( $_GET['iframe'] ) && 'true' === $_GET['iframe'];
-?>
-
-<script type="text/javascript" src="<?php echo esc_url( $theme_js_uri . 'iframeResizer.min.js' ); ?>"></script>
-<script type="text/javascript">
+<script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() . '/js/iframeResizer.min.js' ); ?>"></script>
+<script type="text/javascript" data-theme-js-base="<?php echo esc_attr( get_stylesheet_directory_uri() . '/js/' ); ?>">
 	(function () {
+		var script = document.currentScript;
+		var basePath = script ? script.getAttribute('data-theme-js-base') : '';
+
+		if (!basePath) {
+			var hostScript = document.querySelector('script[src$="iframeResizer.min.js"], script[src*="iframeResizer.min.js?"]');
+			if (hostScript && hostScript.src) {
+				basePath = hostScript.src.replace(/iframeResizer\.min\.js(?:\?.*)?$/, '');
+			}
+		}
+
+		if (!basePath) {
+			basePath = '/wp-content/themes/rmit-learning-lab/js/';
+		}
+
 		var selector = 'iframe[data-rmit-resize="host"]';
-		var candidates = document.querySelectorAll(selector);
-		if (candidates.length) {
+		if (document.querySelector(selector)) {
 			iFrameResize({ warningTimeout: 0 }, selector);
+		}
+
+		var params = new URLSearchParams(window.location.search);
+		if (params.get('iframe') === 'true') {
+			['iframeResizer.contentWindow.min.js', 'ltiTriggerResize.js'].forEach(function (file) {
+				var el = document.createElement('script');
+				el.src = basePath + file;
+				document.body.appendChild(el);
+			});
 		}
 	})();
 </script>
-
-<?php if ( $iframe_enabled ) : ?>
-	<!-- Code to handle this page being resized when embedded inside other platforms -->
-	<script src="<?php echo esc_url( $theme_js_uri . 'iframeResizer.contentWindow.min.js' ); ?>"></script>
-	<script src="<?php echo esc_url( $theme_js_uri . 'ltiTriggerResize.js' ); ?>"></script>
-<?php endif; ?>
 </body>
 </html>
