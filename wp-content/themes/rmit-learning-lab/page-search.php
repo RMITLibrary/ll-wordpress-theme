@@ -223,5 +223,5 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
 <!-- END col-xs-12 -->
 </div>
 
-<script type="text/javascript" src="<?php echo get_template_directory_uri(); ?>/js/search.js?v=1.3.7"></script>
+<script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/search.js?v=1.3.7"></script>
 <?php get_footer();
