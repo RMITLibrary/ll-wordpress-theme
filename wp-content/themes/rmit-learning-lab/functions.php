@@ -43,7 +43,7 @@ add_action( 'wp_enqueue_scripts', function() {
     if (is_page('home')) {
         wp_enqueue_script(
             'search-home',
-            get_template_directory_uri() . '/js/search-home.js',
+            get_stylesheet_directory_uri() . '/js/search-home.js',
             array(),
             '1.0.0',
             array('strategy' => 'defer', 'in_footer' => true)

@@ -541,7 +541,7 @@ function output_redirect_404_script_and_html()
     main();
   </script>
   <!-- script to punt search input to /search via query string -->
-  <script type="text/javascript" src="<?php echo get_template_directory_uri(); ?>/js/search-home.js?v=1.0.1"></script>
+  <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/search-home.js?v=1.0.1"></script>
 
 <?php
 }
