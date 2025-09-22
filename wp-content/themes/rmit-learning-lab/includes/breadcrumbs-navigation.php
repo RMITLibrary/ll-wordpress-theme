@@ -35,15 +35,18 @@ function createBreadcrumbs($thePost) {
 
     // Check that objects exist and have ID property before accessing
     if($greatGrandParent && !empty($greatGrandParent->ID) && $grandParent && !empty($grandParent->ID)) {
-        $output .= '<li><a href="/' . esc_attr($greatGrandParent->post_name) . '">' . esc_html(formatAfterTheColon(get_the_title($greatGrandParent))) . '</a></li>' . "\n";
+        $greatGrandParent_link = wp_make_link_relative(get_permalink($greatGrandParent->ID));
+        $output .= '<li><a href="' . esc_url($greatGrandParent_link) . '">' . esc_html(formatAfterTheColon(get_the_title($greatGrandParent))) . '</a></li>' . "\n";
     }
 
     if($grandParent && !empty($grandParent->ID) && $parent && !empty($parent->ID)) {
-        $output .= '<li><a href="/' . esc_attr($grandParent->post_name) . '">' . esc_html(formatAfterTheColon(get_the_title($grandParent))) . '</a></li>' . "\n";
+        $grandParent_link = wp_make_link_relative(get_permalink($grandParent->ID));
+        $output .= '<li><a href="' . esc_url($grandParent_link) . '">' . esc_html(formatAfterTheColon(get_the_title($grandParent))) . '</a></li>' . "\n";
     }
 
     if($parent && !empty($parent->ID)) {
-        $output .= '<li><a href="/' . esc_attr($parent->post_name) . '">' . esc_html(formatAfterTheColon(get_the_title($parent))) . '</a></li>' . "\n";
+        $parent_link = wp_make_link_relative(get_permalink($parent->ID));
+        $output .= '<li><a href="' . esc_url($parent_link) . '">' . esc_html(formatAfterTheColon(get_the_title($parent))) . '</a></li>' . "\n";
     }
 
     $output .= '</ul>'  . "\n";
