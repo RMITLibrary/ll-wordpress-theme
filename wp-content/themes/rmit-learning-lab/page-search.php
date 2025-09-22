@@ -198,17 +198,14 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
 
         // Get the link for the current keyword
         $link = get_term_link($keyword);
-
-        // Parse the URL to extract the path component
-        $parsed_url = wp_parse_url($link);
-        $relative_link = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+        $link = is_wp_error($link) ? '' : $link;
 
         // Output the keyword as a list item with a link, exclude "Documentation" and "Archive"
         if ($keyword->name != "Documentation" && $keyword->name != "Archive") {
             $has_valid_post = !empty($keyword_status_map[$keyword->term_id]);
 
-            if ($has_valid_post) {
-                echo '<li><a href="..' . esc_url($relative_link) . '">' . esc_html($keyword->name) . '</a></li>';
+            if ($has_valid_post && !empty($link)) {
+                echo '<li><a href="' . esc_url($link) . '">' . esc_html($keyword->name) . '</a></li>';
             }
         }
     }
@@ -217,7 +214,7 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
     echo '</ul></section>';
 } else {
     // Output message if no keywords are found or there's an error
-    echo 'No keywords found.';
+    echo '<p>' . esc_html__('No keywords found.', 'rmit-learning-lab') . '</p>';
 }
 ?>
     <!-- <p class="visually-hidden">Data set lives here: <a href="/wp-content/uploads/pages.json" target="_blank" rel="noopener">/wp-content/uploads/pages.json</a></p>-->
