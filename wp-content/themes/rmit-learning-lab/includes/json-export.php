@@ -22,6 +22,15 @@ function export_content_to_json() {
     if ($query->have_posts()) {
         while ($query->have_posts()) {
             $query->the_post();
+
+            $permalink = get_permalink();
+            $path = wp_parse_url($permalink, PHP_URL_PATH);
+
+            if (rmit_ll_is_work_in_progress_path($path)) {
+                continue;
+            }
+
+            $relative_link = !empty($path) ? $path : '/';
             $content = get_the_content();
             //$content = strip_tags(strip_shortcodes($content)); // Remove shortcodes and HTML tags
 
@@ -58,7 +67,7 @@ function export_content_to_json() {
                 'content' => $content,
                 'excerpt' => strip_tags(strip_shortcodes(get_the_excerpt())), // Remove shortcodes and HTML tags
                 'date' => get_the_date(),
-                'link' => wp_parse_url(get_permalink(), PHP_URL_PATH), // Extract the path from the URL
+                'link' => $relative_link, // Path-only link for search consumers
                 'keywords' => $keywords,
                 'breadcrumbs' => $breadcrumbs
             );
@@ -106,12 +115,13 @@ function export_page_urls_to_json() {
         while ($query->have_posts()) {
             $query->the_post();
             // Use path-only to be consistent with pages.json
-            $path = wp_parse_url(get_permalink(), PHP_URL_PATH);
-            // Exclude any URLs containing '/work-in-progress/'
-            if (strpos($path, '/work-in-progress/') !== false) {
+            $permalink = get_permalink();
+            $path = wp_parse_url($permalink, PHP_URL_PATH);
+            if (rmit_ll_is_work_in_progress_path($path)) {
                 continue;
             }
-            $urls[] = $path;
+            $relative_path = !empty($path) ? $path : '/';
+            $urls[] = $relative_path;
         }
         wp_reset_postdata();
     }
@@ -183,6 +193,20 @@ function rmit_ll_store_export_history($key, $path) {
         'path' => $path,
     );
     update_option('rmit_ll_export_history', $history, false);
+}
+
+/**
+ * Determine whether a relative path belongs to the work-in-progress section.
+ *
+ * @param string|null $path Path portion of a permalink.
+ * @return bool True when the path represents a work-in-progress page.
+ */
+function rmit_ll_is_work_in_progress_path($path) {
+    if (empty($path) || !is_string($path)) {
+        return false;
+    }
+
+    return (bool) preg_match('~(?:^|/)work-in-progress(?:/|$)~', $path);
 }
 
 //-----------------------------
