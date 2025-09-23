@@ -16,6 +16,7 @@
 
 //              align       center or centre -  to align img to centre (optional)
 //              size        wide, md, sm - sets size of image (optional)
+//              loading     lazy (default), eager or auto (optional)
 
 //              portrait    true - if omitted landscape is default (optional)
 //              
@@ -71,7 +72,8 @@ function image_att ($atts, $content = null) {
 		'hide-sm' => '',
         'attribution-id' => '',
         'caption-gap' => '',
-        'classes' => ''
+        'classes' => '',
+        'loading' => 'lazy'
     );
     $a = shortcode_atts($default, $atts);
     $content = wp_kses_post(do_shortcode($content));
@@ -150,7 +152,13 @@ function image_att ($atts, $content = null) {
              
             
     //Build <img> tag with alt tag, add border if present
-    $imageTag = '<img src="' . esc_url($a['url']) . '" alt="' . esc_attr($a['alt']) . '" />' . "\n";
+    $loading_mode = strtolower($a['loading']);
+    $allowed_loading_modes = array('lazy', 'eager', 'auto');
+    if (!in_array($loading_mode, $allowed_loading_modes, true)) {
+        $loading_mode = 'lazy';
+    }
+
+    $imageTag = '<img src="' . esc_url($a['url']) . '" alt="' . esc_attr($a['alt']) . '" loading="' . esc_attr($loading_mode) . '" decoding="async" />' . "\n";
            
  
     //Start output phase       

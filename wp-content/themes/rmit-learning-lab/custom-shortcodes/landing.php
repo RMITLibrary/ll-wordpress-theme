@@ -11,16 +11,18 @@
 //  $atts:      title       Title of the banner
 //              img         Absolute path to image
 //              alt         Alt tag for the above image
-//              caption     Attribution for the image   
+//              width       Optional width attribute for the image
+//              height      Optional height attribute for the image
+//              caption     Attribution for the image
 
 //  shortcode:  [landing-banner]
 
 //	usage:			
-//  [landing-banner title='My title' img='https://path.to/image' alt='description of the image' caption='Image by creator name']Description of the landing page[/landing-banner]
+//  [landing-banner title='My title' img='https://path.to/image' alt='description of the image' width='800' height='450' caption='Image by creator name']Description of the landing page[/landing-banner]
 
 //  Expected output
 //  <div class="landing-banner">
-//      <figure aria-labelledby="caption-text"><img src="https://path.to/image" alt="description of the image" /></figure>
+//      <figure aria-labelledby="caption-text"><img src="https://path.to/image" alt="description of the image" width="800" height="450" loading="eager" decoding="async" /></figure>
 //      <div class="landing-content">
 //          <div class="red-bar"></div>
 //          <h1>Mytitle</h1>
@@ -33,16 +35,40 @@ function landing_banner_att($atts, $content = null) {
     $default = array(
         'caption' => 'Image by <a href="https://rmit.edu.au/">RMIT</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY-NC 4.0</a>.',
         'img' => 'https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-default.png',
-        'alt' => ''
+        'alt' => '',
+        'width' => '',
+        'height' => ''
     );
     $a = shortcode_atts($default, $atts);
     $content = do_shortcode($content);
-    
+
     $output = '';
-    
+
     $output .= '<div class="landing-banner">' . "\n";
     $output .= '<figure aria-labelledby="caption-text">' . "\n";
-    $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '" />' . "\n";   
+    $image_width = absint($a['width']);
+    $image_height = absint($a['height']);
+
+    if ((0 === $image_width || 0 === $image_height) && ! empty($a['img'])) {
+        $attachment_id = attachment_url_to_postid($a['img']);
+        if ($attachment_id) {
+            $image_data = wp_get_attachment_image_src($attachment_id, 'full');
+            if ($image_data) {
+                if (0 === $image_width && ! empty($image_data[1])) {
+                    $image_width = absint($image_data[1]);
+                }
+                if (0 === $image_height && ! empty($image_data[2])) {
+                    $image_height = absint($image_data[2]);
+                }
+            }
+        }
+    }
+
+    $width_attribute = $image_width > 0 ? ' width="' . $image_width . '"' : '';
+    $height_attribute = $image_height > 0 ? ' height="' . $image_height . '"' : '';
+
+    // Force eager loading for the hero image to protect LCP while still including decoding hints.
+    $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '" loading="eager" decoding="async"' . $width_attribute . $height_attribute . ' />' . "\n";
     $output .= '</figure>' . "\n";
     $output .= '<div class="landing-content">' . "\n";
     $output .= '<div class="red-bar"></div>' . "\n";
@@ -121,6 +147,7 @@ function landing_list_att($atts) {
 //  $atts:      link        	Url where the panel links to
 //				title       	Title of the banner
 //              img         	Absolute path to image
+//              loading     	Optional loading attribute for the image (lazy|eager|auto)
 //              description		A short description
 
 //  shortcode:  [home-panel]
@@ -142,6 +169,7 @@ function home_panel_atts($atts, $content = null) {
             'link' => '#',
             'title' => '',
             'img' => '',
+            'loading' => 'lazy',
         ), 
         $atts, 
         'home-panel'
@@ -166,7 +194,13 @@ function home_panel_atts($atts, $content = null) {
             $height_attr = ' height="' . $image_data[2] . '"';
         }
 
-        $output .= '<img src="' . esc_url($atts['img']) . '" alt=""' . $width_attr . $height_attr . '>';
+        $loading_mode = strtolower($atts['loading']);
+        $allowed_loading_modes = array('lazy', 'eager', 'auto');
+        if (!in_array($loading_mode, $allowed_loading_modes, true)) {
+            $loading_mode = 'lazy';
+        }
+
+        $output .= '<img src="' . esc_url($atts['img']) . '" alt="" loading="' . esc_attr($loading_mode) . '" decoding="async"' . $width_attr . $height_attr . '>';
     }
     $output .= '<h2 class="link-large">' . esc_html($atts['title']) . '</h2>';
     $output .= '<p>' . do_shortcode($content) . '</p>';
