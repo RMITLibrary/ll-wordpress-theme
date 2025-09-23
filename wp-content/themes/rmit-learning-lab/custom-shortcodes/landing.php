@@ -13,7 +13,7 @@
 //              alt         Alt tag for the above image
 //              width       Optional width attribute for the image
 //              height      Optional height attribute for the image
-//              caption     Attribution for the image   
+//              caption     Attribution for the image
 
 //  shortcode:  [landing-banner]
 
@@ -22,7 +22,7 @@
 
 //  Expected output
 //  <div class="landing-banner">
-//      <figure aria-labelledby="caption-text"><img src="https://path.to/image" alt="description of the image" width="800" height="450" /></figure>
+//      <figure aria-labelledby="caption-text"><img src="https://path.to/image" alt="description of the image" width="800" height="450" loading="eager" decoding="async" /></figure>
 //      <div class="landing-content">
 //          <div class="red-bar"></div>
 //          <h1>Mytitle</h1>
@@ -67,7 +67,8 @@ function landing_banner_att($atts, $content = null) {
     $width_attribute = $image_width > 0 ? ' width="' . $image_width . '"' : '';
     $height_attribute = $image_height > 0 ? ' height="' . $image_height . '"' : '';
 
-    $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '"' . $width_attribute . $height_attribute . ' />' . "\n";  
+    // Force eager loading for the hero image to protect LCP while still including decoding hints.
+    $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '" loading="eager" decoding="async"' . $width_attribute . $height_attribute . ' />' . "\n";
     $output .= '</figure>' . "\n";
     $output .= '<div class="landing-content">' . "\n";
     $output .= '<div class="red-bar"></div>' . "\n";
@@ -146,6 +147,7 @@ function landing_list_att($atts) {
 //  $atts:      link        	Url where the panel links to
 //				title       	Title of the banner
 //              img         	Absolute path to image
+//              loading     	Optional loading attribute for the image (lazy|eager|auto)
 //              description		A short description
 
 //  shortcode:  [home-panel]
@@ -167,6 +169,7 @@ function home_panel_atts($atts, $content = null) {
             'link' => '#',
             'title' => '',
             'img' => '',
+            'loading' => 'lazy',
         ), 
         $atts, 
         'home-panel'
@@ -191,7 +194,13 @@ function home_panel_atts($atts, $content = null) {
             $height_attr = ' height="' . $image_data[2] . '"';
         }
 
-        $output .= '<img src="' . esc_url($atts['img']) . '" alt=""' . $width_attr . $height_attr . '>';
+        $loading_mode = strtolower($atts['loading']);
+        $allowed_loading_modes = array('lazy', 'eager', 'auto');
+        if (!in_array($loading_mode, $allowed_loading_modes, true)) {
+            $loading_mode = 'lazy';
+        }
+
+        $output .= '<img src="' . esc_url($atts['img']) . '" alt="" loading="' . esc_attr($loading_mode) . '" decoding="async"' . $width_attr . $height_attr . '>';
     }
     $output .= '<h2 class="link-large">' . esc_html($atts['title']) . '</h2>';
     $output .= '<p>' . do_shortcode($content) . '</p>';

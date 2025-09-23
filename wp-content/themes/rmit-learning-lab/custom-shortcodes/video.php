@@ -97,7 +97,7 @@ function video_att($atts, $content = null) {
     $url = format_youtube_video_url($a['url']);
 	
     $output .= '<div class="responsive-video">' . "\n"; 
-    $output .= '<iframe src="' . $url . '" frameborder="0" allowfullscreen=""></iframe>' . "\n";
+    $output .= '<iframe src="' . $url . '" frameborder="0" allowfullscreen="" loading="lazy"></iframe>' . "\n";
             
     $output .= '</div>' . "\n"; 
 	
