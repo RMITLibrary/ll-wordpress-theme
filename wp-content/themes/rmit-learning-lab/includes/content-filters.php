@@ -66,7 +66,7 @@ add_filter('the_content', 'prepend_slash_to_relative_urls');
  */
 function tags_tinymce_fix($init) {
     // html elements being stripped
-    $init['extended_valid_elements'] = 'div[*],p[*],br[*]';
+    $init['extended_valid_elements'] = 'div[*],p[*],br[*],iframe[src|title|width|height|allow|allowfullscreen|loading|referrerpolicy|name|scrolling|frameborder],script[src|type|async|defer|nomodule|crossorigin|referrerpolicy|integrity|id|class]';
     // don't remove line breaks
     $init['remove_linebreaks'] = false;
     // convert newline characters to BR
@@ -77,6 +77,48 @@ function tags_tinymce_fix($init) {
     return $init;
 }
 add_filter('tiny_mce_before_init', 'tags_tinymce_fix');
+
+/**
+ * Allow iframe tags through wp_kses_post()
+ *
+ * Ensures saved content and ACF fields can output approved iframe embeds.
+ */
+function rmit_learning_lab_allow_iframes($allowed_tags, $context) {
+    if ('post' === $context) {
+        $allowed_tags['iframe'] = array(
+            'src'             => true,
+            'title'           => true,
+            'width'           => true,
+            'height'          => true,
+            'allow'           => true,
+            'allowfullscreen' => true,
+            'loading'         => true,
+            'referrerpolicy'  => true,
+            'name'            => true,
+            'sandbox'         => true,
+            'scrolling'       => true,
+            'frameborder'     => true,
+            'style'           => true,
+            'class'           => true,
+        );
+
+        $allowed_tags['script'] = array(
+            'src'            => true,
+            'type'           => true,
+            'async'          => true,
+            'defer'          => true,
+            'nomodule'       => true,
+            'crossorigin'    => true,
+            'integrity'      => true,
+            'referrerpolicy' => true,
+            'id'             => true,
+            'class'          => true,
+        );
+    }
+
+    return $allowed_tags;
+}
+add_filter('wp_kses_allowed_html', 'rmit_learning_lab_allow_iframes', 10, 2);
 
 /**
  * Remove pagination limit for certain pages

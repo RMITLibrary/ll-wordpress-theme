@@ -4,9 +4,9 @@
 		?>
 		<?php if (is_active_sidebar( 'footerfull' )): ?>
 		<div class="wrapper bg-light mt-5 py-5" id="wrapper-footer-widgets">
-			
+
 			<div class="container mb-5">
-				
+
 				<div class="row">
 					<?php dynamic_sidebar( 'footerfull' ); ?>
 				</div>
@@ -14,15 +14,15 @@
 			</div>
 		</div>
 		<?php endif ?>
-		
-		
+
+
 <div class="wrapper footer-container" id="wrapper-footer-colophon">
 	<div class="container">
         <div class="row">
             <div class="col">
 				<!-- START ask the library -->
 				<div class="ask-container">
-					
+
                     <section class="ask-the-library">
 						<a href="https://www.rmit.edu.au/library/about-and-contacts/ask-the-library">
 							<img src="https://rmitlibrary.github.io/cdn/footer/ask-library-icon-round.svg" class="ask-logo" alt="" loading="lazy" decoding="async" />
@@ -32,7 +32,7 @@
 							</div>
 						</a>
 					</section>
-			
+
 				</div>
 				<!-- END ask the library -->
 			</div>
@@ -47,7 +47,7 @@
                         <div class="content">
                             <img alt="aboriginal flag" src="https://www.rmit.edu.au/content/dam/rmit/au/en/news/homepage/flag-red.png" loading="lazy" decoding="async" />
                             <img alt="torres strait flag" src="https://www.rmit.edu.au/content/dam/rmit/au/en/news/homepage/flag-green.png" loading="lazy" decoding="async">
-                            
+
                             <h2 class="h4 margin-top-zero">Acknowledgement of Country</h2>
                             <p>RMIT University acknowledges the people of the Woi wurrung and Boon wurrung language groups of the eastern Kulin Nation on whose unceded lands we conduct the business of the University. RMIT University respectfully acknowledges their Ancestors and Elders, past and present. RMIT also acknowledges the Traditional Custodians and their Ancestors of the lands and waters across Australia where we conduct our business<span class="img-credit"> - Artwork 'Sentient' by Hollie Johnson, Gunaikurnai and Monero Ngarigo</span>.</p>
                             <a href="https://www.rmit.edu.au/about/our-values/respect-for-australian-indigenous-cultures" class="link-large">More information</a>
@@ -59,14 +59,14 @@
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
     <!-- END acknowledgement -->
     <!-- START footer -->
     <footer>
     <div class="container">
         <div class="row">
             <div class="col">
-                <!-- START logo -->    
+                <!-- START logo -->
                 <a aria-label="Royal Melbourne Institute of Technology University Logo" href="https://www.rmit.edu.au/">
 					<div aria-hidden="true" class="logo"><span class="no-focus" tabindex="-1"><img src="https://rmitlibrary.github.io/cdn/image/svg/rmit-logo.svg" style="width: 100px" alt="" loading="lazy" decoding="async" /></span>
 					</div>
@@ -98,7 +98,7 @@
                     <!-- END legal -->
                     <!-- START social -->
                     <div class="social-nav">
-                    <ul> 
+                    <ul>
                         <!-- START facebook -->
 	                        <li><a aria-label="For Facebook"  href="https://www.facebook.com/RMITuniversity/"> <span class="no-focus" tabindex="-1"><img src="https://rmitlibrary.github.io/cdn/image/svg/social/facebook.svg" alt="" loading="lazy" decoding="async" /></span></a></li>
                         <!-- END facebook -->
@@ -107,16 +107,16 @@
                         <!-- END twitter/x -->
                         <!-- START insta -->
 	                        <li><a aria-label="For Instagram" href="https://www.instagram.com/rmituniversity/"> <span class="no-focus" tabindex="-1"><img src="https://rmitlibrary.github.io/cdn/image/svg/social/instagram.svg" alt="" loading="lazy" decoding="async" /></span> </a></li>
-                        <!-- END insta -->              
+                        <!-- END insta -->
                         <!-- START LinkedIn -->
 	                        <li><a aria-label="For LinkedIn" data-analytics-type="socialshare" data-analytics-value="LinkedIn" href="https://www.linkedin.com/school/rmit-university/"><span class="no-focus" tabindex="-1"><img src="https://rmitlibrary.github.io/cdn/image/svg/social/linkedin.svg" alt="" loading="lazy" decoding="async" /></span></a></li>
                         <!-- END LinkedIn -->
                         <!-- START YouTube -->
 	                        <li><a aria-label="For Youtube" href="https://www.youtube.com/user/rmitmedia"> <span class="no-focus" tabindex="-1"><img src="https://rmitlibrary.github.io/cdn/image/svg/social/youtube.svg" alt="" loading="lazy" decoding="async" /></span></a></li>
-                        <!-- END YouTube -->     
-                        <!-- START Weibo -->          
+                        <!-- END YouTube -->
+                        <!-- START Weibo -->
 	                        <li><a aria-label="For Weibo" href="https://www.weibo.com/rmituni"> <span class="no-focus" tabindex="-1"><img src="https://rmitlibrary.github.io/cdn/image/svg/social/weibo.svg" alt="" loading="lazy" decoding="async" /></span></a></li>
-                        <!-- END Weibo -->                
+                        <!-- END Weibo -->
 					</ul>
 					</div>
                     <!-- END social -->
@@ -126,49 +126,25 @@
         </div>
     </div>
 	</footer>
-    <!-- END footer -->		
+    <!-- END footer -->
 </div><!-- wrapper end -->
-		
-	<?php 
+
+	<?php
 	} //END ELSE CASE ?>
 
 	<?php wp_footer(); ?>
 
-<!-- Code to handle hamburger menu, embed mode, modal, dark mode -->
-<script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/main-body.js?v=1.0.9"></script>
 
-<!-- Code to handle resizing iframes on this page -->
-<script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() . '/js/iframeResizer.min.js' ); ?>"></script>
-<script type="text/javascript" data-theme-js-base="<?php echo esc_attr( get_stylesheet_directory_uri() . '/js/' ); ?>">
-	(function () {
-		var script = document.currentScript;
-		var basePath = script ? script.getAttribute('data-theme-js-base') : '';
 
-		if (!basePath) {
-			var hostScript = document.querySelector('script[src$="iframeResizer.min.js"], script[src*="iframeResizer.min.js?"]');
-			if (hostScript && hostScript.src) {
-				basePath = hostScript.src.replace(/iframeResizer\.min\.js(?:\?.*)?$/, '');
-			}
-		}
+  <!-- Code to handle hamburger menu, embed mode, modal, dark mode -->
+  <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/main-body.js?v=1.0.9"></script>
+  <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/iframeResizer.min.js"></script>
+  <script type="text/javascript">
+      iFrameResize({log:true});
+  </script>
 
-		if (!basePath) {
-			basePath = '/wp-content/themes/rmit-learning-lab/js/';
-		}
+  <script src="<?php echo get_stylesheet_directory_uri(); ?>/js/iframeResizer.contentWindow.min.js"></script>
+  <script src="<?php echo get_stylesheet_directory_uri(); ?>/js/ltiTriggerResize.js"></script>
 
-		var selector = 'iframe[data-rmit-resize="host"]';
-		if (document.querySelector(selector)) {
-			iFrameResize({ warningTimeout: 0 }, selector);
-		}
-
-		var params = new URLSearchParams(window.location.search);
-		if (params.get('iframe') === 'true') {
-			['iframeResizer.contentWindow.min.js', 'ltiTriggerResize.js'].forEach(function (file) {
-				var el = document.createElement('script');
-				el.src = basePath + file;
-				document.body.appendChild(el);
-			});
-		}
-	})();
-</script>
 </body>
 </html>
