@@ -8,7 +8,13 @@
     "watch": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --watch --style=compressed --source-map",
     "build": "npm run sass",
     "dev": "npm run watch",
-    "clean": "rm -f wp-content/themes/rmit-learning-lab/css-output/bundle.css*"
+    "clean": "rm -f wp-content/themes/rmit-learning-lab/css-output/bundle.css*",
+    "db:prod": "./scripts/db-sync.sh prod",
+    "db:dev": "./scripts/db-sync.sh dev",
+    "plugins:prod": "./scripts/plugins-sync.sh prod",
+    "plugins:dev": "./scripts/plugins-sync.sh dev",
+    "site-sync:prod": "./scripts/site-sync.sh prod",
+    "site-sync:dev": "./scripts/site-sync.sh dev"
   },
   "repository": {
     "type": "git",
