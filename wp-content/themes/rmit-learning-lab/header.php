@@ -65,7 +65,6 @@ defined('ABSPATH') || exit;
   <!-- END Additional meta tags not covered by wp_head -->
 
   <!-- START print styles -->
-  <link rel='stylesheet' href='<?php echo get_stylesheet_directory_uri(); ?>/print.css' media='print' />
 
 
   <!-- START Additional scripts for tracking -->
@@ -129,10 +128,6 @@ defined('ABSPATH') || exit;
       setTheme(getPreferredTheme());
     })();
   </script>
-
-  <link rel="prefetch" href="<?php echo esc_url(content_url('uploads/pages-urls.json')); ?>">
-  <link rel="prefetch" href="<?php echo esc_url(content_url('uploads/pages.json')); ?>">
-
 
 </head>
 

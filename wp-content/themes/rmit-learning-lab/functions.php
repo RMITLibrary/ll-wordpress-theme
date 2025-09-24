@@ -108,6 +108,24 @@ require_once $theme_includes_dir . 'redirect.php';               // Redirect and
 require_once $theme_includes_dir . 'seo-noindex-inheritance.php'; // Noindex inheritance for work in progress pages
 require_once $theme_includes_dir . 'analytics-dashboards.php';   // Analytics dashboards functionality
 
+/**
+ * Utility for cache-busting local theme assets based on file modification time.
+ */
+function rmit_learning_lab_asset_version( $relative_path ) {
+	$relative_path = ltrim( $relative_path, '/' );
+	$theme_path    = trailingslashit( get_stylesheet_directory() ) . $relative_path;
+	if ( file_exists( $theme_path ) ) {
+		return filemtime( $theme_path );
+	}
+
+	$root_path = trailingslashit( ABSPATH ) . $relative_path;
+	if ( file_exists( $root_path ) ) {
+		return filemtime( $root_path );
+	}
+
+	return null;
+}
+
 add_action('wp_head', function () {
 	$origins = array(
 		'https://cdn.jsdelivr.net',
@@ -120,3 +138,108 @@ add_action('wp_head', function () {
 		echo '<link rel="preconnect" href="' . esc_url($origin) . '" crossorigin>' . "\n";
 	}
 }, 1);
+
+/**
+ * Enqueue print stylesheet with automatic versioning.
+ */
+add_action( 'wp_enqueue_scripts', function() {
+	$print_handle  = 'rmit-learning-lab-print';
+	$print_path    = 'print.css';
+	$print_version = rmit_learning_lab_asset_version( $print_path );
+	wp_enqueue_style(
+		$print_handle,
+		trailingslashit( get_stylesheet_directory_uri() ) . $print_path,
+		array(),
+		$print_version,
+		'print'
+	);
+});
+
+/**
+ * Replace default stylesheet version with the compiled bundle's mtime.
+ */
+add_filter( 'style_loader_src', function( $src, $handle ) {
+	if ( 'picostrap-styles' === $handle ) {
+	$version = rmit_learning_lab_asset_version( 'css-output/bundle.css' );
+		if ( null !== $version ) {
+			$src = remove_query_arg( 'ver', $src );
+			$src = add_query_arg( 'ver', $version, $src );
+		}
+	}
+
+	return $src;
+}, 10, 2 );
+
+/**
+ * Register theme-specific scripts with automatic cache-busting.
+ */
+add_action( 'wp_enqueue_scripts', function() {
+	$theme_uri  = trailingslashit( get_stylesheet_directory_uri() );
+	$main_handle = 'rmit-learning-lab-main-body';
+	$main_path   = 'js/main-body.js';
+	$main_ver    = rmit_learning_lab_asset_version( $main_path );
+	wp_register_script(
+		$main_handle,
+		$theme_uri . $main_path,
+		array(),
+		$main_ver,
+		true
+	);
+	wp_enqueue_script( $main_handle );
+
+	$iframe_resizer_handle = 'rmit-learning-lab-iframe-resizer';
+	$iframe_resizer_path   = 'js/iframeResizer.min.js';
+	$iframe_resizer_ver    = rmit_learning_lab_asset_version( $iframe_resizer_path );
+	wp_register_script(
+		$iframe_resizer_handle,
+		$theme_uri . $iframe_resizer_path,
+		array(),
+		$iframe_resizer_ver,
+		true
+	);
+	wp_enqueue_script( $iframe_resizer_handle );
+	wp_add_inline_script( $iframe_resizer_handle, 'if (typeof iFrameResize === "function") { iFrameResize({ log: false }); }', 'after' );
+
+	$iframe_resizer_content_handle = 'rmit-learning-lab-iframe-resizer-content';
+	$iframe_resizer_content_path   = 'js/iframeResizer.contentWindow.min.js';
+	$iframe_resizer_content_ver    = rmit_learning_lab_asset_version( $iframe_resizer_content_path );
+	wp_register_script(
+		$iframe_resizer_content_handle,
+		$theme_uri . $iframe_resizer_content_path,
+		array(),
+		$iframe_resizer_content_ver,
+		true
+	);
+	wp_enqueue_script( $iframe_resizer_content_handle );
+
+	$lti_trigger_handle = 'rmit-learning-lab-lti-trigger';
+	$lti_trigger_path   = 'js/ltiTriggerResize.js';
+	$lti_trigger_ver    = rmit_learning_lab_asset_version( $lti_trigger_path );
+	wp_register_script(
+		$lti_trigger_handle,
+		$theme_uri . $lti_trigger_path,
+		array(),
+		$lti_trigger_ver,
+		true
+	);
+	wp_enqueue_script( $lti_trigger_handle );
+}, 200 );
+
+/**
+ * Add cache-busted preload/prefetch hints for JSON index files.
+ */
+add_action( 'wp_head', function() {
+	$prefetch_files = array(
+		'wp-content/uploads/pages-urls.json',
+		'wp-content/uploads/pages.json',
+	);
+
+	foreach ( $prefetch_files as $relative_path ) {
+		$version = rmit_learning_lab_asset_version( $relative_path );
+		$href    = esc_url( home_url( '/' . ltrim( $relative_path, '/' ) ) );
+		if ( $version ) {
+			$href = add_query_arg( 'ver', $version, $href );
+		}
+		echo '<link rel="prefetch" href="' . $href . '">' . "\n";
+	}
+}, 20 );

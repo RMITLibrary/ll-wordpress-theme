@@ -69,7 +69,6 @@ defined('ABSPATH') || exit;
     <!-- END Additional meta tags not covered by wp_head -->
 
     <!-- START print styles -->
-    <link rel='stylesheet' href='<?php echo get_stylesheet_directory_uri(); ?>/print.css' media='print' />
 
 
     <!-- START Additional scripts for tracking -->
