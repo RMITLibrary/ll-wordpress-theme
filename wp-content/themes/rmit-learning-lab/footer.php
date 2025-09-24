@@ -134,17 +134,5 @@
 
 	<?php wp_footer(); ?>
 
-
-
-  <!-- Code to handle hamburger menu, embed mode, modal, dark mode -->
-  <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/main-body.js?v=1.0.9"></script>
-  <script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/iframeResizer.min.js"></script>
-  <script type="text/javascript">
-      iFrameResize({log:true});
-  </script>
-
-  <script src="<?php echo get_stylesheet_directory_uri(); ?>/js/iframeResizer.contentWindow.min.js"></script>
-  <script src="<?php echo get_stylesheet_directory_uri(); ?>/js/ltiTriggerResize.js"></script>
-
 </body>
 </html>
