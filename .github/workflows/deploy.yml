@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ensure previous commit is available for diff checks
 
       # Detect lockfile location (root vs theme). If neither exists, no cache.
       - name: Detect lockfile
@@ -62,25 +64,8 @@ jobs:
           echo "WORKDIR=${WORKDIR}" >> $GITHUB_ENV
           npx --yes sass@1.77.6 --version
 
-      # Check if SASS files have changed
-      - name: Check for SASS changes
-        id: sass_changes
-        run: |
-          if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
-            # First commit, build SASS
-            echo "sass_changed=true" >> $GITHUB_OUTPUT
-            echo "Reason: First commit or force push"
-          elif git diff --name-only ${{ github.event.before }}..${{ github.sha }} | grep -E '\.(scss|sass)$'; then
-            echo "sass_changed=true" >> $GITHUB_OUTPUT
-            echo "Reason: SASS files changed"
-          else
-            echo "sass_changed=false" >> $GITHUB_OUTPUT
-            echo "Reason: No SASS files changed"
-          fi
-
       # Sanity check: ensure your theme's vendor/rfs exists (no npm bootstrap)
       - name: Verify theme vendor/rfs
-        if: steps.sass_changes.outputs.sass_changed == 'true'
         run: |
           test -f "${THEME_DIR}/sass/bootstrap5/vendor/_rfs.scss" || {
             echo "Missing ${THEME_DIR}/sass/bootstrap5/vendor/_rfs.scss" >&2
@@ -90,7 +75,6 @@ jobs:
 
       # Build CSS using ONLY your theme sources. Add include paths to theme sass dirs.
       - name: Build CSS
-        if: steps.sass_changes.outputs.sass_changed == 'true'
         working-directory: ${{ env.WORKDIR }}
         run: |
           # figure out source & out based on where we installed
