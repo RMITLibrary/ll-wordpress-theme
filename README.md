@@ -53,11 +53,16 @@ npm run clean
 
 ## Available Scripts
 
-- `npm run dev` - Watch SASS files and auto-compile on changes (alias for `watch`)
-- `npm run build` - Build compressed CSS with source maps (alias for `sass`)
-- `npm run sass` - Single compile with compressed output and source maps
-- `npm run watch` - Watch SASS files and auto-compile on changes
-- `npm run clean` - Remove generated CSS files
+- `npm run dev` – Watch SASS files and auto-compile on changes (alias for `watch`)
+- `npm run build` – Build compressed CSS with source maps (alias for `sass`)
+- `npm run sass` – Single compile with compressed output and source maps
+- `npm run watch` – Watch SASS files and auto-compile on changes
+- `npm run clean` – Remove generated CSS files
+- `npm run db:prod` / `npm run db:dev` – Run the database sync helper for the specified environment
+- `npm run plugins:prod` / `npm run plugins:dev` – Rsync remote plugins down to the local install
+- `npm run site-sync:prod` / `npm run site-sync:dev` – Orchestrate both database and plugin syncs sequentially
+
+> The sync commands read configuration from `.env`; see the sync workflow section below before running them.
 
 ## Project Structure
 
@@ -114,6 +119,7 @@ The repository tracks:
 - Child theme files (rmit-learning-lab)
 - Parent theme files (picostrap5)
 - Development configuration (package.json, .nvmrc)
+- Custom sync tooling (`scripts/`, `SYNC_GUIDE.md`)
 
 The repository ignores:
 - WordPress core files
@@ -135,6 +141,16 @@ The repository ignores:
 1. Create a local database
 2. Configure `wp-config.php` with your local database credentials
 3. Never commit `wp-config.php` to version control
+
+### Sync Workflow (DB + Plugins)
+
+Operational scripts live in `scripts/` and are documented in `SYNC_GUIDE.md`.
+
+- Copy `.env.example` to `.env` and populate the WP Engine (or other host) credentials for each environment.
+- Use the npm scripts (or call the shell scripts directly) to pull the remote database and plugins locally.
+- Summaries print after each run so you can confirm replacements, backups, and plugin changes at a glance.
+
+See [`SYNC_GUIDE.md`](./SYNC_GUIDE.md) for step-by-step instructions, prerequisites (WP-CLI, rsync, SSH), and troubleshooting tips.
 
 ## Deployment
 
