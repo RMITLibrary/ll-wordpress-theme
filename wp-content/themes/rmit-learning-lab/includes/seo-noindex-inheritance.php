@@ -15,7 +15,7 @@
 
 /**
  * Dynamically applies noindex to pages based on ancestor noindex settings
- * 
+ *
  * Instead of trying to read AIOSEO's internal storage, we'll check if ancestor pages
  * would generate noindex robots meta and inherit that setting.
  *
@@ -27,27 +27,27 @@ function dynamically_noindex_pages($robots) {
     if (!is_page()) {
         return $robots;
     }
-    
+
     global $post;
-    
+
     // Safety check - ensure we have a valid post object
     if (!$post || !isset($post->ID)) {
         return $robots;
     }
-    
+
     // If current page already has noindex, return as-is
     if (!empty($robots['noindex']) && $robots['noindex'] === 'noindex') {
         return $robots;
     }
-    
+
     // Check ancestor pages for noindex inheritance
     $ancestors = get_post_ancestors($post->ID);
-    
+
     if (!empty($ancestors)) {
         foreach ($ancestors as $ancestor_id) {
             // Check if this ancestor should have noindex
             $ancestor_robots = check_ancestor_robots_meta($ancestor_id);
-            
+
             if (!empty($ancestor_robots['noindex']) && $ancestor_robots['noindex'] === 'noindex') {
                 // Inherit all robots directives from the ancestor, not just noindex
                 foreach ($ancestor_robots as $directive => $value) {
@@ -79,14 +79,14 @@ function check_ancestor_robots_meta($page_id) {
         'max-image-preview' => '',
         'max-video-preview' => '',
     );
-    
+
     // Get the page title and slug to identify "Work in progress" pages
     $page_title = get_the_title($page_id);
     $page_slug = get_post_field('post_name', $page_id);
-    
+
     // Only match the exact "Work in progress" page by slug or exact title
     if (
-        $page_slug === 'work-in-progress' || 
+        $page_slug === 'work-in-progress' || $page_slug === 'documentation' ||
         $page_title === 'Work in progress'
     ) {
         // Set all robots directives that should be inherited for work in progress content
@@ -96,7 +96,7 @@ function check_ancestor_robots_meta($page_id) {
         $ancestor_robots['nosnippet'] = 'nosnippet';
         $ancestor_robots['noimageindex'] = 'noimageindex';
     }
-    
+
     return $ancestor_robots;
 }
 
@@ -131,31 +131,31 @@ function is_work_in_progress_page($page_id) {
     // Check if this page itself is "Work in progress"
     $page_title = get_the_title($page_id);
     $page_slug = get_post_field('post_name', $page_id);
-    
+
     // Only match the exact "Work in progress" page by slug or exact title
     if (
-        $page_slug === 'work-in-progress' || 
+        $page_slug === 'work-in-progress' ||
         $page_title === 'Work in progress'
     ) {
         return true;
     }
-    
+
     // Check if any ancestor is the exact "Work in progress" page
     $ancestors = get_post_ancestors($page_id);
     if (!empty($ancestors)) {
         foreach ($ancestors as $ancestor_id) {
             $ancestor_title = get_the_title($ancestor_id);
             $ancestor_slug = get_post_field('post_name', $ancestor_id);
-            
+
             if (
-                $ancestor_slug === 'work-in-progress' || 
+                $ancestor_slug === 'work-in-progress' ||
                 $ancestor_title === 'Work in progress'
             ) {
                 return true;
             }
         }
     }
-    
+
     return false;
 }
 
@@ -189,14 +189,14 @@ function exclude_work_in_progress_posts_from_sitemap($ids, $type) {
     if ($work_in_progress_page) {
         // Add the main work-in-progress page
         $ids[] = $work_in_progress_page->ID;
-        
+
         // Get all pages to check which ones are descendants
         $all_pages = get_posts(array(
             'post_type' => 'page',
             'posts_per_page' => -1,
             'fields' => 'ids'
         ));
-        
+
         // Check each page to see if it's a descendant of work-in-progress
         foreach ($all_pages as $page_id) {
             if ($page_id !== $work_in_progress_page->ID && is_work_in_progress_page($page_id)) {
@@ -204,6 +204,6 @@ function exclude_work_in_progress_posts_from_sitemap($ids, $type) {
             }
         }
     }
-    
+
     return $ids;
 }
