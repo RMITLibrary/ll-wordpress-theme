@@ -107,16 +107,3 @@ require_once $theme_includes_dir . 'json-export.php';            // Exports the 
 require_once $theme_includes_dir . 'redirect.php';               // Redirect and 404 code for both admin and client side
 require_once $theme_includes_dir . 'seo-noindex-inheritance.php'; // Noindex inheritance for work in progress pages
 require_once $theme_includes_dir . 'analytics-dashboards.php';   // Analytics dashboards functionality
-
-add_action('wp_head', function () {
-	$origins = array(
-		'https://cdn.jsdelivr.net',
-		'https://www.googletagmanager.com',
-		'https://www.rmit.edu.au',
-		'https://rmitlibrary.github.io',
-	);
-
-	foreach ($origins as $origin) {
-		echo '<link rel="preconnect" href="' . esc_url($origin) . '" crossorigin>' . "\n";
-	}
-}, 1);
