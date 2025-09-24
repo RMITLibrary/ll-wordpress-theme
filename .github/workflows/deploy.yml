@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # ensure previous commit is available for diff checks
 
       # Detect lockfile location (root vs theme). If neither exists, no cache.
       - name: Detect lockfile
@@ -70,9 +72,13 @@ jobs:
             # First commit, build SASS
             echo "sass_changed=true" >> $GITHUB_OUTPUT
             echo "Reason: First commit or force push"
-          elif git diff --name-only ${{ github.event.before }}..${{ github.sha }} | grep -E '\.(scss|sass)$'; then
+          elif git rev-parse "${{ github.event.before }}" >/dev/null 2>&1 && \
+               git diff --name-only ${{ github.event.before }}..${{ github.sha }} | grep -E '\.(scss|sass)$'; then
             echo "sass_changed=true" >> $GITHUB_OUTPUT
             echo "Reason: SASS files changed"
+          elif git diff --name-only HEAD^ HEAD 2>/dev/null | grep -E '\.(scss|sass)$'; then
+            echo "sass_changed=true" >> $GITHUB_OUTPUT
+            echo "Reason: SASS files changed (fallback diff)"
           else
             echo "sass_changed=false" >> $GITHUB_OUTPUT
             echo "Reason: No SASS files changed"
