@@ -226,20 +226,15 @@ add_action( 'wp_enqueue_scripts', function() {
 }, 200 );
 
 /**
- * Add cache-busted preload/prefetch hints for JSON index files.
+ * Add preload/prefetch hints for JSON index files without cache-busting.
  */
 add_action( 'wp_head', function() {
 	$prefetch_files = array(
-		'wp-content/uploads/pages-urls.json',
-		'wp-content/uploads/pages.json',
+		content_url( 'uploads/pages-urls.json' ),
+		content_url( 'uploads/pages.json' ),
 	);
 
-	foreach ( $prefetch_files as $relative_path ) {
-		$version = rmit_learning_lab_asset_version( $relative_path );
-		$href    = esc_url( home_url( '/' . ltrim( $relative_path, '/' ) ) );
-		if ( $version ) {
-			$href = add_query_arg( 'ver', $version, $href );
-		}
-		echo '<link rel="prefetch" href="' . $href . '">' . "\n";
+	foreach ( $prefetch_files as $href ) {
+		echo '<link rel="prefetch" href="' . esc_url( $href ) . '">' . "\n";
 	}
 }, 20 );
