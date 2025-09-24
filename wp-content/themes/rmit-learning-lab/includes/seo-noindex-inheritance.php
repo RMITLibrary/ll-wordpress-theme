@@ -148,7 +148,7 @@ function is_work_in_progress_page($page_id) {
             $ancestor_slug = get_post_field('post_name', $ancestor_id);
 
             if (
-                $ancestor_slug === 'work-in-progress' ||
+                $ancestor_slug === 'work-in-progress' || $ancestor_slug === 'documentation' ||
                 $ancestor_title === 'Work in progress'
             ) {
                 return true;
