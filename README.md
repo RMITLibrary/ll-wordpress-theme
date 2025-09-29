@@ -2,54 +2,81 @@
 
 WordPress theme development repository for the RMIT Learning Lab website.
 
+> **Quick Setup Checklist**
+> 1. Clone this repo into your local WordPress environment.
+> 2. Download the latest WordPress backup (core + uploads + plugins) from WP Engine.
+> 3. Import the production database into your local MySQL instance.
+> 4. Update `wp-config.php` with local DB credentials and set `WP_HOME` / `WP_SITEURL`.
+> 5. Copy `.env.example` → `.env` and fill the WP Engine SSH details.
+> 6. Run `npm install`, then `npm run site-sync:prod` (or `:dev`).
+> 7. Start your local server and log in with your usual WordPress credentials.
+
 ## Prerequisites
 
 - Node.js v20+ (uses `.nvmrc` for version management)
 - npm or yarn
-- Local WordPress development environment (e.g., Local by Flywheel, MAMP, XAMPP)
+- Local WordPress development environment (e.g., Laravel Herd, Herd, MAMP)
 - PHP 7.4+ (WordPress requirement)
 - MySQL 5.7+ or MariaDB 10.3+
+- WP-CLI and rsync available on your PATH
 
-## Quick Start
+## Local Environment Setup
 
-### 1. Clone the Repository
+These steps mirror how we run the theme locally with WP Engine data. Complete steps 1–6 to get up and running; the remaining steps are optional helpers.
 
-```bash
-git clone https://github.com/yourusername/ll-wordpress-theme.git
-cd ll-wordpress-theme
-```
+### Core setup
 
-### 2. Set Up Node Environment
-
-```bash
-# If you have nvm installed, use the correct Node version
-nvm use
-
-# Install dependencies
-npm install
-```
-
-### 3. Set Up WordPress
-
-1. Install WordPress 6.8.2 in your local environment
-2. Copy the theme files to your WordPress installation:
+1. **Clone the repository**
    ```bash
-   cp -r wp-content/themes/* /path/to/wordpress/wp-content/themes/
+   git clone https://github.com/yourusername/ll-wordpress-theme.git
+   cd ll-wordpress-theme
    ```
-3. Activate the "RMIT Learning Lab" theme in WordPress admin
+2. **Install WordPress core and uploads**
+   1. Download WordPress (or a WP Engine backup snapshot).
+   2. Extract WordPress into the repo root so `wp-admin/`, `wp-includes/`, etc. sit beside this README.
+   3. Copy `wp-content/uploads`, `wp-content/mu-plugins`, and any other environment-specific directories from the backup (these paths are git-ignored).
+   *WP Engine reference: [Download backups](https://wpengine.com/support/backup-points/) and [SSH/SFTP access](https://wpengine.com/support/ssh-gateway/).* 
+3. **Restore the database**
+   1. Create a local MySQL database.
+   2. Import the production/staging SQL dump via `mysql`, phpMyAdmin, or `./scripts/db-sync.sh <env>`.
+   3. Update `wp-config.php` with local DB credentials and set the local URLs:
+      ```php
+      define( 'WP_HOME', 'https://ll-wordpress-theme.test' );
+      define( 'WP_SITEURL', 'https://ll-wordpress-theme.test' );
+      ```
+      - `WP_HOME` / `WP_SITEURL`: tell WordPress which domain to use locally.
+      - Keep these in sync with whatever domain your local server is serving.
+4. **Install Node dependencies**
+   ```bash
+   nvm use        # optional, aligns with .nvmrc
+   npm install
+   ```
+5. **Start your local server & log in**
+   1. Boot your preferred PHP/MySQL stack (Herd, Local, MAMP, etc.).
+   2. Visit the URL defined in `WP_HOME` and log in using your normal WordPress credentials (accounts come across with the imported DB).
+6. **Verify the theme loads**
+   - Confirm the Learning Lab theme is active under Appearance → Themes.
+   - Browse a few pages to ensure URLs resolve to your local domain.
 
-### 4. Development
+### Optional tooling & helpers
 
-```bash
-# Watch and compile SASS during development
-npm run dev
-
-# Build production CSS (minified)
-npm run build
-
-# Clean generated CSS files
-npm run clean
-```
+7. **Configure `.env` for sync tooling**
+   1. Copy `.env.example` to `.env`.
+   2. Fill in `DBSYNC_<ENV>_*` values (SSH host, path, URL) for each remote you want to pull.
+   3. Adjust plugin sync flags (`DBSYNC_PLUGIN_*`) if you need excludes or exact mirroring.
+   4. Ensure your SSH public key is registered with WP Engine (internal guide: [Setting Up SSH Access to WP Engine](https://slcrmit.atlassian.net/wiki/spaces/DLT/pages/4509139854/Guide+Setting+Up+SSH+Access+to+WP+Engine)); the sync scripts authenticate via SSH.
+   *Glossary:* `.env` holds private credentials; the sync scripts export values like `DBSYNC_PROD_SSH_HOST` to know where to fetch data from.
+8. **Pull database and plugins automatically**
+   ```bash
+   npm run site-sync:prod    # or :dev, :uat, etc.
+   ```
+   The wrapper script first runs the DB sync (backup → import → search/replace → cache flush) then rsyncs `wp-content/plugins`, printing summaries for both phases.
+9. **Front-end workflow helpers**
+   ```bash
+   npm run dev     # watch & compile SASS during development
+   npm run build   # one-off production compile
+   npm run clean   # remove compiled CSS artifacts
+   ```
 
 ## Available Scripts
 
@@ -96,6 +123,7 @@ ll-wordpress-theme/
 │           └── functions.php     # Theme functions (modular)
 ├── package.json                  # Node dependencies and scripts
 ├── .nvmrc                        # Node version specification
+├── SYNC_GUIDE.md                 # Full sync workflow documentation
 └── README.md                     # This file
 ```
 
@@ -133,7 +161,7 @@ The repository ignores:
 ### Recommended Tools
 
 1. **Laravel Herd** - Modern PHP/MySQL local development
-2. **Local by Flywheel** - Simple WordPress local development
+2. **Laravel Herd** - Simple WordPress local development
 3. **MAMP/XAMPP** - Traditional PHP/MySQL stack
 
 ### Database Configuration
@@ -156,39 +184,20 @@ See [`SYNC_GUIDE.md`](./SYNC_GUIDE.md) for step-by-step instructions, prerequisi
 
 This theme is hosted on WP Engine and uses GitHub Actions for automated deployment.
 
-### GitHub Actions Workflow
+### Deployment Process
 
-The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically deploys theme changes to WP Engine environments on git pushes:
+Push changes to the appropriate branch and GitHub Actions will deploy the `wp-content/themes/` directory to the mapped WP Engine environment (production, development, or staging). Cache is cleared after each deployment. Monitor builds at https://github.com/RMITLibrary/ll-wordpress-theme/actions.
 
-- **main branch** → Production environment
-- **develop branch** → Development environment
-- **staging branch** → Staging environment
+## Troubleshooting Highlights
 
-### Setup
-
-1. **Configure Secrets in GitHub**:
-   - Go to your GitHub repository → Settings → Secrets and variables → Actions
-   - Add the following secrets:
-     - `WPE_SSHG_KEY_PRIVATE`: SSH private key for WP Engine access
-     - `WPE_ENV_PRD`: Production environment name (e.g., `yoursite-prd`)
-     - `WPE_ENV_DEV`: Development environment name (e.g., `yoursite-dev`)
-     - `WPE_ENV_STG`: Staging environment name (e.g., `yoursite-staging`)
-
-2. **SSH Key Setup**:
-   - Generate an SSH key pair if you haven't already
-   - Add the public key to your WP Engine account
-   - Store the private key as `WPE_SSHG_KEY_PRIVATE`
-
-3. **Deployment Process**:
-   - Push changes to the appropriate branch
-   - GitHub Actions will automatically deploy the `wp-content/themes/` directory to WP Engine
-   - Cache is cleared after each deployment
-
-### Manual Deployment
-
-If needed, you can manually deploy using Cyberduck or another SFTP client:
-- Connect to your WP Engine environment via SFTP
-- Upload the `wp-content/themes/` folder to `/wp-content/themes/`
+| Symptom | Try This |
+| --- | --- |
+| `wp: command not found` | Install WP-CLI and ensure it’s on your PATH (https://wp-cli.org/). |
+| Database import fails | Confirm DB credentials in `wp-config.php`; check SQL dump isn’t gzipped; use `mysql -u root -p dbname < dump.sql`. |
+| Site shows wrong domain or redirects | Re-run `npm run site-sync:prod` (search-replace step) or manually update `WP_HOME`/`WP_SITEURL`. |
+| Plugin sync removes local-only plugins | Add them to `DBSYNC_PLUGIN_EXCLUDES` before running the script, or set `DBSYNC_PLUGIN_DELETE=0`. |
+| `ENV_FILE=.env: command not found` | Ensure you’re calling scripts via `./scripts/*.sh` or the npm alias on the latest branch (wrapper now uses `env`). |
+| Permission denied (publickey) when syncing | Follow the internal SSH setup guide above and confirm the key matches the user in `.env`; test with `ssh <user>@<host>`. |
 
 ## Contributing
 
