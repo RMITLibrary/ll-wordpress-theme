@@ -30,5 +30,8 @@
   "license": "GPL-2.0",
   "devDependencies": {
     "sass": "^1.83.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

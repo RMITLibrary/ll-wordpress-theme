@@ -3,22 +3,49 @@
 WordPress theme development repository for the RMIT Learning Lab website.
 
 > **Quick Setup Checklist**
-> 1. Clone this repo into your local WordPress environment.
-> 2. Download the latest WordPress backup (core + uploads + plugins) from WP Engine.
-> 3. Import the production database into your local MySQL instance.
-> 4. Update `wp-config.php` with local DB credentials and set `WP_HOME` / `WP_SITEURL`.
-> 5. Copy `.env.example` → `.env` and fill the WP Engine SSH details.
-> 6. Run `npm install`, then `npm run site-sync:prod` (or `:dev`).
-> 7. Start your local server and log in with your usual WordPress credentials.
+> 1. Install prerequisites: MySQL server, nvm, WP-CLI, and rsync (see below).
+> 2. Clone this repo into your local WordPress environment.
+> 3. Download the latest WordPress backup (core + uploads + plugins) from WP Engine.
+> 4. Import the production database into your local MySQL instance.
+> 5. Update `wp-config.php` with local DB credentials and set `WP_HOME` / `WP_SITEURL`.
+> 6. Copy `.env.example` → `.env` and fill the WP Engine SSH details.
+> 7. Run `npm install`, then `npm run site-sync:prod` (or `:dev`).
+> 8. Start your local server and log in with your usual WordPress credentials.
 
 ## Prerequisites
 
-- Node.js v20+ (uses `.nvmrc` for version management)
+- Node.js v20+ (uses `.nvmrc`; install via nvm for easiest switching)
+- nvm (Node Version Manager) – https://github.com/nvm-sh/nvm
 - npm or yarn
-- Local WordPress development environment (e.g., Laravel Herd, Herd, MAMP)
+- Local WordPress development environment (e.g., Laravel Herd or MAMP)
 - PHP 7.4+ (WordPress requirement)
-- MySQL 5.7+ or MariaDB 10.3+
+- MySQL 5.7+ or MariaDB 10.3+ (e.g., `brew install mysql`)
 - WP-CLI and rsync available on your PATH
+
+### Installing prerequisites
+
+```bash
+# Install nvm (see https://github.com/nvm-sh/nvm for latest script)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+
+# Install Node.js 20 using nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+nvm install 20
+
+# Install MySQL via Homebrew (macOS)
+brew install mysql
+brew services start mysql
+
+# Optional: install WP-CLI
+brew install wp-cli
+```
+
+- After installing nvm, restart your terminal or run `source "$HOME/.nvm/nvm.sh"` so the `nvm` command is available.
+- First-time MySQL installs default to `root` with an empty password. Test access with `mysql -u root`.
+- If you prefer GUI tools, use TablePlus or Sequel Ace once MySQL is running.
+- Ensure `rsync` is available (`xcode-select --install` on macOS installs command line tools if missing).
 
 ## Local Environment Setup
 
@@ -46,13 +73,14 @@ These steps mirror how we run the theme locally with WP Engine data. Complete st
       ```
       - `WP_HOME` / `WP_SITEURL`: tell WordPress which domain to use locally.
       - Keep these in sync with whatever domain your local server is serving.
+      - Fresh Homebrew MySQL installs use the `root` user with an empty password (`mysql -u root`).
 4. **Install Node dependencies**
    ```bash
    nvm use        # optional, aligns with .nvmrc
    npm install
    ```
 5. **Start your local server & log in**
-   1. Boot your preferred PHP/MySQL stack (Herd, Local, MAMP, etc.).
+   1. Boot your preferred PHP/MySQL stack (Laravel Herd or MAMP).
    2. Visit the URL defined in `WP_HOME` and log in using your normal WordPress credentials (accounts come across with the imported DB).
 6. **Verify the theme loads**
    - Confirm the Learning Lab theme is active under Appearance → Themes.
@@ -160,9 +188,9 @@ The repository ignores:
 
 ### Recommended Tools
 
-1. **Laravel Herd** - Modern PHP/MySQL local development
-2. **Laravel Herd** - Simple WordPress local development
-3. **MAMP/XAMPP** - Traditional PHP/MySQL stack
+1. **Laravel Herd** - Modern PHP/MySQL local development (macOS)
+2. **MAMP/XAMPP** - Traditional PHP/MySQL stack (macOS/Windows)
+3. **Docker-based stack** (DDEV, Lando, etc.) - if you prefer containers
 
 ### Database Configuration
 
@@ -193,7 +221,7 @@ Push changes to the appropriate branch and GitHub Actions will deploy the `wp-co
 | Symptom | Try This |
 | --- | --- |
 | `wp: command not found` | Install WP-CLI and ensure it’s on your PATH (https://wp-cli.org/). |
-| Database import fails | Confirm DB credentials in `wp-config.php`; check SQL dump isn’t gzipped; use `mysql -u root -p dbname < dump.sql`. |
+| Database import fails | Confirm DB credentials in `wp-config.php`; check SQL dump isn’t gzipped; use `mysql -u root dbname < dump.sql   # add -p if you set a password`. |
 | Site shows wrong domain or redirects | Re-run `npm run site-sync:prod` (search-replace step) or manually update `WP_HOME`/`WP_SITEURL`. |
 | Plugin sync removes local-only plugins | Add them to `DBSYNC_PLUGIN_EXCLUDES` before running the script, or set `DBSYNC_PLUGIN_DELETE=0`. |
 | `ENV_FILE=.env: command not found` | Ensure you’re calling scripts via `./scripts/*.sh` or the npm alias on the latest branch (wrapper now uses `env`). |
