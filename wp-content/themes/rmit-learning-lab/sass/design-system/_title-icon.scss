@@ -30,6 +30,11 @@ h2.title-icon {
 .title-icon.aboriginal-flag::before {
     content: ''; // 'First Nations content';
     background-image: url('https://www.rmit.edu.au/content/dam/rmit/au/en/news/homepage/flag-red.png');
+
+    //due to copyright / licencing restrictions, the flag needs to be displayed in full
+    width: 54px;
+    height: 36px;
+    border-radius: 0;
 }
 
 // Dark Mode
