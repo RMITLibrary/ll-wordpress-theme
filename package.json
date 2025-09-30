@@ -4,8 +4,8 @@
   "description": "RMIT Learning Lab WordPress theme development",
   "main": "index.js",
   "scripts": {
-    "sass": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --style=compressed --source-map",
-    "watch": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --watch --style=compressed --source-map",
+    "sass": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --style=compressed --source-map --quiet-deps",
+    "watch": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --watch --style=compressed --source-map --quiet-deps",
     "build": "npm run sass",
     "dev": "npm run watch",
     "clean": "rm -f wp-content/themes/rmit-learning-lab/css-output/bundle.css*",
