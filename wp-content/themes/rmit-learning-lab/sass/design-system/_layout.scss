@@ -194,7 +194,7 @@ $img-width-sm: 18.5rem;     //296px*/
 		border-color: $yellow;
 	}
 }
-// If a card is floated right, it's max-width is further restrictied/. Also default type to small
+// If a card is floated right, it's max-width is further restricted. Also default type to small
 .card.float-right {
 	max-width: $img-width-sm;
 	@include type-small;
@@ -206,6 +206,10 @@ $img-width-sm: 18.5rem;     //296px*/
 	.large {
 		@include type-default;
 	}	
+}
+
+.card.wide {
+	max-width: 100%;
 }
 
 // Dark Mode

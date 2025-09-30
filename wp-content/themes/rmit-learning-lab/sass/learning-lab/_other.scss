@@ -96,3 +96,9 @@ aside.visually-hidden-focusable div {
 .btn-embed {
     flex-shrink: 0;
 }
+
+//consider moving this to a new scss file
+.title-icon.maths-in-context::before {
+    content: ''; // 'Maths in context';
+    background-image: url('https://rmitlibrary.github.io/cdn/learninglab/illustration/subject-support/maths-and-statistics/maths-context-icon-pie.png');
+}

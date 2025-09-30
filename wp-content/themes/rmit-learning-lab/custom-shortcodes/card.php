@@ -41,6 +41,7 @@ function ll_card_att($atts, $content = null) {
         'alt' => '',
         'trim' => '',
         'purpose' => '',
+        'wide' => '',
         'classes' => ''
     );
     $a = shortcode_atts($default, $atts);
@@ -55,6 +56,10 @@ function ll_card_att($atts, $content = null) {
 
     if($a['float'] == 'true') {
         $output .= ' float-right ';
+    }
+
+    if ($a['wide'] == 'true') {
+        $output .= 'wide ';
     }
 
      //if there's anything in clesses, add it (don't document this, for web devs only)
