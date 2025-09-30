@@ -62,6 +62,9 @@ Desktop.ini
 .fseventsd
 .TemporaryItems
 .apdisk
+apple-touch-icon-precomposed.png
+apple-touch-icon.png
+favicon.ico
 
 # IDE Files
 .vscode/
