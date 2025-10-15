@@ -10,11 +10,21 @@
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
 
+// Ensure the static export always grabs the JSON search index by referencing it in the head.
+add_action( 'wp_head', function() {
+	$prefetch_targets = array(
+		content_url( 'uploads/pages.json' ),
+		content_url( 'uploads/pages-urls.json' ),
+	);
+
+	foreach ( $prefetch_targets as $href ) {
+		echo '<link rel="prefetch" href="' . esc_url( $href ) . '" as="fetch" type="application/json" crossorigin="anonymous">' . "\n";
+	}
+}, 5 );
+
 get_header();
 ?>
 <div class="container" id="page-content">
-<!-- FUSE script --> 
-<script src="https://cdn.jsdelivr.net/npm/fuse.js"></script>
 <div class="col-xl-8">
 <nav aria-label="breadcrumbs">
 <ul class="breadcrumbs">
