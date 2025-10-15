@@ -2,12 +2,15 @@
     'use strict';
 
     var dataURL = "../wp-content/uploads/pages.json?v=1.1.3";
+    var indexURL = "../wp-content/uploads/pages-index.json?v=1.1.3";
     var fuseScriptURL = "https://cdn.jsdelivr.net/npm/fuse.js";
 
-    var debug = false;
     var fuseScriptPromise = null;
     var pagesData = null;
     var pagesDataPromise = null;
+    var prebuiltIndexData = null;
+    var prebuiltIndexPromise = null;
+    var parsedFuseIndex = null;
 
     var urlParamsSearch;
     try {
@@ -16,16 +19,7 @@
         urlParamsSearch = null;
     }
 
-    var debugBool = urlParamsSearch ? urlParamsSearch.get('debug') : null;
     var searchString = urlParamsSearch ? urlParamsSearch.get('query') : null;
-
-    if (debugBool === 'true') {
-        debug = true;
-        var debugPanel = document.getElementById('search-debug');
-        if (debugPanel) {
-            debugPanel.style.display = 'block';
-        }
-    }
 
     var searchInput = document.getElementById('searchInput');
     if (!searchInput) {
@@ -94,12 +88,61 @@
     }
 
     function ensureResources() {
-        return Promise.all([loadFuseScript(), loadPagesData()]);
+        return Promise.all([loadFuseScript(), loadPagesData(), loadPrebuiltIndex()]).then(function(resources) {
+            var FuseLib = resources[0];
+            var indexData = resources[2];
+
+            if (indexData && !parsedFuseIndex) {
+                try {
+                    parsedFuseIndex = FuseLib.parseIndex(indexData);
+                } catch (error) {
+                    parsedFuseIndex = null;
+                    if (window.console && window.console.warn) {
+                        console.warn('Failed to parse Fuse index', error);
+                    }
+                }
+            }
+
+            return resources;
+        });
     }
 
     function primeResources() {
         loadFuseScript().catch(function() {});
         loadPagesData().catch(function() {});
+        loadPrebuiltIndex().catch(function() {});
+    }
+
+    function loadPrebuiltIndex() {
+        if (prebuiltIndexData !== null) {
+            return Promise.resolve(prebuiltIndexData);
+        }
+
+        if (!prebuiltIndexPromise) {
+            prebuiltIndexPromise = fetch(indexURL, { credentials: 'same-origin', cache: 'no-store' })
+                .then(function(response) {
+                    if (response.status === 404) {
+                        return null;
+                    }
+                    if (!response.ok) {
+                        throw new Error('Prebuilt index request failed with status ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(indexData) {
+                    prebuiltIndexData = indexData;
+                    return indexData;
+                })
+                .catch(function(error) {
+                    prebuiltIndexPromise = null;
+                    if (window.console && window.console.warn) {
+                        console.warn('Unable to load prebuilt Fuse index', error);
+                    }
+                    return null;
+                });
+        }
+
+        return prebuiltIndexPromise;
     }
 
     function setStatusText(message) {
@@ -129,44 +172,16 @@
     }
 
     function getFuseOptions() {
-        var options = {
+        return {
             keys: ['title', 'content', 'keywords'],
             threshold: 0.4,
             distance: 1200,
             location: 0,
-            minMatchCharLength: 4,
-            includeScore: true,
-            includeMatches: true
+            minMatchCharLength: 4
         };
-
-        if (debug) {
-            var thresholdInput = document.getElementById('threshold');
-            var distanceInput = document.getElementById('distance');
-            var locationInput = document.getElementById('location');
-            var useExtendedSearchInput = document.getElementById('useExtendedSearch');
-            var minMatchCharLengthInput = document.getElementById('minMatchCharLength');
-
-            if (thresholdInput) {
-                options.threshold = parseFloat(thresholdInput.value);
-            }
-            if (distanceInput) {
-                options.distance = parseInt(distanceInput.value, 10);
-            }
-            if (locationInput) {
-                options.location = parseInt(locationInput.value, 10);
-            }
-            if (minMatchCharLengthInput) {
-                options.minMatchCharLength = parseInt(minMatchCharLengthInput.value, 10);
-            }
-            if (useExtendedSearchInput && useExtendedSearchInput.checked) {
-                options.useExtendedSearch = true;
-            }
-        }
-
-        return options;
     }
 
-    function performSearch(FuseLib, data) {
+    function performSearch(FuseLib, data, parsedIndex) {
         var query = searchInput.value.trim();
         if (!query) {
             setStatusText('Enter a search term to begin.');
@@ -176,7 +191,8 @@
             return;
         }
 
-        var fuse = new FuseLib(data, getFuseOptions());
+        var fuseOptions = getFuseOptions();
+        var fuse = parsedIndex ? new FuseLib(data, fuseOptions, parsedIndex) : new FuseLib(data, fuseOptions);
         var results = fuse.search(query);
 
         if (!resultsList) {
@@ -203,11 +219,6 @@
 
             var snippet = getSnippet(cleanJSONContent(item.content), query);
             li.innerHTML += '<p>' + snippet + '</p>';
-
-            if (debug) {
-                var score = result.score.toFixed(2);
-                li.innerHTML += '<p class="small">Score: ' + score + '</p>';
-            }
 
             resultsList.appendChild(li);
 
@@ -359,7 +370,7 @@
             return;
         }
 
-        var hasIndex = Array.isArray(pagesData);
+        var hasIndex = Array.isArray(pagesData) && (parsedFuseIndex || prebuiltIndexData);
         setLoadingState(true, hasIndex ? 'Searching…' : 'Loading search index…');
 
         ensureResources()
@@ -367,7 +378,7 @@
                 setLoadingState(false);
                 var FuseLib = resources[0];
                 var data = resources[1];
-                performSearch(FuseLib, data);
+                performSearch(FuseLib, data, parsedFuseIndex);
             })
             .catch(function(error) {
                 setLoadingState(false);

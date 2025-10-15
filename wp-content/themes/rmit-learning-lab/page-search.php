@@ -15,6 +15,7 @@ add_action( 'wp_head', function() {
 	$prefetch_targets = array(
 		content_url( 'uploads/pages.json' ),
 		content_url( 'uploads/pages-urls.json' ),
+		content_url( 'uploads/pages-index.json' ),
 	);
 
 	foreach ( $prefetch_targets as $href ) {
