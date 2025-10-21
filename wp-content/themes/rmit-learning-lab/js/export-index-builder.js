@@ -8,6 +8,7 @@
 
   var statusSelector = settings.statusSelector || '#rmit-export-index-status';
   var statusElement = document.querySelector(statusSelector);
+  var labels = settings.labels || {};
 
   function ensureStatusElement() {
     if (!statusElement) {
@@ -32,6 +33,64 @@
 
     container.className = className;
     container.innerHTML = '<p>' + message + '</p>';
+  }
+
+  function updateFuseRow(meta) {
+    if (!meta || typeof meta !== 'object') {
+      return;
+    }
+
+    var updatedCell = document.querySelector('[data-fuse-index="updated"]');
+    if (updatedCell && meta.formatted) {
+      updatedCell.textContent = meta.formatted;
+
+      if (meta.timezone_label || meta.relative) {
+        var info = [];
+        if (meta.timezone_label) {
+          info.push(meta.timezone_label);
+        }
+        if (meta.relative) {
+          info.push(meta.relative + ' ago');
+        }
+
+        if (info.length) {
+          var description = document.createElement('span');
+          description.className = 'description';
+          description.textContent = info.join(' • ');
+          updatedCell.appendChild(document.createTextNode(' '));
+          updatedCell.appendChild(description);
+        }
+      }
+    } else if (updatedCell && labels.notGenerated) {
+      updatedCell.textContent = labels.notGenerated;
+    }
+
+    var sizeCell = document.querySelector('[data-fuse-index="size"]');
+    if (sizeCell) {
+      sizeCell.textContent = meta.size_label || '—';
+    }
+
+    var actionsCell = document.querySelector('[data-fuse-index="actions"]');
+    if (actionsCell) {
+      while (actionsCell.firstChild) {
+        actionsCell.removeChild(actionsCell.firstChild);
+      }
+
+      if (meta.url) {
+        var link = document.createElement('a');
+        link.className = 'button';
+        link.href = meta.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = labels.viewJson || 'View JSON';
+        actionsCell.appendChild(link);
+      } else {
+        var message = document.createElement('span');
+        message.className = 'description';
+        message.textContent = labels.noFile || 'No file available';
+        actionsCell.appendChild(message);
+      }
+    }
   }
 
   function loadFuse() {
@@ -109,8 +168,11 @@
       updateStatus(messages.saving || 'Saving Fuse.js index…', 'info');
       return saveIndex(index.toJSON());
     })
-    .then(function() {
+    .then(function(payload) {
       updateStatus(messages.success || 'Fuse.js index updated.', 'success');
+      if (payload && payload.data && payload.data.meta) {
+        updateFuseRow(payload.data.meta);
+      }
     })
     .catch(function(error) {
       console.error('Fuse index build failed:', error);

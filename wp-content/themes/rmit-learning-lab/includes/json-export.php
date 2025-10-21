@@ -186,6 +186,21 @@ function rmit_ll_get_export_file_meta($filename, $label) {
     );
 }
 
+function rmit_ll_get_timezone_label() {
+    $timezone = wp_timezone();
+    $timezone_name = $timezone instanceof DateTimeZone ? $timezone->getName() : get_option('timezone_string');
+    if (empty($timezone_name)) {
+        $timezone_name = 'UTC';
+    }
+
+    $timezone_abbr = wp_date('T', current_time('timestamp', true));
+    if (!empty($timezone_abbr) && stripos($timezone_name, $timezone_abbr) === false) {
+        $timezone_name .= ' (' . $timezone_abbr . ')';
+    }
+
+    return $timezone_name;
+}
+
 function rmit_ll_store_export_history($key, $path) {
     $history = get_option('rmit_ll_export_history', array());
     $history[$key] = array(
@@ -295,13 +310,7 @@ function export_json_page() {
         ),
     );
 
-    $timezone = wp_timezone();
-    $timezone_name = $timezone instanceof DateTimeZone ? $timezone->getName() : 'UTC';
-    $timezone_abbr = wp_date('T', current_time('timestamp', true));
-    $timezone_label = $timezone_name;
-    if (!empty($timezone_abbr) && stripos($timezone_name, $timezone_abbr) === false) {
-        $timezone_label .= ' (' . $timezone_abbr . ')';
-    }
+    $timezone_label = rmit_ll_get_timezone_label();
 
     $notices = array(
         'errors' => array(),
@@ -379,6 +388,11 @@ function export_json_page() {
             'saving'   => __('Saving Fuse.js index…', 'rmit-learning-lab'),
             'success'  => __('Fuse.js index updated.', 'rmit-learning-lab'),
             'failure'  => __('Unable to generate Fuse.js index.', 'rmit-learning-lab'),
+        ),
+        'labels'         => array(
+            'viewJson'     => __('View JSON', 'rmit-learning-lab'),
+            'noFile'       => __('No file available', 'rmit-learning-lab'),
+            'notGenerated' => __('Not generated yet', 'rmit-learning-lab'),
         ),
     );
 
@@ -522,7 +536,7 @@ function export_json_page() {
                     <span class="description"><?php esc_html_e('Precomputed search index consumed by the static site.', 'rmit-learning-lab'); ?></span>
                 </td>
                 <td>pages-index.json</td>
-                <td>
+                <td data-fuse-index="updated">
                     <?php
                     if (is_wp_error($fuse_index_meta)) {
                         echo '<span class="error">' . esc_html($fuse_index_meta->get_error_message()) . '</span>';
@@ -535,7 +549,7 @@ function export_json_page() {
                     }
                     ?>
                 </td>
-                <td>
+                <td data-fuse-index="size">
                     <?php
                     if (is_wp_error($fuse_index_meta)) {
                         echo '—';
@@ -546,7 +560,7 @@ function export_json_page() {
                     }
                     ?>
                 </td>
-                <td>
+                <td data-fuse-index="actions">
                     <?php
                     if (!is_wp_error($fuse_index_meta) && !empty($fuse_index_meta['exists']) && !empty($fuse_index_meta['url'])) {
                         echo '<a class="button" href="' . esc_url($fuse_index_meta['url']) . '" target="_blank" rel="noopener">' . esc_html__('View JSON', 'rmit-learning-lab') . '</a>';
@@ -599,9 +613,33 @@ function rmit_ll_save_fuse_index() {
 
     rmit_ll_store_export_history('fuse_index', $file_path);
 
-    wp_send_json_success(array(
+    $response = array(
         'message' => __('Fuse index saved.', 'rmit-learning-lab'),
         'path'    => $file_path,
-    ));
+    );
+
+    $meta = rmit_ll_get_export_file_meta('pages-index.json', 'Fuse.js index');
+    if (!is_wp_error($meta) && !empty($meta['exists'])) {
+        $current_gmt  = time();
+        $timestamp    = !empty($meta['modified']) ? (int) $meta['modified'] : $current_gmt;
+        $size_bytes   = isset($meta['size']) ? (int) $meta['size'] : null;
+        $size_label   = null;
+
+        if (!is_null($size_bytes)) {
+            $size_label = size_format($size_bytes);
+        }
+
+        $response['meta'] = array(
+            'timestamp'      => $timestamp,
+            'formatted'      => wp_date(get_option('date_format') . ' ' . get_option('time_format'), $timestamp),
+            'relative'       => human_time_diff($timestamp, $current_gmt),
+            'timezone_label' => rmit_ll_get_timezone_label(),
+            'size'           => $size_bytes,
+            'size_label'     => $size_label,
+            'url'            => !empty($meta['url']) ? esc_url_raw($meta['url']) : '',
+        );
+    }
+
+    wp_send_json_success($response);
 }
 ?>

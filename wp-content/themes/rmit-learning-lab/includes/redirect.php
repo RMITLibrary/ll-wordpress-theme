@@ -115,8 +115,36 @@ add_action('redirection_flush_cache', 'write_redirects_js_file');
 //    Usage:            Call output_redirect_script_and_html() in template files to display redirect logic and messages
 //-------------------------------------------
 
-function output_redirect_404_script_and_html()
+function output_redirect_404_script_and_html($args = array())
 {
+  $defaults = array(
+    'ignored_paths'             => array(),
+    'disable_dataset_fallback'  => false,
+  );
+
+  $args = wp_parse_args($args, $defaults);
+
+  $ignored_paths = array();
+  foreach ((array) $args['ignored_paths'] as $path) {
+    if (!is_string($path) || '' === trim($path)) {
+      continue;
+    }
+
+    $normalised = '/' . ltrim(trim($path), '/');
+    if ('/' !== $normalised) {
+      $normalised = rtrim($normalised, '/');
+    }
+
+    $ignored_paths[] = $normalised;
+
+    if ('/' !== $normalised) {
+      $ignored_paths[] = trailingslashit($normalised);
+    }
+  }
+
+  $ignored_paths = array_values(array_unique($ignored_paths));
+  $disable_dataset_fallback = (bool) $args['disable_dataset_fallback'];
+
   // Output the HTML and CSS
 ?>
 
@@ -184,6 +212,12 @@ function output_redirect_404_script_and_html()
 
     // Prefix for the environment; set to '' for live and '/preview' for test
     const pathPrefix = '';
+    const redirectConfig = <?php echo wp_json_encode(
+      array(
+        'ignoredPaths'            => $ignored_paths,
+        'disableDatasetFallback'  => $disable_dataset_fallback,
+      )
+    ); ?>;
 
     // Function to extract the path after the domain and remove the prefix if present
     function extractPath(url) {
@@ -367,6 +401,15 @@ function output_redirect_404_script_and_html()
       console.log('Normalized Path: ' + normalizedPath);
       console.log('Normalized Path length: ' + normalizedPath.length);
 
+      const ignoredPaths = Array.isArray(redirectConfig.ignoredPaths) ? redirectConfig.ignoredPaths : [];
+      const disableDatasetFallback = !!redirectConfig.disableDatasetFallback;
+
+      if (ignoredPaths.includes(extractedPath) || ignoredPaths.includes(normalizedPath)) {
+        console.log('Redirect handling skipped for helper path:', normalizedPath);
+        fourOhInfo.style.display = 'block';
+        return;
+      }
+
       // Check for redirect mappings
       {
         // Check if urlMappings is defined before using it.
@@ -425,7 +468,7 @@ function output_redirect_404_script_and_html()
           }
 
           // If no mapping found but URL was normalized, try redirecting to normalized URL if it exists in DB
-          if (!mapping && normalizedPath !== extractedPath) {
+          if (!disableDatasetFallback && !mapping && normalizedPath !== extractedPath) {
             console.log('No mapping found, considering normalized URL:', normalizedPath);
             const normalizedUrl = window.location.origin + normalizedPath + window.location.search + window.location.hash;
             // Load DB only when needed
@@ -444,7 +487,7 @@ function output_redirect_404_script_and_html()
           }
 
           // If no mapping found but we have content/ in the original path, try content-stripped URL if it exists in DB
-          if (!mapping && extractedPath.includes('/content/')) {
+          if (!disableDatasetFallback && !mapping && extractedPath.includes('/content/')) {
             const pathWithoutContent = extractedPath.replace('/content/', '/');
             if (pathWithoutContent !== extractedPath) {
               console.log('No mapping found, considering content-stripped URL:', pathWithoutContent);
