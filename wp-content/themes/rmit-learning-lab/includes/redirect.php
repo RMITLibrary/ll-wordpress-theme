@@ -124,7 +124,7 @@ function output_redirect_404_script_and_html($args = array())
 
   $args = wp_parse_args($args, $defaults);
 
-  $ignored_paths = array();
+  $ignored_paths = array('/redirect-404', '/redirect-404/');
   foreach ((array) $args['ignored_paths'] as $path) {
     if (!is_string($path) || '' === trim($path)) {
       continue;
@@ -588,3 +588,5 @@ function output_redirect_404_script_and_html($args = array())
 
 <?php
 }
+  $ignored_paths[] = '/redirect-404';
+  $ignored_paths[] = '/redirect-404/';
