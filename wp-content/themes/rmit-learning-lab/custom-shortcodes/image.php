@@ -32,6 +32,12 @@
 //	usage:			
 //  [ll-image url='https://path.to/image' alt='Alt tag for the image' caption='Caption here' portrait='true' centre='true' border='true' size='sm'][/ll-image]
 //
+//  Captions can also be provided within the shortcode body when richer markup is required:
+//  [ll-image url='https://path.to/image' alt='Alt tag for the image']
+//      Caption copy with <a href="https://link.example">links</a> and other inline HTML.
+//      [transcript-accordion]<p>Transcript content.</p>[/transcript-accordion]
+//  [/ll-image]
+//
 //  [ll-image url='https://path.to/image' shadow='true' rounded='true' alt='Alt tag for the image']
 //      [transcript-accordion]<p>Transcript content.</p>[/transcript-accordion]
 //  [/ll-image]
@@ -75,8 +81,31 @@ function image_att ($atts, $content = null) {
         'classes' => '',
         'loading' => 'lazy'
     );
+    $atts = ll_image_recover_caption_attribute($atts);
     $a = shortcode_atts($default, $atts);
-    $content = wp_kses_post(do_shortcode($content));
+
+    $caption_from_content = '';
+    $transcript_content = '';
+    $caption = '';
+
+    if (!empty($content)) {
+        $transcript_regex = get_shortcode_regex(array('transcript-accordion'));
+        $remaining_content = $content;
+
+        if (!empty($transcript_regex)) {
+            $remaining_content = preg_replace_callback('/' . $transcript_regex . '/s', function ($match) use (&$transcript_content) {
+                $transcript_content .= wp_kses_post(do_shortcode($match[0]));
+                return '';
+            }, $remaining_content);
+            if ($remaining_content === null) {
+                $remaining_content = $content;
+            }
+        }
+
+        if ($remaining_content !== null) {
+            $caption_from_content = trim($remaining_content);
+        }
+    }
 
     $figure_classes = array();
 
@@ -142,7 +171,11 @@ function image_att ($atts, $content = null) {
 
     if ($a['caption'] !== '') {
         $caption = wp_kses_post(addAttribution($a['caption']));
+    } elseif ($caption_from_content !== '') {
+        $caption = wp_kses_post(addAttribution($caption_from_content));
+    }
 
+    if (!empty($caption)) {
         if ($a['caption-gap'] !== '') {
             $figCaptionTag .= '<figcaption class="gap-lg">' . $caption . '</figcaption>' . "\n";
         } else {
@@ -170,9 +203,9 @@ function image_att ($atts, $content = null) {
     $output .= $wrapperDivEnd . "\n"; 
     
     //If $content exists, there's a transcript, add output from [transcript-accordion] 
-	if($content != null) {
-		$output .= $content;
-	}        
+    if($transcript_content !== '') {
+        $output .= $transcript_content;
+    }
                   
     $output .= '</figure>' . "\n";
             
@@ -206,6 +239,130 @@ function addAttribution($input) {
     }
     
     return $input;
+}
+
+function ll_image_recover_caption_attribute($atts) {
+    if (isset($atts['caption']) && $atts['caption'] !== '') {
+        return $atts;
+    }
+
+    $fragments = array();
+    $quote_char = '';
+    $capturing = false;
+
+    foreach ($atts as $key => $value) {
+        if (!is_int($key)) {
+            continue;
+        }
+
+        $token = trim($value);
+
+        if ($token === '') {
+            continue;
+        }
+
+        if (!$capturing) {
+            if (strpos($token, 'caption=') === 0) {
+                $quote_candidate = substr($token, 8, 1);
+                if ($quote_candidate !== '"' && $quote_candidate !== '\'') {
+                    continue;
+                }
+
+                $quote_char = $quote_candidate;
+                $capturing = true;
+
+                $fragment = substr($token, 9);
+                if ($fragment !== '' || $token === 'caption=' . $quote_char . $quote_char) {
+                    $fragment = rtrim($fragment, ']');
+                    if (substr($fragment, -1) === $quote_char) {
+                        $fragment = substr($fragment, 0, -1);
+                        if ($fragment !== '') {
+                            $fragments[] = $fragment;
+                        }
+                        $capturing = false;
+                        break;
+                    }
+
+                    if ($fragment !== '') {
+                        $fragments[] = $fragment;
+                    }
+                }
+            }
+        } else {
+            $fragment = rtrim($token, ']');
+            $has_closing = substr($fragment, -1) === $quote_char;
+
+            if ($has_closing) {
+                $fragment = substr($fragment, 0, -1);
+            }
+
+            if ($fragment !== '') {
+                $fragments[] = $fragment;
+            }
+
+            if ($has_closing) {
+                break;
+            }
+        }
+    }
+
+    if (empty($fragments)) {
+        return $atts;
+    }
+
+    $caption = implode(' ', $fragments);
+    $caption = preg_replace('/\s+/', ' ', $caption);
+    $caption = str_replace(array("\\\"", "\\'"), array("\"", "'"), $caption);
+
+    if (strpos($caption, '<a ') === false && strpos($caption, 'href=') !== false) {
+        $caption = preg_replace('/href=/', '<a href=', $caption, 1);
+        if (strpos($caption, '</a>') === false) {
+            $caption .= '</a>';
+        }
+    }
+
+    if (strpos($caption, 'href=') !== false) {
+        $offset = 0;
+        while (($pos = strpos($caption, 'href=', $offset)) !== false) {
+            $needs_anchor = true;
+
+            for ($i = $pos - 1; $i >= 0; $i--) {
+                $char = $caption[$i];
+
+                if ($char === '<') {
+                    $next = substr($caption, $i, 2);
+                    if ($next === '<a') {
+                        $after = isset($caption[$i + 2]) ? $caption[$i + 2] : '';
+                        if ($after === ' ' || $after === '\t' || $after === '\n' || $after === '\r' || $after === '>') {
+                            $needs_anchor = false;
+                        }
+                    }
+                    break;
+                }
+
+                if ($char === '>') {
+                    break;
+                }
+            }
+
+            if ($needs_anchor) {
+                $caption = substr($caption, 0, $pos) . '<a ' . substr($caption, $pos);
+                $offset = $pos + 3 + 5;
+            } else {
+                $offset = $pos + 5;
+            }
+        }
+    }
+
+    $caption = preg_replace('/<a\s+href/', '<a href', $caption);
+
+    if (strpos($caption, '<a ') !== false && strpos($caption, '</a>') === false) {
+        $caption .= '</a>';
+    }
+
+    $atts['caption'] = trim($caption);
+
+    return $atts;
 }
 
 //add code to list (used in the_content_filter)
