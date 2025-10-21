@@ -1,36 +1,107 @@
-// START Script to show and hide hamburger menu
+// START Script to handle hamburger menu accessibility and body scroll locking
 (function() {
-    // Grab both the menu button, the page content and footer
-    var menuButton = document.getElementById("menu-button");
-    var pageContent = document.getElementById("theme-main"); 
-    var footer = document.getElementById("wrapper-footer-colophon"); 
+    var menuButton = document.getElementById('menu-button');
+    var contextMenu = document.getElementById('context-menu');
+    if (!menuButton || !contextMenu) {
+        return;
+    }
 
-    // Store display status of menu
-    var menuDisplay = false;
+    var pageContent = document.getElementById('theme-main');
+    var subMenu = document.getElementById('sub-menu');
+    var footer = document.getElementById('wrapper-footer-colophon');
+    var root = document.documentElement;
+    var scrollPosition = 0;
+    var previousBodyStyles = {
+        position: '',
+        top: '',
+        width: '',
+        overflowY: ''
+    };
+    var previousScrollBehavior = '';
+    var inertFallbackClass = 'nav-menu-inert';
+    var hiddenTargets = [pageContent, subMenu, footer];
 
-    // Store content scroll position
-    var scrollPosition;
+    function toggleHiddenTargets(isHidden) {
+        hiddenTargets.forEach(function(target) {
+            if (!target) {
+                return;
+            }
 
-    // Listen for click - call showHideMenu
-    menuButton.addEventListener("click", showHideMenu);
+            if (isHidden) {
+                target.setAttribute('aria-hidden', 'true');
+                if ('inert' in target) {
+                    target.inert = true;
+                } else {
+                    target.classList.add(inertFallbackClass);
+                }
+            } else {
+                target.removeAttribute('aria-hidden');
+                if ('inert' in target) {
+                    target.inert = false;
+                } else {
+                    target.classList.remove(inertFallbackClass);
+                }
+            }
+        });
+    }
 
-    function showHideMenu() {
-        if (menuDisplay == false) {
-            menuDisplay = true;
-            scrollPosition = window.scrollY;
-            pageContent.style.display = "none"; 
-            footer.style.display = "none"; 
-        } else {
-            menuDisplay = false;
-            pageContent.style.display = "block"; 
-            footer.style.display = "block"; 
-            document.documentElement.style.scrollBehavior = "auto";
-            window.scroll(0, scrollPosition);
-            document.documentElement.style.scrollBehavior = "smooth";
+    function lockScroll() {
+        if (root.classList.contains('nav-menu-open')) {
+            return;
         }
+        scrollPosition = window.scrollY || 0;
+        previousBodyStyles.position = document.body.style.position;
+        previousBodyStyles.top = document.body.style.top;
+        previousBodyStyles.width = document.body.style.width;
+        previousBodyStyles.overflowY = document.body.style.overflowY;
+        previousScrollBehavior = document.documentElement.style.scrollBehavior;
+
+        document.body.style.position = 'fixed';
+        document.body.style.top = (-scrollPosition) + 'px';
+        document.body.style.width = '100%';
+        document.body.style.overflowY = 'hidden';
+
+        root.classList.add('nav-menu-open');
+        toggleHiddenTargets(true);
+    }
+
+    function unlockScroll() {
+        if (!root.classList.contains('nav-menu-open')) {
+            return;
+        }
+        root.classList.remove('nav-menu-open');
+        document.body.style.position = previousBodyStyles.position;
+        document.body.style.top = previousBodyStyles.top;
+        document.body.style.width = previousBodyStyles.width;
+        document.body.style.overflowY = previousBodyStyles.overflowY;
+
+        var htmlStyle = document.documentElement.style;
+        htmlStyle.scrollBehavior = 'auto';
+        window.scrollTo(0, scrollPosition);
+
+        if (previousScrollBehavior) {
+            htmlStyle.scrollBehavior = previousScrollBehavior;
+        } else {
+            htmlStyle.removeProperty('scroll-behavior');
+        }
+
+        toggleHiddenTargets(false);
+    }
+
+    contextMenu.addEventListener('show.bs.collapse', function handleShow() {
+        lockScroll();
+    });
+
+    contextMenu.addEventListener('hidden.bs.collapse', function handleHidden() {
+        unlockScroll();
+    });
+
+    // Ensure the correct state on load if the menu starts expanded.
+    if (contextMenu.classList.contains('show')) {
+        lockScroll();
     }
 })();
-// END Script to show and hide hamburger menu
+// END Script to handle hamburger menu accessibility and body scroll locking
     
 
 // START Script to turn on embed mode
