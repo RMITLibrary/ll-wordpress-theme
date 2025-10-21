@@ -261,6 +261,7 @@ html.nav-fixed {
     
     position: absolute;
     width: 100%;
+    z-index: 2000;
 
     .nav-container {
         min-height: 100vh;
@@ -274,6 +275,42 @@ html.nav-fixed {
 	a {
 			color: $white;
 		}
+}
+
+.nav-menu-inert {
+    pointer-events: none;
+    user-select: none;
+}
+
+html.nav-menu-open {
+    overflow: hidden;
+
+    body {
+        overflow: hidden;
+    }
+
+    #context-menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2100;
+        overflow-y: auto;
+    }
+
+    .top-navigation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 2200;
+    }
+
+    #context-menu .nav-container {
+        padding-top: 5rem;
+        @include media-breakpoint-up(md) { padding-top: 6.5rem; }
+    }
 }
 
 /* START logo */
