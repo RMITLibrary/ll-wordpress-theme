@@ -308,7 +308,7 @@
 
     function shouldIncludeResult(keywords, link) {
         var excludeKeywords = ["documentation", "archive", "redirect"];
-        var excludePaths = ["/work-in-progress/"];
+        var excludePaths = ["/work-in-progress/", "/documentation/"];
 
         var includeByKeyword = !keywords || !keywords.some(function(keyword) {
             return excludeKeywords.indexOf(keyword.toLowerCase()) !== -1;

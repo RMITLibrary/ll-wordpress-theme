@@ -211,17 +211,17 @@ function rmit_ll_store_export_history($key, $path) {
 }
 
 /**
- * Determine whether a relative path belongs to the work-in-progress section.
+ * Determine whether a relative path belongs to an excluded section.
  *
  * @param string|null $path Path portion of a permalink.
- * @return bool True when the path represents a work-in-progress page.
+ * @return bool True when the path should be excluded from exports.
  */
 function rmit_ll_is_work_in_progress_path($path) {
     if (empty($path) || !is_string($path)) {
         return false;
     }
 
-    return (bool) preg_match('~(?:^|/)work-in-progress(?:/|$)~', $path);
+    return (bool) preg_match('~(?:^|/)(?:work-in-progress|documentation)(?:/|$)~', $path);
 }
 
 //-----------------------------
