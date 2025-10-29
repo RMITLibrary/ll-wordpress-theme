@@ -1,215 +1,421 @@
-var dataURL = "../wp-content/uploads/pages.json?v=1.1.3";
-var debug = false;
+(function() {
+    'use strict';
 
-// Check query string for debug and search initiation
-const urlParamsSearch = new URLSearchParams(window.location.search);
-const debugBool = urlParamsSearch.get('debug');
-const searchString = urlParamsSearch.get('query');
+    var dataURL = "../wp-content/uploads/pages.json?v=1.1.3";
+    var indexURL = "../wp-content/uploads/pages-index.json?v=1.1.3";
+    var fuseScriptURL = "https://cdn.jsdelivr.net/npm/fuse.js";
 
-// Enable debug mode if flag is present
-if (debugBool === 'true') {
-    debug = true;
-    document.getElementById("search-debug").style.display = "block";
-}
+    var fuseScriptPromise = null;
+    var pagesData = null;
+    var pagesDataPromise = null;
+    var prebuiltIndexData = null;
+    var prebuiltIndexPromise = null;
+    var parsedFuseIndex = null;
 
-fetch(dataURL)
-    .then(response => response.json())
-    .then(data => {
+    var urlParamsSearch;
+    try {
+        urlParamsSearch = new URLSearchParams(window.location.search);
+    } catch (error) {
+        urlParamsSearch = null;
+    }
 
-        function performSearch() {
-            var query = document.getElementById('searchInput').value;
+    var searchString = urlParamsSearch ? urlParamsSearch.get('query') : null;
 
-            if (debug) {
-                threshold = parseFloat(document.getElementById('threshold').value);
-                distance = parseInt(document.getElementById('distance').value, 10);
-                mySearchLocation = parseInt(document.getElementById('location').value, 10);
-                useExtendedSearch = document.getElementById('useExtendedSearch').checked;
-                minMatchCharLength = parseInt(document.getElementById('minMatchCharLength').value, 10);
+    var searchInput = document.getElementById('searchInput');
+    if (!searchInput) {
+        return;
+    }
+
+    var searchButton = document.getElementById('searchButton');
+    var searchForm = searchInput.closest('form');
+    var resultsList = document.getElementById('results');
+    var resultsCountDisplay = document.getElementById('results-counter');
+    var collapseElement = document.getElementById('results-container');
+
+    function loadFuseScript() {
+        if (typeof Fuse === 'function') {
+            return Promise.resolve(Fuse);
+        }
+
+        if (!fuseScriptPromise) {
+            fuseScriptPromise = new Promise(function(resolve, reject) {
+                var script = document.createElement('script');
+                script.src = fuseScriptURL;
+                script.async = true;
+                script.onload = function() {
+                    if (typeof Fuse === 'function') {
+                        resolve(Fuse);
+                    } else {
+                        fuseScriptPromise = null;
+                        reject(new Error('Fuse.js loaded but the global constructor is missing.'));
+                    }
+                };
+                script.onerror = function(event) {
+                    fuseScriptPromise = null;
+                    reject(new Error('Failed to load Fuse.js')); 
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        return fuseScriptPromise;
+    }
+
+    function loadPagesData() {
+        if (Array.isArray(pagesData)) {
+            return Promise.resolve(pagesData);
+        }
+
+        if (!pagesDataPromise) {
+            pagesDataPromise = fetch(dataURL, { credentials: 'same-origin' })
+                .then(function(response) {
+                    if (!response.ok) {
+                        throw new Error('Search index request failed with status ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(data) {
+                    pagesData = data;
+                    return data;
+                })
+                .catch(function(error) {
+                    pagesDataPromise = null;
+                    throw error;
+                });
+        }
+
+        return pagesDataPromise;
+    }
+
+    function ensureResources() {
+        return Promise.all([loadFuseScript(), loadPagesData(), loadPrebuiltIndex()]).then(function(resources) {
+            var FuseLib = resources[0];
+            var indexData = resources[2];
+
+            if (indexData && !parsedFuseIndex) {
+                try {
+                    parsedFuseIndex = FuseLib.parseIndex(indexData);
+                } catch (error) {
+                    parsedFuseIndex = null;
+                    if (window.console && window.console.warn) {
+                        console.warn('Failed to parse Fuse index', error);
+                    }
+                }
             }
 
-            if (query !== "") {
-                const options = {
-                    keys: ['title', 'content', 'keywords'],
-                    threshold: 0.4,
-                    distance: 1200,
-                    location: 0,
-                    minMatchCharLength: 4,
-                    includeScore: true,
-                    includeMatches: true,
-                };
+            return resources;
+        });
+    }
 
-                const fuse = new Fuse(data, options);
-                const results = fuse.search(query);
-                const resultsList = document.getElementById('results');
+    function primeResources() {
+        loadFuseScript().catch(function() {});
+        loadPagesData().catch(function() {});
+        loadPrebuiltIndex().catch(function() {});
+    }
+
+    function loadPrebuiltIndex() {
+        if (prebuiltIndexData !== null) {
+            return Promise.resolve(prebuiltIndexData);
+        }
+
+        if (!prebuiltIndexPromise) {
+            prebuiltIndexPromise = fetch(indexURL, { credentials: 'same-origin', cache: 'no-store' })
+                .then(function(response) {
+                    if (response.status === 404) {
+                        return null;
+                    }
+                    if (!response.ok) {
+                        throw new Error('Prebuilt index request failed with status ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(function(indexData) {
+                    prebuiltIndexData = indexData;
+                    return indexData;
+                })
+                .catch(function(error) {
+                    prebuiltIndexPromise = null;
+                    if (window.console && window.console.warn) {
+                        console.warn('Unable to load prebuilt Fuse index', error);
+                    }
+                    return null;
+                });
+        }
+
+        return prebuiltIndexPromise;
+    }
+
+    function setStatusText(message) {
+        if (resultsCountDisplay) {
+            resultsCountDisplay.textContent = message || '';
+        }
+    }
+
+    function setLoadingState(isLoading, message) {
+        if (searchButton) {
+            searchButton.disabled = isLoading;
+            searchButton.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+        }
+
+        searchInput.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+
+        if (typeof message === 'string') {
+            setStatusText(message);
+        }
+    }
+
+    function handleSearchError(error) {
+        setStatusText('Unable to load the search index. Please try again.');
+        if (window.console && window.console.error) {
+            console.error(error);
+        }
+    }
+
+    function getFuseOptions() {
+        return {
+            keys: ['title', 'content', 'keywords'],
+            threshold: 0.4,
+            distance: 1200,
+            location: 0,
+            minMatchCharLength: 4
+        };
+    }
+
+    function performSearch(FuseLib, data, parsedIndex) {
+        var query = searchInput.value.trim();
+        if (!query) {
+            setStatusText('Enter a search term to begin.');
+            if (resultsList) {
                 resultsList.innerHTML = '';
+            }
+            return;
+        }
 
-                let resultCount = 0;
+        var fuseOptions = getFuseOptions();
+        var fuse = parsedIndex ? new FuseLib(data, fuseOptions, parsedIndex) : new FuseLib(data, fuseOptions);
+        var results = fuse.search(query);
 
-                results.forEach(result => {
-                    var title = result.item.title;
-                    var content = cleanJSONContent(result.item.content);
-                    var link = result.item.link;
-                    var breadcrumbs = getBreadcrumbs(result.item.breadcrumbs);
-                    var snippet = getSnippet(content, query);
-                    
-                    if (shouldIncludeResult(result.item.keywords, result.item.link)) {
-                        var li = document.createElement('li');
-                        li.classList.add('result-item');
-                        li.innerHTML = `<a href="..${link}"><h3 class="text">${title}</h3></a>`;
-                        
-                        if (breadcrumbs) {
-                            li.innerHTML += `<ul class="breadcrumbs">${breadcrumbs}</ul>`;
-                        }
-                        
-                        li.innerHTML += `<p>${snippet}</p>`;
-                        
-                        if (debug) {
-                            var score = result.score.toFixed(2);
-                            var matches = result.matches;
-                            li.innerHTML += `<p class="small">Score: ${score} &nbsp;&nbsp;&nbsp;&nbsp;Matches: ${matches}</p>`;
-                        }
-                
-                        resultsList.appendChild(li);
-                        MathJax.typesetPromise([li]).catch(err => console.log('MathJax error:', err));
-                        resultCount++;
+        if (!resultsList) {
+            return;
+        }
+
+        resultsList.innerHTML = '';
+        var resultCount = 0;
+
+        results.forEach(function(result) {
+            var item = result.item;
+            if (!shouldIncludeResult(item.keywords, item.link)) {
+                return;
+            }
+
+            var li = document.createElement('li');
+            li.classList.add('result-item');
+            li.innerHTML = '<a href="..' + item.link + '"><h3 class="text">' + item.title + '</h3></a>';
+
+            var breadcrumbs = getBreadcrumbs(item.breadcrumbs);
+            if (breadcrumbs) {
+                li.innerHTML += '<ul class="breadcrumbs">' + breadcrumbs + '</ul>';
+            }
+
+            var snippet = getSnippet(cleanJSONContent(item.content), query);
+            li.innerHTML += '<p>' + snippet + '</p>';
+
+            resultsList.appendChild(li);
+
+            if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                window.MathJax.typesetPromise([li]).catch(function(mathError) {
+                    if (window.console && window.console.warn) {
+                        console.warn('MathJax rendering error', mathError);
                     }
                 });
-
-                updateResultsCount(resultCount);
-                handleSearchFocus(resultCount);
-            }
-        }
-
-        function getBreadcrumbs(arr)
-        {
-            var breadcrumbStr = "";
-
-            //last breadcrumb matches title, so exclude
-            for(var i=0; i < arr.length-1; i++)
-            {
-                breadcrumbStr += "<li>" +arr[i]["title"] +"</li>";
             }
 
-            return breadcrumbStr;
+            resultCount++;
+        });
+
+        updateResultsCount(resultCount);
+        handleSearchFocus(resultCount);
+    }
+
+    function getBreadcrumbs(arr) {
+        if (!Array.isArray(arr)) {
+            return '';
         }
 
-        function getSnippet(content, query) {
-            const snippetLength = 270; // Desired snippet length
-            const halfSnippetLength = snippetLength / 2;
-        
-            if (!query) return content.substring(0, snippetLength);
-        
-            const index = content.toLowerCase().indexOf(query.toLowerCase());
-        
-            if (index !== -1) {
-                let snippetStart = Math.max(0, index - halfSnippetLength);
-                let snippetEnd = Math.min(content.length, index + halfSnippetLength);
-        
-                // Adjust snippetStart if the remaining content length is less than snippetLength
-                if (snippetEnd - snippetStart < snippetLength) {
-                    if (snippetStart === 0) {
-                        snippetEnd = Math.min(content.length, snippetStart + snippetLength);
-                    } else {
-                        snippetStart = Math.max(0, snippetEnd - snippetLength);
-                    }
+        var breadcrumbStr = '';
+        for (var i = 0; i < arr.length - 1; i++) {
+            breadcrumbStr += '<li>' + arr[i]['title'] + '</li>';
+        }
+        return breadcrumbStr;
+    }
+
+    function getSnippet(content, query) {
+        var snippetLength = 270;
+        var halfSnippetLength = snippetLength / 2;
+
+        if (!query) {
+            return content.substring(0, snippetLength);
+        }
+
+        var lowerContent = content.toLowerCase();
+        var index = lowerContent.indexOf(query.toLowerCase());
+
+        if (index !== -1) {
+            var snippetStart = Math.max(0, index - halfSnippetLength);
+            var snippetEnd = Math.min(content.length, index + halfSnippetLength);
+
+            if (snippetEnd - snippetStart < snippetLength) {
+                if (snippetStart === 0) {
+                    snippetEnd = Math.min(content.length, snippetStart + snippetLength);
+                } else {
+                    snippetStart = Math.max(0, snippetEnd - snippetLength);
                 }
-        
-                // Expand to nearest whole words
-                while (snippetStart > 0 && !/\s/.test(content.charAt(snippetStart - 1))) {
-                    snippetStart--;
-                }
-                while (snippetEnd < content.length && !/\s/.test(content.charAt(snippetEnd))) {
-                    snippetEnd++;
-                }
-        
-                // Adjust for unmatched MathJax delimiters
-                const openIndex = content.lastIndexOf('\\[', snippetStart);
-                const closeIndex = content.indexOf('\\]', snippetEnd);
-        
-                if (openIndex !== -1 && (closeIndex === -1 || closeIndex > snippetEnd)) {
-                    snippetEnd = Math.min(content.length, closeIndex + 2);
-                }
-        
-                // Extract and trim the snippet from content
-                let snippet = content.substring(snippetStart, snippetEnd).trim();
-        
-                // Remove \ce from the snippet
-                snippet = snippet.replace(/\\ce/g, '');
-        
-                // Add ellipses if snippet doesn't start or end at content bounds
-                if (snippetStart > 0) {
-                    snippet = "&hellip;" + snippet;
-                }
-                if (snippetEnd < content.length) {
-                    snippet += "&hellip;";
-                }
-        
-                // Highlight the query within the snippet
-                const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-                const regex = new RegExp(`(${escapedQuery})`, 'gi');
-                snippet = snippet.replace(regex, '<span class="highlight-1">$1</span>');
-                
-                return snippet;
             }
-        
-            // If the query is not found, return the first snippetLength characters as a fallback
-            return content.substring(0, snippetLength) + "&hellip;";
-        }
 
-        function shouldIncludeResult(keywords, link) {
-            const excludeKeywords = ["documentation", "archive", "redirect"];
-            const excludePaths = ["/work-in-progress/"];
-        
-            const excludeByKeyword = !keywords || !keywords.some(keyword =>
-                excludeKeywords.includes(keyword.toLowerCase())
-            );
-        
-            const excludeByLink = !excludePaths.some(path => link.includes(path));
-        
-            return excludeByKeyword && excludeByLink;
-        }
-
-        function cleanJSONContent(content) {
-            return content
-                .replace(/\\\\/g, '\\') // Converts double-escaped backslashes to single
-                .replace(/\\r\\n/g, ' ') // Replaces newline with space
-                .trim();
-        }
-
-        function updateResultsCount(count) {
-            const resultsCountDisplay = document.getElementById('results-counter');
-            if (count === 0) {
-                resultsCountDisplay.textContent = 'No results found.';
-            } else {
-                resultsCountDisplay.textContent = `${count} result${count > 1 ? 's' : ''} found.`;
+            while (snippetStart > 0 && !/\s/.test(content.charAt(snippetStart - 1))) {
+                snippetStart--;
             }
+            while (snippetEnd < content.length && !/\s/.test(content.charAt(snippetEnd))) {
+                snippetEnd++;
+            }
+
+            var openIndex = content.lastIndexOf('\\[', snippetStart);
+            var closeIndex = content.indexOf('\\]', snippetEnd);
+
+            if (openIndex !== -1 && (closeIndex === -1 || closeIndex > snippetEnd)) {
+                snippetEnd = Math.min(content.length, closeIndex + 2);
+            }
+
+            var snippet = content.substring(snippetStart, snippetEnd).trim();
+            snippet = snippet.replace(/\\ce/g, '');
+
+            if (snippetStart > 0) {
+                snippet = '&hellip;' + snippet;
+            }
+            if (snippetEnd < content.length) {
+                snippet += '&hellip;';
+            }
+
+            var escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+            var regex = new RegExp('(' + escapedQuery + ')', 'gi');
+            snippet = snippet.replace(regex, '<span class="highlight-1">$1</span>');
+
+            return snippet;
         }
 
-        function handleSearchFocus(count) {
-            var collapseElement = document.getElementById('results-container');
+        return content.substring(0, snippetLength) + '&hellip;';
+    }
 
-            if (searchString != null) {
-                collapseElement.classList.remove('collapse');
-                if (window.history.replaceState) {
-                    window.history.replaceState(null, '', window.location.origin + window.location.pathname);
-                }
-            } else if (count > 0) {
-                var collapseInstance = new bootstrap.Collapse(collapseElement, { toggle: false });
-                collapseInstance.show();
-                document.getElementById("results-title").focus();
-            }
+    function shouldIncludeResult(keywords, link) {
+        var excludeKeywords = ["documentation", "archive", "redirect"];
+        var excludePaths = ["/work-in-progress/"];
+
+        var includeByKeyword = !keywords || !keywords.some(function(keyword) {
+            return excludeKeywords.indexOf(keyword.toLowerCase()) !== -1;
+        });
+
+        var includeByLink = !excludePaths.some(function(path) {
+            return link.indexOf(path) !== -1;
+        });
+
+        return includeByKeyword && includeByLink;
+    }
+
+    function cleanJSONContent(content) {
+        return content
+            .replace(/\\\\/g, '\\')
+            .replace(/\\r\\n/g, ' ')
+            .trim();
+    }
+
+    function updateResultsCount(count) {
+        if (!resultsCountDisplay) {
+            return;
+        }
+
+        if (count === 0) {
+            resultsCountDisplay.textContent = 'No results found.';
+        } else {
+            resultsCountDisplay.textContent = count + ' result' + (count > 1 ? 's' : '') + ' found.';
+        }
+    }
+
+    function handleSearchFocus(count) {
+        if (!collapseElement) {
+            return;
         }
 
         if (searchString != null) {
-            document.getElementById('searchInput').value = searchString;
-            performSearch();
+            collapseElement.classList.remove('collapse');
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(null, '', window.location.origin + window.location.pathname);
+            }
+            searchString = null;
+        } else if (count > 0 && typeof bootstrap !== 'undefined' && bootstrap.Collapse) {
+            var collapseInstance = new bootstrap.Collapse(collapseElement, { toggle: false });
+            collapseInstance.show();
+            var resultsTitle = document.getElementById('results-title');
+            if (resultsTitle) {
+                resultsTitle.focus();
+            }
+        }
+    }
+
+    function triggerSearch(fromQuery) {
+        var query = searchInput.value.trim();
+        if (!query) {
+            if (!fromQuery) {
+                setStatusText('Enter a search term to begin.');
+            }
+            return;
         }
 
-        document.getElementById('searchButton').addEventListener('click', performSearch);
-        document.getElementById('searchInput').addEventListener('keypress', function(event) {
-            if (event.key === 'Enter') {
-                performSearch();
-            }
+        var hasIndex = Array.isArray(pagesData) && (parsedFuseIndex || prebuiltIndexData);
+        setLoadingState(true, hasIndex ? 'Searching…' : 'Loading search index…');
+
+        ensureResources()
+            .then(function(resources) {
+                setLoadingState(false);
+                var FuseLib = resources[0];
+                var data = resources[1];
+                performSearch(FuseLib, data, parsedFuseIndex);
+            })
+            .catch(function(error) {
+                setLoadingState(false);
+                handleSearchError(error);
+            });
+    }
+
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            triggerSearch(false);
         });
-    })
-    .catch(error => console.error('Error fetching JSON:', error));
+    }
+
+    searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            triggerSearch(false);
+        }
+    });
+
+    if (searchButton) {
+        searchButton.addEventListener('click', function(event) {
+            event.preventDefault();
+            triggerSearch(false);
+        });
+    }
+
+    searchInput.addEventListener('focus', function() {
+        primeResources();
+    }, { once: true });
+
+    if (searchString) {
+        searchInput.value = searchString;
+        primeResources();
+        triggerSearch(true);
+    } else {
+        setStatusText('Enter a search term to begin.');
+    }
+})();

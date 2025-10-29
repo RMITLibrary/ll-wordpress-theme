@@ -186,6 +186,21 @@ function rmit_ll_get_export_file_meta($filename, $label) {
     );
 }
 
+function rmit_ll_get_timezone_label() {
+    $timezone = wp_timezone();
+    $timezone_name = $timezone instanceof DateTimeZone ? $timezone->getName() : get_option('timezone_string');
+    if (empty($timezone_name)) {
+        $timezone_name = 'UTC';
+    }
+
+    $timezone_abbr = wp_date('T', current_time('timestamp', true));
+    if (!empty($timezone_abbr) && stripos($timezone_name, $timezone_abbr) === false) {
+        $timezone_name .= ' (' . $timezone_abbr . ')';
+    }
+
+    return $timezone_name;
+}
+
 function rmit_ll_store_export_history($key, $path) {
     $history = get_option('rmit_ll_export_history', array());
     $history[$key] = array(
@@ -295,13 +310,7 @@ function export_json_page() {
         ),
     );
 
-    $timezone = wp_timezone();
-    $timezone_name = $timezone instanceof DateTimeZone ? $timezone->getName() : 'UTC';
-    $timezone_abbr = wp_date('T', current_time('timestamp', true));
-    $timezone_label = $timezone_name;
-    if (!empty($timezone_abbr) && stripos($timezone_name, $timezone_abbr) === false) {
-        $timezone_label .= ' (' . $timezone_abbr . ')';
-    }
+    $timezone_label = rmit_ll_get_timezone_label();
 
     $notices = array(
         'errors' => array(),
@@ -338,7 +347,60 @@ function export_json_page() {
         }
     }
 
+    $fuse_index_meta = rmit_ll_get_export_file_meta('pages-index.json', 'Fuse.js index');
+    $fuse_index_recorded_time = isset($export_history['fuse_index']['timestamp']) ? (int) $export_history['fuse_index']['timestamp'] : null;
+    if (!$fuse_index_recorded_time && !is_wp_error($fuse_index_meta) && !empty($fuse_index_meta['modified'])) {
+        $fuse_index_recorded_time = (int) $fuse_index_meta['modified'];
+    }
+
     $current_gmt = time();
+
+    $should_build_index = isset($success_exports['pages']);
+
+    $export_builder_handle = 'rmit-learning-lab-export-index';
+    $export_builder_path   = 'js/export-index-builder.js';
+    $export_builder_ver    = rmit_learning_lab_asset_version($export_builder_path);
+
+    wp_enqueue_script(
+        $export_builder_handle,
+        get_stylesheet_directory_uri() . '/' . $export_builder_path,
+        array(),
+        $export_builder_ver,
+        true
+    );
+
+    $pages_meta = isset($file_statuses['pages']) ? $file_statuses['pages'] : null;
+    $pages_version = time();
+    if ($pages_meta && !is_wp_error($pages_meta) && !empty($pages_meta['modified'])) {
+        $pages_version = (int) $pages_meta['modified'];
+    }
+
+    $localized_data = array(
+        'shouldBuild'    => $should_build_index,
+        'ajaxUrl'        => admin_url('admin-ajax.php'),
+        'nonce'          => wp_create_nonce('rmit_ll_save_fuse_index'),
+        'pagesJson'      => trailingslashit(content_url()) . 'uploads/pages.json' . ( $pages_version ? '?ver=' . $pages_version : '' ),
+        'statusSelector' => '#rmit-export-index-status',
+        'keys'           => array('title', 'content', 'keywords'),
+        'fuseUrl'        => 'https://cdn.jsdelivr.net/npm/fuse.js',
+        'messages'       => array(
+            'starting' => __('Building Fuse.js index…', 'rmit-learning-lab'),
+            'saving'   => __('Saving Fuse.js index…', 'rmit-learning-lab'),
+            'success'  => __('Fuse.js index updated.', 'rmit-learning-lab'),
+            'failure'  => __('Unable to generate Fuse.js index.', 'rmit-learning-lab'),
+        ),
+        'labels'         => array(
+            'viewJson'     => __('View JSON', 'rmit-learning-lab'),
+            'noFile'       => __('No file available', 'rmit-learning-lab'),
+            'notGenerated' => __('Not generated yet', 'rmit-learning-lab'),
+        ),
+    );
+
+    if (!is_wp_error($fuse_index_meta) && !empty($fuse_index_meta['modified'])) {
+        $localized_data['indexLastModified'] = (int) $fuse_index_meta['modified'];
+    }
+
+    wp_localize_script($export_builder_handle, 'RMITExportIndex', $localized_data);
 
     if (!empty($success_exports)) {
         $success_items = array();
@@ -396,6 +458,8 @@ function export_json_page() {
         }
         echo '</ul></div>';
     }
+
+    echo '<div id="rmit-export-index-status" class="notice notice-info" style="display:none;"></div>';
 
     ?>
     <div class="wrap">
@@ -466,9 +530,116 @@ function export_json_page() {
                     </td>
                 </tr>
             <?php endforeach; ?>
+            <tr>
+                <td>
+                    <strong><?php esc_html_e('Fuse.js index', 'rmit-learning-lab'); ?></strong><br>
+                    <span class="description"><?php esc_html_e('Precomputed search index consumed by the static site.', 'rmit-learning-lab'); ?></span>
+                </td>
+                <td>pages-index.json</td>
+                <td data-fuse-index="updated">
+                    <?php
+                    if (is_wp_error($fuse_index_meta)) {
+                        echo '<span class="error">' . esc_html($fuse_index_meta->get_error_message()) . '</span>';
+                    } elseif (!empty($fuse_index_meta['exists']) && !empty($fuse_index_recorded_time)) {
+                        $formatted_time = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $fuse_index_recorded_time);
+                        $relative = human_time_diff($fuse_index_recorded_time, $current_gmt);
+                        printf('%s <span class="description">%s • %s ago</span>', esc_html($formatted_time), esc_html($timezone_label), esc_html($relative));
+                    } else {
+                        echo '<span class="description">' . esc_html__('Not generated yet', 'rmit-learning-lab') . '</span>';
+                    }
+                    ?>
+                </td>
+                <td data-fuse-index="size">
+                    <?php
+                    if (is_wp_error($fuse_index_meta)) {
+                        echo '—';
+                    } elseif (!empty($fuse_index_meta['exists']) && isset($fuse_index_meta['size'])) {
+                        echo esc_html(size_format($fuse_index_meta['size']));
+                    } else {
+                        echo '—';
+                    }
+                    ?>
+                </td>
+                <td data-fuse-index="actions">
+                    <?php
+                    if (!is_wp_error($fuse_index_meta) && !empty($fuse_index_meta['exists']) && !empty($fuse_index_meta['url'])) {
+                        echo '<a class="button" href="' . esc_url($fuse_index_meta['url']) . '" target="_blank" rel="noopener">' . esc_html__('View JSON', 'rmit-learning-lab') . '</a>';
+                    } else {
+                        echo '<span class="description">' . esc_html__('No file available', 'rmit-learning-lab') . '</span>';
+                    }
+                    ?>
+                </td>
+            </tr>
             </tbody>
         </table>
     </div>
     <?php
+}
+
+add_action('wp_ajax_rmit_ll_save_fuse_index', 'rmit_ll_save_fuse_index');
+
+function rmit_ll_save_fuse_index() {
+    if (!current_user_can('manage_options')) {
+        wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'rmit-learning-lab')), 403);
+    }
+
+    check_ajax_referer('rmit_ll_save_fuse_index', 'nonce');
+
+    $raw_payload = isset($_POST['index']) ? wp_unslash($_POST['index']) : '';
+    if ('' === $raw_payload) {
+        wp_send_json_error(array('message' => __('Index payload missing.', 'rmit-learning-lab')));
+    }
+
+    $decoded = json_decode($raw_payload, true);
+    if (null === $decoded || !is_array($decoded)) {
+        wp_send_json_error(array('message' => __('Invalid index payload.', 'rmit-learning-lab')));
+    }
+
+    $file_path = rmit_ll_get_export_file_path('pages-index.json');
+    if (is_wp_error($file_path)) {
+        wp_send_json_error(array('message' => $file_path->get_error_message()));
+    }
+
+    $encoded = wp_json_encode($decoded, JSON_UNESCAPED_SLASHES);
+    if (false === $encoded) {
+        wp_send_json_error(array('message' => __('Failed to encode index payload.', 'rmit-learning-lab')));
+    }
+
+    if (false === file_put_contents($file_path, $encoded)) {
+        wp_send_json_error(array('message' => __('Unable to write index file to uploads directory.', 'rmit-learning-lab')));
+    }
+
+    clearstatcache(true, $file_path);
+
+    rmit_ll_store_export_history('fuse_index', $file_path);
+
+    $response = array(
+        'message' => __('Fuse index saved.', 'rmit-learning-lab'),
+        'path'    => $file_path,
+    );
+
+    $meta = rmit_ll_get_export_file_meta('pages-index.json', 'Fuse.js index');
+    if (!is_wp_error($meta) && !empty($meta['exists'])) {
+        $current_gmt  = time();
+        $timestamp    = !empty($meta['modified']) ? (int) $meta['modified'] : $current_gmt;
+        $size_bytes   = isset($meta['size']) ? (int) $meta['size'] : null;
+        $size_label   = null;
+
+        if (!is_null($size_bytes)) {
+            $size_label = size_format($size_bytes);
+        }
+
+        $response['meta'] = array(
+            'timestamp'      => $timestamp,
+            'formatted'      => wp_date(get_option('date_format') . ' ' . get_option('time_format'), $timestamp),
+            'relative'       => human_time_diff($timestamp, $current_gmt),
+            'timezone_label' => rmit_ll_get_timezone_label(),
+            'size'           => $size_bytes,
+            'size_label'     => $size_label,
+            'url'            => !empty($meta['url']) ? esc_url_raw($meta['url']) : '',
+        );
+    }
+
+    wp_send_json_success($response);
 }
 ?>

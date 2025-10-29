@@ -187,54 +187,30 @@ add_action( 'wp_enqueue_scripts', function() {
 	);
 	wp_enqueue_script( $main_handle );
 
-	$iframe_resizer_handle = 'rmit-learning-lab-iframe-resizer';
-	$iframe_resizer_path   = 'js/iframeResizer.min.js';
-	$iframe_resizer_ver    = rmit_learning_lab_asset_version( $iframe_resizer_path );
-	wp_register_script(
-		$iframe_resizer_handle,
-		$theme_uri . $iframe_resizer_path,
-		array(),
-		$iframe_resizer_ver,
-		true
-	);
-	wp_enqueue_script( $iframe_resizer_handle );
-	wp_add_inline_script( $iframe_resizer_handle, 'if (typeof iFrameResize === "function") { iFrameResize({ log: false }); }', 'after' );
+	$iframe_loader_handle = 'rmit-learning-lab-iframe-loader';
+	$iframe_loader_path   = 'js/iframe-loader.js';
+	$iframe_loader_ver    = rmit_learning_lab_asset_version( $iframe_loader_path );
 
-	$iframe_resizer_content_handle = 'rmit-learning-lab-iframe-resizer-content';
-	$iframe_resizer_content_path   = 'js/iframeResizer.contentWindow.min.js';
-	$iframe_resizer_content_ver    = rmit_learning_lab_asset_version( $iframe_resizer_content_path );
 	wp_register_script(
-		$iframe_resizer_content_handle,
-		$theme_uri . $iframe_resizer_content_path,
+		$iframe_loader_handle,
+		$theme_uri . $iframe_loader_path,
 		array(),
-		$iframe_resizer_content_ver,
+		$iframe_loader_ver,
 		true
 	);
-	wp_enqueue_script( $iframe_resizer_content_handle );
 
-	$lti_trigger_handle = 'rmit-learning-lab-lti-trigger';
-	$lti_trigger_path   = 'js/ltiTriggerResize.js';
-	$lti_trigger_ver    = rmit_learning_lab_asset_version( $lti_trigger_path );
-	wp_register_script(
-		$lti_trigger_handle,
-		$theme_uri . $lti_trigger_path,
-		array(),
-		$lti_trigger_ver,
-		true
+	wp_localize_script(
+		$iframe_loader_handle,
+		'RMITIframeAssets',
+		array(
+			'host'    => $theme_uri . 'js/iframeResizer.min.js',
+			'content' => $theme_uri . 'js/iframeResizer.contentWindow.min.js',
+			'lti'     => $theme_uri . 'js/ltiTriggerResize.js',
+		)
 	);
-	wp_enqueue_script( $lti_trigger_handle );
+
+	wp_enqueue_script( $iframe_loader_handle );
 }, 200 );
 
-/**
- * Add preload/prefetch hints for JSON index files without cache-busting.
- */
-add_action( 'wp_head', function() {
-	$prefetch_files = array(
-		content_url( 'uploads/pages-urls.json' ),
-		content_url( 'uploads/pages.json' ),
-	);
-
-	foreach ( $prefetch_files as $href ) {
-		echo '<link rel="prefetch" href="' . esc_url( $href ) . '">' . "\n";
-	}
-}, 20 );
+// Search index is now loaded lazily via JavaScript as users interact with search,
+// so the previous global prefetch hints are intentionally removed.
