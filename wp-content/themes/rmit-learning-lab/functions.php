@@ -51,22 +51,20 @@ add_action( 'wp_enqueue_scripts', function() {
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED
 add_action( 'wp_enqueue_scripts', function() {
 
-    // Enqueue search functionality for home page
-    if ( is_front_page() ) {
-		$search_home_path    = get_stylesheet_directory() . '/js/search-home.js';
-		$search_home_version = file_exists( $search_home_path ) ? filemtime( $search_home_path ) : null;
+    // Enqueue search functionality globally for static exports
+	$search_home_path    = get_stylesheet_directory() . '/js/search-home.js';
+	$search_home_version = file_exists( $search_home_path ) ? filemtime( $search_home_path ) : null;
 
-		wp_enqueue_script(
-			'search-home',
-			get_stylesheet_directory_uri() . '/js/search-home.js',
-			array(),
-			$search_home_version,
-			array(
-				'strategy'  => 'defer',
-				'in_footer' => true,
-			)
-		);
-    }
+	wp_enqueue_script(
+		'search-home',
+		get_stylesheet_directory_uri() . '/js/search-home.js',
+		array(),
+		$search_home_version,
+		array(
+			'strategy'  => 'defer',
+			'in_footer' => true,
+		)
+	);
 
     //UNCOMMENT next row to include the js/custom.js file globally
     //wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
@@ -191,10 +189,48 @@ add_action( 'wp_enqueue_scripts', function() {
 	$iframe_loader_path   = 'js/iframe-loader.js';
 	$iframe_loader_ver    = rmit_learning_lab_asset_version( $iframe_loader_path );
 
+	$iframe_resizer_host_handle = 'rmit-learning-lab-iframe-resizer-host';
+	$iframe_resizer_host_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/iframeResizer.min.js';
+
+	$iframe_resizer_content_handle = 'rmit-learning-lab-iframe-resizer-content';
+	$iframe_resizer_content_path   = 'js/iframeResizer.contentWindow.min.js';
+	$iframe_resizer_content_ver    = rmit_learning_lab_asset_version( $iframe_resizer_content_path );
+
+	$lti_resize_handle = 'rmit-learning-lab-lti-trigger-resize';
+	$lti_resize_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/ltiTriggerResize.js';
+
+	wp_enqueue_script(
+		$iframe_resizer_host_handle,
+		$iframe_resizer_host_src,
+		array(),
+		null,
+		true
+	);
+
+	wp_enqueue_script(
+		$iframe_resizer_content_handle,
+		$theme_uri . $iframe_resizer_content_path,
+		array(),
+		$iframe_resizer_content_ver,
+		true
+	);
+
+	wp_enqueue_script(
+		$lti_resize_handle,
+		$lti_resize_src,
+		array(),
+		null,
+		true
+	);
+
 	wp_register_script(
 		$iframe_loader_handle,
 		$theme_uri . $iframe_loader_path,
-		array(),
+		array(
+			$iframe_resizer_host_handle,
+			$iframe_resizer_content_handle,
+			$lti_resize_handle
+		),
 		$iframe_loader_ver,
 		true
 	);
@@ -203,9 +239,9 @@ add_action( 'wp_enqueue_scripts', function() {
 		$iframe_loader_handle,
 		'RMITIframeAssets',
 		array(
-			'host'    => $theme_uri . 'js/iframeResizer.min.js',
+			'host'    => $iframe_resizer_host_src,
 			'content' => $theme_uri . 'js/iframeResizer.contentWindow.min.js',
-			'lti'     => $theme_uri . 'js/ltiTriggerResize.js',
+			'lti'     => $lti_resize_src,
 		)
 	);
 

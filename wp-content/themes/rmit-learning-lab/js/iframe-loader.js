@@ -5,6 +5,25 @@
   var pendingHostScript = null;
   var observer = null;
 
+  function scriptExists(src, attributeSelector) {
+    if (!src) {
+      return false;
+    }
+
+    if (attributeSelector && document.querySelector(attributeSelector)) {
+      return true;
+    }
+
+    var scripts = document.querySelectorAll('script[src]');
+    for (var i = 0; i < scripts.length; i++) {
+      if (scripts[i].src === src) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function injectScript(key, src) {
     if (!src) {
       return Promise.resolve(false);
@@ -13,7 +32,11 @@
     var attribute = 'data-rmit-iframe-loader';
     var selector = 'script[' + attribute + '="' + key + '"]';
 
-    if (document.querySelector(selector)) {
+    if (scriptExists(src, selector)) {
+      return Promise.resolve(true);
+    }
+
+    if (key === 'host' && typeof window.iFrameResize === 'function') {
       return Promise.resolve(true);
     }
 
