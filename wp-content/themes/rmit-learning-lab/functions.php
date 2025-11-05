@@ -190,22 +190,20 @@ add_action( 'wp_enqueue_scripts', function() {
 	$iframe_loader_ver    = rmit_learning_lab_asset_version( $iframe_loader_path );
 
 	$iframe_resizer_host_handle = 'rmit-learning-lab-iframe-resizer-host';
-	$iframe_resizer_host_path   = 'js/iframeResizer.min.js';
-	$iframe_resizer_host_ver    = rmit_learning_lab_asset_version( $iframe_resizer_host_path );
+	$iframe_resizer_host_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/iframeResizer.min.js';
 
 	$iframe_resizer_content_handle = 'rmit-learning-lab-iframe-resizer-content';
 	$iframe_resizer_content_path   = 'js/iframeResizer.contentWindow.min.js';
 	$iframe_resizer_content_ver    = rmit_learning_lab_asset_version( $iframe_resizer_content_path );
 
 	$lti_resize_handle = 'rmit-learning-lab-lti-trigger-resize';
-	$lti_resize_path   = 'js/ltiTriggerResize.js';
-	$lti_resize_ver    = rmit_learning_lab_asset_version( $lti_resize_path );
+	$lti_resize_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/ltiTriggerResize.js';
 
 	wp_enqueue_script(
 		$iframe_resizer_host_handle,
-		$theme_uri . $iframe_resizer_host_path,
+		$iframe_resizer_host_src,
 		array(),
-		$iframe_resizer_host_ver,
+		null,
 		true
 	);
 
@@ -219,9 +217,9 @@ add_action( 'wp_enqueue_scripts', function() {
 
 	wp_enqueue_script(
 		$lti_resize_handle,
-		$theme_uri . $lti_resize_path,
+		$lti_resize_src,
 		array(),
-		$lti_resize_ver,
+		null,
 		true
 	);
 
@@ -241,9 +239,9 @@ add_action( 'wp_enqueue_scripts', function() {
 		$iframe_loader_handle,
 		'RMITIframeAssets',
 		array(
-			'host'    => $theme_uri . 'js/iframeResizer.min.js',
+			'host'    => $iframe_resizer_host_src,
 			'content' => $theme_uri . 'js/iframeResizer.contentWindow.min.js',
-			'lti'     => $theme_uri . 'js/ltiTriggerResize.js',
+			'lti'     => $lti_resize_src,
 		)
 	);
 
