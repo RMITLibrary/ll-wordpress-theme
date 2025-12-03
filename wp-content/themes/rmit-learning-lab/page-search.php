@@ -36,10 +36,12 @@ get_header();
 <!-- START search -->
 <div class="search-container">
     <label for="searchInput"><h1 class="margin-top-zero">Search the Learning Lab</h1></label>
-    <div class="input-group">
-        <input type="search" id="searchInput" class="form-control">
-        <button type="submit"  id="searchButton" class="btn btn-primary"><div class="mag-glass"></div><span class="visually-hidden">Search</span></button>
-    </div>
+    <form id="search-form" role="search">
+        <div class="input-group">
+            <input type="search" id="searchInput" class="form-control">
+            <button type="submit"  id="searchButton" class="btn btn-primary"><div class="mag-glass"></div><span class="visually-hidden">Search</span></button>
+        </div>
+    </form>
 </div>
 <!-- END search -->
 <!-- START debug -->
@@ -234,5 +236,5 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
 <!-- END col-xs-12 -->
 </div>
 
-<script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/search.js?v=1.3.7"></script>
+<script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/search.js?v=1.3.31"></script>
 <?php get_footer();

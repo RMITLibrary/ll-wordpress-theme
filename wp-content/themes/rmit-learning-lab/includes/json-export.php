@@ -61,6 +61,18 @@ function export_content_to_json() {
 
             $breadcrumbs = get_breadcrumbs(get_the_ID());
 
+            $meta_description = '';
+            $clean_content    = trim( $content );
+            if ( '' === $clean_content ) {
+                $meta_description = trim( get_post_meta( get_the_ID(), '_yoast_wpseo_metadesc', true ) );
+                if ( '' === $meta_description ) {
+                    $meta_description = trim( get_post_meta( get_the_ID(), 'rank_math_description', true ) );
+                }
+                if ( '' === $meta_description ) {
+                    $meta_description = trim( get_post_meta( get_the_ID(), '_aioseo_description', true ) );
+                }
+            }
+
             $posts_data[] = array(
                 'id' => get_the_ID(),
                 'title' => get_the_title(),
@@ -69,7 +81,8 @@ function export_content_to_json() {
                 'date' => get_the_date(),
                 'link' => $relative_link, // Path-only link for search consumers
                 'keywords' => $keywords,
-                'breadcrumbs' => $breadcrumbs
+                'breadcrumbs' => $breadcrumbs,
+                'meta_description' => $meta_description,
             );
         }
         wp_reset_postdata();
