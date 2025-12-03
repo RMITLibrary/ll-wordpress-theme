@@ -130,29 +130,6 @@ if ($is_landing) {
   }
 }
 
-// Only add prev/next if template actually shows navigation AND at least one exists
-if ($shows_navigation && ($has_prev || $has_next)) {
-  // Add previous page relationship (only if not marked as first page)
-  if ($has_prev) {
-    $data['previousItem'] = [
-      '@type' => 'LearningResource',
-      '@id'   => get_permalink($prevID) . '#learning-resource',
-      'name'  => get_the_title($prevID),
-      'url'   => get_permalink($prevID),
-    ];
-  }
-
-  // Add next page relationship (only if not marked as last page)
-  if ($has_next) {
-    $data['nextItem'] = [
-      '@type' => 'LearningResource',
-      '@id'   => get_permalink($nextID) . '#learning-resource',
-      'name'  => get_the_title($nextID),
-      'url'   => get_permalink($nextID),
-    ];
-  }
-}
-
 // Output JSON-LD script
 echo "\n" . '<script type="application/ld+json">';
 echo wp_json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
