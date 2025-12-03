@@ -9,67 +9,15 @@ defined('ABSPATH') || exit;
   <meta charset="<?php bloginfo('charset'); ?>">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- wp_head -->
   <?php
-  // wp_head() outputs the following:
-  //      1. title attribute
-  //
-  // Via All in One SEO Plugin
-  //      1. Meta tags, generic, OpenGraph and twitter
-  //      2. JSON schema
-  //
-  // A Python script is deployed to change https://lab.bitm.app to
-  // https://learninglab.rmit.edu.au/ before upload to prod
-  //
-  // Via other plug-ins
-  // 1. MathJax script and link to jsdeliver.net
-  // 2. Styles related to WordPress editor and plugins
-  // 3. Site Stylesheets
-  //
-  // A Python script is deployed to remove some of these styles
   wp_head();
-  ?>
-  <!-- /wp_head -->
-
-  <!-- START Additional meta tags not covered by wp_head -->
-  <?php
-  // A Python script is deployed to change https://lab.bitm.app to
-  // https://learninglab.rmit.edu.au/ in the tags below before upload to prod
   ?>
 
   <link href="https://rmitlibrary.github.io/cdn/learninglab/illustration/dev-fav-icon.png" rel="icon" type="image/x-icon" />
   <link href="https://rmitlibrary.github.io/cdn/learninglab/illustration/dev-fav-icon.png" rel="shortcut icon" type="image/x-icon" />
 
-  <meta name="author" content="RMIT Library">
-  <meta name="geo.position" content="-37.807778, 144.963333">
-  <meta name="geo.placename" content="Melbourne">
-  <meta name="geo.region" content="AU">
-  <meta name="dcterms.title" content="Learning Lab">
+  <?php get_template_part('includes/dcterms-meta'); ?>
 
-  <?php
-  if (is_singular()) { // Check if it's a single post or page
-    $excerpt = get_the_excerpt();
-    if ($excerpt == "...") {
-      echo '<meta name="dcterms.description" content="The Learning Lab provides foundation skills and study support materials for writing, science and more.">';
-    } else {
-      echo '<meta name="dcterms.description" content="' . esc_attr($excerpt) . '">';
-    }
-
-    echo "\n";
-  }
-  ?>
-  <meta name="dcterms.type" content="Text">
-  <?php echo '<meta name="dcterms.identifier" content="' . esc_url(get_permalink()) . '">';
-  echo "\n"; ?>
-  <meta name="dcterms.format" content="text/html">
-  <!-- END Additional meta tags not covered by wp_head -->
-
-  <!-- START print styles -->
-
-
-  <!-- START Additional scripts for tracking -->
-
-  <!-- Google Tag Manager -->
   <script>
     (function(w, d, s, l, i) {
       w[l] = w[l] || [];
@@ -86,11 +34,7 @@ defined('ABSPATH') || exit;
       f.parentNode.insertBefore(j, f);
     })(window, document, 'script', 'dataLayer', 'GTM-MPHJK3H');
   </script>
-  <!-- End Google Tag Manager -->
 
-  <!-- END Additional scripts for tracking -->
-
-  <!-- Microsoft Bing - Not sure how useful this is? -->
   <meta name="msvalidate.01" content="8E4954E1DFAB7E2F8A92DD0A0BD6ED09">
 
   <style>
