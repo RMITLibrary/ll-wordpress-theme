@@ -17,6 +17,7 @@ defined('ABSPATH') || exit;
   <link href="https://rmitlibrary.github.io/cdn/learninglab/illustration/dev-fav-icon.png" rel="shortcut icon" type="image/x-icon" />
 
   <?php get_template_part('includes/dcterms-meta'); ?>
+  <?php get_template_part('includes/schema-learning-resource'); ?>
 
   <script>
     (function(w, d, s, l, i) {
