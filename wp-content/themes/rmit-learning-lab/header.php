@@ -18,6 +18,7 @@ defined('ABSPATH') || exit;
 
   <?php get_template_part('includes/dcterms-meta'); ?>
   <?php get_template_part('includes/schema-learning-resource'); ?>
+  <?php get_template_part('includes/schema-video'); ?>
 
   <script>
     (function(w, d, s, l, i) {
