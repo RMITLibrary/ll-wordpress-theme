@@ -217,7 +217,11 @@
                 li.innerHTML += '<ul class="breadcrumbs">' + breadcrumbs + '</ul>';
             }
 
-            var snippet = getSnippet(cleanJSONContent(item.content), query);
+            var cleanedContent = cleanJSONContent(item.content);
+            if (!cleanedContent && item.meta_description) {
+                cleanedContent = item.meta_description.trim();
+            }
+            var snippet = getSnippet(cleanedContent, query);
             li.innerHTML += '<p>' + snippet + '</p>';
 
             resultsList.appendChild(li);
