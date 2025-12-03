@@ -51,20 +51,22 @@ add_action( 'wp_enqueue_scripts', function() {
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED
 add_action( 'wp_enqueue_scripts', function() {
 
-    // Enqueue search functionality globally for static exports
-	$search_home_path    = get_stylesheet_directory() . '/js/search-home.js';
-	$search_home_version = file_exists( $search_home_path ) ? filemtime( $search_home_path ) : null;
+    // Enqueue search functionality globally for static exports (except on search page)
+	if ( ! is_page( 'search' ) ) {
+		$search_home_path    = get_stylesheet_directory() . '/js/search-home.js';
+		$search_home_version = file_exists( $search_home_path ) ? filemtime( $search_home_path ) : null;
 
-	wp_enqueue_script(
-		'search-home',
-		get_stylesheet_directory_uri() . '/js/search-home.js',
-		array(),
-		$search_home_version,
-		array(
-			'strategy'  => 'defer',
-			'in_footer' => true,
-		)
-	);
+		wp_enqueue_script(
+			'search-home',
+			get_stylesheet_directory_uri() . '/js/search-home.js',
+			array(),
+			$search_home_version,
+			array(
+				'strategy'  => 'defer',
+				'in_footer' => true,
+			)
+		);
+	}
 
     //UNCOMMENT next row to include the js/custom.js file globally
     //wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
