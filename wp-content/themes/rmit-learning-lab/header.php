@@ -147,13 +147,15 @@ defined('ABSPATH') || exit;
         <div class="row">
           <div class="col-auto left-nav">
             <a href="https://www.rmit.edu.au/" class="rmit-logo"><span class="visually-hidden">RMIT University</span></a>
-            <h2>
+            <div class="h2">
+              <?php /*
               <!-- Explicitly turn off one bit of text and turn on the other to deal with JAWS bug - https://github.com/alphagov/govuk-frontend/issues/1643 -->
-              <a href="/home">
+              */ ?>
+              <a href="/">
                 <span aria-hidden="true">Learning Lab</span>
                 <span class="visually-hidden">Learning Lab homepage</span>
               </a>
-            </h2>
+            </div>
           </div>
           <div class="col">
             <ul>
