@@ -89,7 +89,7 @@ function image_att ($atts, $content = null) {
     $caption = '';
 
     if (!empty($content)) {
-        $transcript_regex = get_shortcode_regex(array('transcript-accordion'));
+        $transcript_regex = get_shortcode_regex(array('transcript', 'transcript-accordion', 'lightweight-accordion'));
         $remaining_content = $content;
 
         if (!empty($transcript_regex)) {
