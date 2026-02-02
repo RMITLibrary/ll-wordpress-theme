@@ -88,11 +88,17 @@
         toggleHiddenTargets(false);
     }
 
-    contextMenu.addEventListener('show.bs.collapse', function handleShow() {
+    contextMenu.addEventListener('show.bs.collapse', function handleShow(event) {
+        if (event.target !== contextMenu) {
+            return;
+        }
         lockScroll();
     });
 
-    contextMenu.addEventListener('hidden.bs.collapse', function handleHidden() {
+    contextMenu.addEventListener('hidden.bs.collapse', function handleHidden(event) {
+        if (event.target !== contextMenu) {
+            return;
+        }
         unlockScroll();
     });
 
