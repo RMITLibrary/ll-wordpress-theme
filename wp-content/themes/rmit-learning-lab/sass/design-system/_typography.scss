@@ -170,3 +170,12 @@ li > ul {
 .nowrap, .no-wrap {
 	white-space: nowrap;
 }
+
+.break-word {
+	overflow-wrap: break-word;
+	word-break: normal;
+}
+
+.break-all {
+	word-break: break-all;
+}

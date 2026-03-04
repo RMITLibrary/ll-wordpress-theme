@@ -75,11 +75,11 @@
 	//create padding within the accordion.
     .accordion-body {
         padding: 1.5rem 0 0 0;
-        @include do-space(margin-bottom, lg); 
+        @include do-space(margin-bottom, lg);
 
 		//Remove the margin from the first item of content with the accordion body
         > first-child {
-            @include do-space(margin-top, zero);   
+            @include do-space(margin-top, zero);
         }
     }
 } 

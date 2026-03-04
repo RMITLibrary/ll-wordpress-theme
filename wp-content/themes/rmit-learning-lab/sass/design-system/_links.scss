@@ -20,6 +20,7 @@
 
 a {
 	@include link-normal;
+	overflow-wrap: break-word;
 }
 		
 a:hover {
