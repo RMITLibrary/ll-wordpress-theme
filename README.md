@@ -9,7 +9,7 @@ WordPress theme development repository for the RMIT Learning Lab website.
 > 4. Import the production database into your local MySQL instance.
 > 5. Update `wp-config.php` with local DB credentials and set `WP_HOME` / `WP_SITEURL`.
 > 6. Copy `.env.example` → `.env` and fill the WP Engine SSH details.
-> 7. Run `npm install`, then `npm run site-sync:prod` (or `:dev`).
+> 7. Run `npm install`, then `npm run site:pull:prod` (or `:dev`).
 > 8. Start your local server and log in with your usual WordPress credentials.
 
 ## Prerequisites
@@ -96,7 +96,7 @@ These steps mirror how we run the theme locally with WP Engine data. Complete st
    *Glossary:* `.env` holds private credentials; the sync scripts export values like `DBSYNC_PROD_SSH_HOST` to know where to fetch data from.
 8. **Pull database and plugins automatically**
    ```bash
-   npm run site-sync:prod    # or :dev, :uat, etc.
+   npm run site:pull:prod    # or :dev, :uat, etc.
    ```
    The wrapper script first runs the DB sync (backup → import → search/replace → cache flush) then rsyncs `wp-content/plugins`, printing summaries for both phases.
 9. **Front-end workflow helpers**
@@ -113,9 +113,9 @@ These steps mirror how we run the theme locally with WP Engine data. Complete st
 - `npm run sass` – Single compile with compressed output and source maps
 - `npm run watch` – Watch SASS files and auto-compile on changes
 - `npm run clean` – Remove generated CSS files
-- `npm run db:prod` / `npm run db:dev` – Run the database sync helper for the specified environment
-- `npm run plugins:prod` / `npm run plugins:dev` – Rsync remote plugins down to the local install
-- `npm run site-sync:prod` / `npm run site-sync:dev` – Orchestrate both database and plugin syncs sequentially
+- `npm run db:pull:prod` / `npm run db:pull:dev` – Pull the database from the specified environment
+- `npm run plugins:pull:prod` / `npm run plugins:pull:dev` – Pull remote plugins down to the local install via rsync
+- `npm run site:pull:prod` / `npm run site:pull:dev` – Pull both database and plugins sequentially
 
 > The sync commands read configuration from `.env`; see the sync workflow section below before running them.
 
@@ -222,7 +222,7 @@ Push changes to the appropriate branch and GitHub Actions will deploy the `wp-co
 | --- | --- |
 | `wp: command not found` | Install WP-CLI and ensure it’s on your PATH (https://wp-cli.org/). |
 | Database import fails | Confirm DB credentials in `wp-config.php`; check SQL dump isn’t gzipped; use `mysql -u root dbname < dump.sql   # add -p if you set a password`. |
-| Site shows wrong domain or redirects | Re-run `npm run site-sync:prod` (search-replace step) or manually update `WP_HOME`/`WP_SITEURL`. |
+| Site shows wrong domain or redirects | Re-run `npm run site:pull:prod` (search-replace step) or manually update `WP_HOME`/`WP_SITEURL`. |
 | Plugin sync removes local-only plugins | Add them to `DBSYNC_PLUGIN_EXCLUDES` before running the script, or set `DBSYNC_PLUGIN_DELETE=0`. |
 | `ENV_FILE=.env: command not found` | Ensure you’re calling scripts via `./scripts/*.sh` or the npm alias on the latest branch (wrapper now uses `env`). |
 | Permission denied (publickey) when syncing | Follow the internal SSH setup guide above and confirm the key matches the user in `.env`; test with `ssh <user>@<host>`. |

@@ -9,12 +9,14 @@
     "build": "npm run sass",
     "dev": "npm run watch",
     "clean": "rm -f wp-content/themes/rmit-learning-lab/css-output/bundle.css*",
-    "db:prod": "./scripts/db-sync.sh prod",
-    "db:dev": "./scripts/db-sync.sh dev",
-    "plugins:prod": "./scripts/plugins-sync.sh prod",
-    "plugins:dev": "./scripts/plugins-sync.sh dev",
-    "site-sync:prod": "./scripts/site-sync.sh prod",
-    "site-sync:dev": "./scripts/site-sync.sh dev"
+    "db:pull:prod": "./scripts/db-sync.sh prod",
+    "db:pull:dev": "./scripts/db-sync.sh dev",
+    "plugins:pull:prod": "./scripts/plugins-sync.sh prod",
+    "plugins:pull:dev": "./scripts/plugins-sync.sh dev",
+    "site:pull:prod": "./scripts/site-sync.sh prod",
+    "site:pull:dev": "./scripts/site-sync.sh dev",
+    "check-overflow": "node scripts/check-overflow.js",
+    "check-overflow:report": "node scripts/check-overflow.js --output overflow-report.json"
   },
   "repository": {
     "type": "git",
@@ -29,6 +31,7 @@
   "author": "Digital Learning Team",
   "license": "GPL-2.0",
   "devDependencies": {
+    "playwright": "^1.58.2",
     "sass": "^1.83.2"
   },
   "engines": {
