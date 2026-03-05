@@ -107,12 +107,12 @@ Example: only grab plugins with a preview:
 The `package.json` exposes shortcuts:
 
 ```bash
-npm run db:prod           # ./scripts/db-sync.sh prod
-npm run db:dev
-npm run plugins:prod
-npm run plugins:dev
-npm run site-sync:prod    # database + plugins
-npm run site-sync:dev
+npm run db:pull:prod           # ./scripts/db-sync.sh prod
+npm run db:pull:dev
+npm run plugins:pull:prod
+npm run plugins:pull:dev
+npm run site:pull:prod    # database + plugins
+npm run site:pull:dev
 ```
 
 You can chain flags by invoking the underlying shell script directly (npm doesn’t pass extra args cleanly).

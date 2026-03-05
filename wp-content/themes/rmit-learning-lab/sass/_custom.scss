@@ -1,3 +1,15 @@
+// Auto-apply hscroll behaviour to display-mode MathJax elements not already inside an hscroll wrapper.
+// Uses div.mathjax (the theme wrapper) where it exists; falls back to mjx-container[display="true"]
+// for cases where div.mathjax is not present. Neither applies inside an existing .hscroll.
+div.mathjax:not(.hscroll *),
+mjx-container[display="true"]:not(.hscroll *):not(div.mathjax *) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    @include do-space(margin-top, sm);
+    @include do-space(margin-bottom, sm);
+    padding-bottom: 1rem;
+}
+
 // Temporary fix for MathJax 4.0 not working in older browsers like Safari 17.
 // This fix will be removed once MathJax 4.1 is released, which includes the fix.
 
