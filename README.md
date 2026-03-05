@@ -119,6 +119,25 @@ These steps mirror how we run the theme locally with WP Engine data. Complete st
 
 > The sync commands read configuration from `.env`; see the sync workflow section below before running them.
 
+### Testing
+
+**Mobile overflow audit** — checks every published page at 320px viewport for horizontal overflow (content wider than the screen). Useful for catching MathJax equations, wide tables, or other content that breaks the mobile layout.
+
+```bash
+# Run audit — prints offending URLs and the elements causing the overflow
+npm run test:overflow
+
+# Same but also saves a full JSON report
+npm run test:overflow:report
+```
+
+Requirements:
+- Local site must be running at `https://ll-wordpress-theme.test`
+- WP-CLI must be available on your `PATH`
+- Playwright Chromium is installed automatically via `npm install`
+
+The report (if generated) is saved to `overflow-report.json` in the project root and is git-ignored.
+
 ## Project Structure
 
 ```

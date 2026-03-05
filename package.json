@@ -15,8 +15,8 @@
     "plugins:pull:dev": "./scripts/plugins-sync.sh dev",
     "site:pull:prod": "./scripts/site-sync.sh prod",
     "site:pull:dev": "./scripts/site-sync.sh dev",
-    "check-overflow": "node scripts/check-overflow.js",
-    "check-overflow:report": "node scripts/check-overflow.js --output overflow-report.json"
+    "test:overflow": "node scripts/check-overflow.js",
+    "test:overflow:report": "node scripts/check-overflow.js --output overflow-report.json"
   },
   "repository": {
     "type": "git",
