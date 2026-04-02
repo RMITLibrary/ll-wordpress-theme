@@ -286,20 +286,20 @@ function output_redirect_404_script_and_html($args = array())
       console.log('normalizeIndexPath input:', path);
       if (typeof path !== 'string') return '';
       let p = path;
-      // Remove trailing '/index.html'
       if (p.endsWith('/index.html')) {
-        p = p.slice(0, -10);
+        p = p.substring(0, p.length - '/index.html'.length) || '/';
       } else if (p.endsWith('index.html')) {
         // Handle 'index.html' without a preceding slash
-        p = p.slice(0, -10) || '/';
+        p = p.substring(0, p.length - 'index.html'.length) || '/';
       } else if (p.endsWith('.html')) {
-        // Remove '.html'
-        p = p.slice(0, -5);
+        p = p.substring(0, p.length - '.html'.length) || '/';
       }
-      // Remove a trailing slash if not root
-      if (p.length > 1 && p.endsWith('/')) {
-        p = p.slice(0, -1);
+
+      // Remove trailing slashes one character at a time to avoid over-trimming.
+      while (p.length > 1 && p.endsWith('/')) {
+        p = p.substring(0, p.length - 1);
       }
+
       if (!p.startsWith('/')) p = '/' + p;
       console.log('normalizeIndexPath result:', p);
       return p;
