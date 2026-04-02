@@ -223,6 +223,24 @@ function rmit_ll_store_export_history($key, $path) {
     update_option('rmit_ll_export_history', $history, false);
 }
 
+function rmit_ll_get_theme_export_file_meta($absolute_path, $label) {
+    clearstatcache(true, $absolute_path);
+    $exists = file_exists($absolute_path);
+    $theme_base_path = trailingslashit(get_stylesheet_directory());
+    $theme_base_url = trailingslashit(get_stylesheet_directory_uri());
+    $relative_path = str_replace($theme_base_path, '', $absolute_path);
+
+    return array(
+        'label' => $label,
+        'filename' => basename($absolute_path),
+        'path' => $absolute_path,
+        'url' => $exists ? $theme_base_url . ltrim($relative_path, '/') : '',
+        'exists' => $exists,
+        'modified' => $exists ? filemtime($absolute_path) : null,
+        'size' => $exists ? filesize($absolute_path) : null,
+    );
+}
+
 /**
  * Determine whether a relative path belongs to an excluded section.
  *
@@ -321,6 +339,12 @@ function export_json_page() {
             'filename' => 'pages-urls.json',
             'callback' => 'export_page_urls_to_json',
         ),
+        'redirects' => array(
+            'label' => 'Redirect map',
+            'description' => 'Generated JavaScript map used by the static 404 redirect helper.',
+            'filename' => 'redirects.js',
+            'callback' => 'rmit_ll_generate_redirects_js_file',
+        ),
     );
 
     $timezone_label = rmit_ll_get_timezone_label();
@@ -349,7 +373,11 @@ function export_json_page() {
 
     $file_statuses = array();
     foreach ($export_tasks as $key => $task) {
-        $meta = rmit_ll_get_export_file_meta($task['filename'], $task['label']);
+        if ('redirects' === $key) {
+            $meta = rmit_ll_get_theme_export_file_meta(rmit_ll_get_redirects_js_file_path(), $task['label']);
+        } else {
+            $meta = rmit_ll_get_export_file_meta($task['filename'], $task['label']);
+        }
         $file_statuses[$key] = $meta;
 
         if (is_wp_error($meta)) {
@@ -507,7 +535,12 @@ function export_json_page() {
                         <strong><?php echo esc_html($task['label']); ?></strong><br>
                         <span class="description"><?php echo esc_html($task['description']); ?></span>
                     </td>
-                    <td><?php echo esc_html($task['filename']); ?></td>
+                    <td>
+                        <?php echo esc_html($task['filename']); ?>
+                        <?php if ('redirects' === $key) : ?>
+                            <br><span class="description"><?php esc_html_e('Stored in the active theme JS directory.', 'rmit-learning-lab'); ?></span>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php
                         if (is_wp_error($meta)) {
@@ -535,7 +568,8 @@ function export_json_page() {
                     <td>
                         <?php
                         if (!is_wp_error($meta) && !empty($meta['exists']) && !empty($meta['url'])) {
-                            echo '<a class="button" href="' . esc_url($meta['url']) . '" target="_blank" rel="noopener">View JSON</a>';
+                            $action_label = ('redirects' === $key) ? __('View file', 'rmit-learning-lab') : __('View JSON', 'rmit-learning-lab');
+                            echo '<a class="button" href="' . esc_url($meta['url']) . '" target="_blank" rel="noopener">' . esc_html($action_label) . '</a>';
                         } else {
                             echo '<span class="description">No file available</span>';
                         }
