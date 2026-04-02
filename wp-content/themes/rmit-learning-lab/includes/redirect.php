@@ -32,11 +32,16 @@ add_filter('redirection_log_404', function ($log) {
 }, 1);
 
 
-function write_redirects_js_file()
+function rmit_ll_get_redirects_js_file_path()
+{
+  return trailingslashit(get_stylesheet_directory()) . 'js/redirects.js';
+}
+
+function rmit_ll_generate_redirects_js_file()
 {
   global $wpdb;
 
-  error_log('write_redirects_js_file function called!'); // Added logging
+  error_log('rmit_ll_generate_redirects_js_file function called!');
 
   // Query the Redirection plugin's table
   $table_name = $wpdb->prefix . 'redirection_items';
@@ -44,6 +49,10 @@ function write_redirects_js_file()
     "SELECT url, action_data, regex FROM $table_name WHERE action_type = 'url' AND status = 'enabled'",
     ARRAY_A
   );
+
+  if (null === $redirects) {
+    return new WP_Error('redirects_query_failed', sprintf('Failed to read redirects from table %s.', $table_name));
+  }
 
   $url_mappings = [];
   if ($redirects) {
@@ -65,17 +74,17 @@ function write_redirects_js_file()
 
 
   $dir = get_stylesheet_directory() . '/js/';
-  $js_file_path = $dir . 'redirects.js'; // Path to save the JS file
+  $js_file_path = rmit_ll_get_redirects_js_file_path();
 
   // Check if directory exists and is writable
   if (!is_dir($dir)) {
     error_log('Directory does not exist: ' . esc_html($dir));
-    return;
+    return new WP_Error('redirects_dir_missing', sprintf('Directory does not exist: %s', $dir));
   }
 
   if (!is_writable($dir)) {
     error_log('Directory is not writable: ' . esc_html($dir));
-    return;
+    return new WP_Error('redirects_dir_unwritable', sprintf('Directory is not writable: %s', $dir));
   }
 
   // Prepare JS content with proper JSON escaping for regex patterns
@@ -86,9 +95,31 @@ function write_redirects_js_file()
   // Write the JavaScript content to the file
   if (file_put_contents($js_file_path, $js_content) === false) {
     error_log('Failed to write JS file to: ' . esc_html($js_file_path));
+    return new WP_Error('redirects_write_failed', sprintf('Failed to write JS file to: %s', $js_file_path));
   } else {
     error_log('JS file successfully written to: ' . esc_html($js_file_path));
+    clearstatcache(true, $js_file_path);
+    return $js_file_path;
   }
+}
+
+function write_redirects_js_file()
+{
+  rmit_ll_generate_redirects_js_file();
+}
+
+function rmit_ll_maybe_generate_redirects_js_file()
+{
+  if (!class_exists('Redirection')) {
+    return;
+  }
+
+  $js_file_path = rmit_ll_get_redirects_js_file_path();
+  if (file_exists($js_file_path)) {
+    return;
+  }
+
+  rmit_ll_generate_redirects_js_file();
 }
 
 // Hook into Redirection plugin's actions
@@ -102,6 +133,7 @@ add_action('redirection_redirect_disabled', 'write_redirects_js_file');
 
 // Fallback - regenerate on any redirect table changes
 add_action('redirection_flush_cache', 'write_redirects_js_file');
+add_action('admin_init', 'rmit_ll_maybe_generate_redirects_js_file');
 
 //-------------------------------------------
 //    output_redirect_404_script_and_html
@@ -412,170 +444,169 @@ function output_redirect_404_script_and_html($args = array())
 
       // Check for redirect mappings
       {
-        // Check if urlMappings is defined before using it.
-        if (typeof urlMappings !== 'undefined') {
-          // Function to search for a mapping with a given path
-          function findMapping(searchPath) {
-            console.log('Searching for mapping with path:', searchPath);
+        const mappings = Array.isArray(typeof urlMappings !== 'undefined' ? urlMappings : null) ? urlMappings : [];
 
-            // First, try to find an exact match (non-regex)
-            let mapping = urlMappings.find((mapping) => !mapping.regex && normalizePath(mapping.oldPath) === normalizePath(searchPath));
+        if (!mappings.length) {
+          console.log('urlMappings is not defined or empty; falling back to normalized and dataset-backed redirects.');
+        }
 
-            // If no exact match, then try regex matching
-            if (!mapping) {
-              mapping = urlMappings.find((mapping) => {
-                if (mapping.regex) {
-                  try {
-                    // Properly escape the regex pattern for JavaScript
-                    const regex = new RegExp(mapping.pattern, 'i');
-                    console.log('Testing regex pattern:', mapping.pattern, 'against:', searchPath);
-                    return regex.test(searchPath);
-                  } catch (e) {
-                    console.error('Invalid regex pattern:', mapping.pattern, e);
-                    return false; // Skip this mapping if the regex is invalid
-                  }
-                }
-                return false;
-              });
-            }
+        // Function to search for a mapping with a given path
+        function findMapping(searchPath) {
+          console.log('Searching for mapping with path:', searchPath);
 
-            return mapping;
-          }
+          // First, try to find an exact match (non-regex)
+          let mapping = mappings.find((mapping) => !mapping.regex && normalizePath(mapping.oldPath) === normalizePath(searchPath));
 
-          // First, try to find a mapping with the ORIGINAL extracted path (before normalization)
-          let mapping = findMapping(extractedPath);
-          let matchedPath = extractedPath;
-
-          // If no mapping found, try the normalized path
+          // If no exact match, then try regex matching
           if (!mapping) {
-            mapping = findMapping(normalizedPath);
-            matchedPath = normalizedPath;
+            mapping = mappings.find((mapping) => {
+              if (mapping.regex) {
+                try {
+                  // Properly escape the regex pattern for JavaScript
+                  const regex = new RegExp(mapping.pattern, 'i');
+                  console.log('Testing regex pattern:', mapping.pattern, 'against:', searchPath);
+                  return regex.test(searchPath);
+                } catch (e) {
+                  console.error('Invalid regex pattern:', mapping.pattern, e);
+                  return false; // Skip this mapping if the regex is invalid
+                }
+              }
+              return false;
+            });
           }
 
-          // If no mapping found and path contains '/content/', try replacing it with '/'
-          if (!mapping && normalizedPath.includes('/content/')) {
-            console.log('No direct match found, trying with /content/ replaced by /');
-            const pathWithoutContent = normalizedPath.replace('/content/', '/');
-            mapping = findMapping(pathWithoutContent);
+          return mapping;
+        }
 
-            // If we found a match with the content-stripped path, update the search path for redirect processing
-            if (mapping) {
-              console.log('Found match after replacing /content/ with /');
-              // Use the path without content for the redirect processing
-              normalizedPath = pathWithoutContent;
-              matchedPath = pathWithoutContent;
-            }
+        // First, try to find a mapping with the ORIGINAL extracted path (before normalization)
+        let mapping = findMapping(extractedPath);
+        let matchedPath = extractedPath;
+
+        // If no mapping found, try the normalized path
+        if (!mapping) {
+          mapping = findMapping(normalizedPath);
+          matchedPath = normalizedPath;
+        }
+
+        // If no mapping found and path contains '/content/', try replacing it with '/'
+        if (!mapping && normalizedPath.includes('/content/')) {
+          console.log('No direct match found, trying with /content/ replaced by /');
+          const pathWithoutContent = normalizedPath.replace('/content/', '/');
+          mapping = findMapping(pathWithoutContent);
+
+          // If we found a match with the content-stripped path, update the search path for redirect processing
+          if (mapping) {
+            console.log('Found match after replacing /content/ with /');
+            // Use the path without content for the redirect processing
+            normalizedPath = pathWithoutContent;
+            matchedPath = pathWithoutContent;
           }
+        }
 
-          // If no mapping found but URL was normalized, try redirecting to normalized URL if it exists in DB
-          if (!disableDatasetFallback && !mapping && normalizedPath !== extractedPath) {
-            console.log('No mapping found, considering normalized URL:', normalizedPath);
-            const normalizedUrl = window.location.origin + normalizedPath + window.location.search + window.location.hash;
+        // If no mapping found but we have content/ in the original path, try content-stripped URL if it exists in DB
+        if (!disableDatasetFallback && !mapping && extractedPath.includes('/content/')) {
+          const pathWithoutContent = extractedPath.replace('/content/', '/');
+          if (pathWithoutContent !== extractedPath) {
+            console.log('No mapping found, considering content-stripped URL:', pathWithoutContent);
+            const contentStrippedUrl = window.location.origin + pathWithoutContent + window.location.search + window.location.hash;
             // Load DB only when needed
             await loadValidPaths();
-            if (isUrlValidInDb(normalizedUrl)) {
+            if (isUrlValidInDb(contentStrippedUrl)) {
               // Change page title to reflect change
               document.title = 'Redirecting you to the correct page...';
               // Display redirect information
               redirectInfo.style.display = 'block';
               // Perform the redirect
-              doRedirect(normalizedUrl);
+              doRedirect(contentStrippedUrl);
               return; // Exit early to prevent immediate 404 display
             } else {
-              console.log('Normalized URL not in database, skipping redirect:', normalizedPath);
+              console.log('Content-stripped URL not in database, skipping redirect:', pathWithoutContent);
             }
           }
+        }
 
-          // If no mapping found but we have content/ in the original path, try content-stripped URL if it exists in DB
-          if (!disableDatasetFallback && !mapping && extractedPath.includes('/content/')) {
-            const pathWithoutContent = extractedPath.replace('/content/', '/');
-            if (pathWithoutContent !== extractedPath) {
-              console.log('No mapping found, considering content-stripped URL:', pathWithoutContent);
-              const contentStrippedUrl = window.location.origin + pathWithoutContent + window.location.search + window.location.hash;
-              // Load DB only when needed
-              await loadValidPaths();
-              if (isUrlValidInDb(contentStrippedUrl)) {
-                // Change page title to reflect change
-                document.title = 'Redirecting you to the correct page...';
-                // Display redirect information
-                redirectInfo.style.display = 'block';
-                // Perform the redirect
-                doRedirect(contentStrippedUrl);
-                return; // Exit early to prevent immediate 404 display
-              } else {
-                console.log('Content-stripped URL not in database, skipping redirect:', pathWithoutContent);
-              }
-            }
-          }
-
-          // If a matching mapping is found, redirect to the new URL
-          if (mapping) {
-            let newUrl;
-            if (mapping.regex) {
-              try {
-                // Use the same regex pattern for matching and replacement
-                const regex = new RegExp(mapping.pattern, 'i');
-
-                // Use the path that was used to find the mapping
-                const matches = matchedPath.match(regex);
-                console.log('Regex match attempt - Pattern:', mapping.pattern, 'Matched path:', matchedPath, 'Matches:', matches);
-
-                if (matches) {
-                  // If there are matches, do the replacement using captured groups
-                  newUrl = mapping.newPath.replace(/\$(\d+)/g, (_, groupIndex) => {
-                    const matchIndex = parseInt(groupIndex);
-                    const replacement = matches[matchIndex] || '';
-                    console.log('Replacing $' + groupIndex + ' with:', replacement);
-                    return replacement;
-                  });
-                  console.log('Regex replacement result:', newUrl);
-                } else {
-                  // If no matches, use the new path as is
-                  newUrl = mapping.newPath;
-                }
-
-                // Preserve query parameters and hash for regex redirects
-                const urlObj = new URL(currentURL);
-                const finalUrlObj = new URL(newUrl, urlObj.origin);
-                if (urlObj.search) {
-                  finalUrlObj.search = urlObj.search;
-                }
-                if (urlObj.hash) {
-                  finalUrlObj.hash = urlObj.hash;
-                }
-                newUrl = finalUrlObj.toString();
-              } catch (e) {
-                console.error('Error during regex replacement:', e);
-                newUrl = mapping.newPath;
-              }
-            } else {
-              // Non-regex match, check if newPath is external URL or relative path
-              if (mapping.newPath.startsWith('http://') || mapping.newPath.startsWith('https://')) {
-                // External URL - use as is
-                newUrl = mapping.newPath;
-              } else {
-                // Relative path - use replaceUrlPath
-                newUrl = replaceUrlPath(currentURL, mapping.newPath);
-              }
-            }
-            console.log('Match found! Redirecting to: ' + newUrl);
-
-            //Change page title to relect change
-            document.title = 'Redirecting you to the new page...';
-
+        // If no mapping found but URL was normalized, try redirecting to normalized URL if it exists in DB
+        if (!disableDatasetFallback && !mapping && normalizedPath !== extractedPath) {
+          console.log('No mapping found, considering normalized URL:', normalizedPath);
+          const normalizedUrl = window.location.origin + normalizedPath + window.location.search + window.location.hash;
+          // Load DB only when needed
+          await loadValidPaths();
+          if (isUrlValidInDb(normalizedUrl)) {
+            // Change page title to reflect change
+            document.title = 'Redirecting you to the correct page...';
             // Display redirect information
             redirectInfo.style.display = 'block';
-
             // Perform the redirect
-            doRedirect(newUrl);
+            doRedirect(normalizedUrl);
+            return; // Exit early to prevent immediate 404 display
           } else {
-            // If no mapping is found, display 404 information
-            console.log('No match found. Displaying 404 info.');
-            fourOhInfo.style.display = 'block';
+            console.log('Normalized URL not in database, skipping redirect:', normalizedPath);
           }
+        }
+
+        // If a matching mapping is found, redirect to the new URL
+        if (mapping) {
+          let newUrl;
+          if (mapping.regex) {
+            try {
+              // Use the same regex pattern for matching and replacement
+              const regex = new RegExp(mapping.pattern, 'i');
+
+              // Use the path that was used to find the mapping
+              const matches = matchedPath.match(regex);
+              console.log('Regex match attempt - Pattern:', mapping.pattern, 'Matched path:', matchedPath, 'Matches:', matches);
+
+              if (matches) {
+                // If there are matches, do the replacement using captured groups
+                newUrl = mapping.newPath.replace(/\$(\d+)/g, (_, groupIndex) => {
+                  const matchIndex = parseInt(groupIndex);
+                  const replacement = matches[matchIndex] || '';
+                  console.log('Replacing $' + groupIndex + ' with:', replacement);
+                  return replacement;
+                });
+                console.log('Regex replacement result:', newUrl);
+              } else {
+                // If no matches, use the new path as is
+                newUrl = mapping.newPath;
+              }
+
+              // Preserve query parameters and hash for regex redirects
+              const urlObj = new URL(currentURL);
+              const finalUrlObj = new URL(newUrl, urlObj.origin);
+              if (urlObj.search) {
+                finalUrlObj.search = urlObj.search;
+              }
+              if (urlObj.hash) {
+                finalUrlObj.hash = urlObj.hash;
+              }
+              newUrl = finalUrlObj.toString();
+            } catch (e) {
+              console.error('Error during regex replacement:', e);
+              newUrl = mapping.newPath;
+            }
+          } else {
+            // Non-regex match, check if newPath is external URL or relative path
+            if (mapping.newPath.startsWith('http://') || mapping.newPath.startsWith('https://')) {
+              // External URL - use as is
+              newUrl = mapping.newPath;
+            } else {
+              // Relative path - use replaceUrlPath
+              newUrl = replaceUrlPath(currentURL, mapping.newPath);
+            }
+          }
+          console.log('Match found! Redirecting to: ' + newUrl);
+
+          //Change page title to relect change
+          document.title = 'Redirecting you to the new page...';
+
+          // Display redirect information
+          redirectInfo.style.display = 'block';
+
+          // Perform the redirect
+          doRedirect(newUrl);
         } else {
-          // urlMappings is not defined, display 404 information
-          console.log('urlMappings is not defined. Displaying 404 info.');
+          // If no mapping is found, display 404 information
+          console.log('No match found. Displaying 404 info.');
           fourOhInfo.style.display = 'block';
         }
       }
