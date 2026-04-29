@@ -3,7 +3,7 @@
 
     var dataURL = "../wp-content/uploads/pages.json?v=1.1.3";
     var indexURL = "../wp-content/uploads/pages-index.json?v=1.1.3";
-    var fuseScriptURL = "https://cdn.jsdelivr.net/npm/fuse.js";
+    var fuseScriptURL = "https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js";
 
     var fuseScriptPromise = null;
     var pagesData = null;
