@@ -423,7 +423,7 @@ function export_json_page() {
         'pagesJson'      => trailingslashit(content_url()) . 'uploads/pages.json' . ( $pages_version ? '?ver=' . $pages_version : '' ),
         'statusSelector' => '#rmit-export-index-status',
         'keys'           => array('title', 'content', 'keywords'),
-        'fuseUrl'        => 'https://cdn.jsdelivr.net/npm/fuse.js',
+        'fuseUrl'        => 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js',
         'messages'       => array(
             'starting' => __('Building Fuse.js index…', 'rmit-learning-lab'),
             'saving'   => __('Saving Fuse.js index…', 'rmit-learning-lab'),
