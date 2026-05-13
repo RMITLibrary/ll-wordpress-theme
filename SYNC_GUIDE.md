@@ -4,8 +4,28 @@ This guide covers the helper scripts bundled in this repository for keeping a lo
 
 ## 1. Prerequisites
 
+### SSH Key Setup (first-time, required)
+
+The sync scripts authenticate to WP Engine over SSH — no API key is needed, but your SSH public key must be registered with WP Engine before any sync command will work.
+
+1. **Generate an SSH key** if you don't already have one:
+   ```bash
+   ssh-keygen -t ed25519 -C "your.email@rmit.edu.au"
+   ```
+2. **Add your public key to WP Engine** via the User Portal:
+   WP Engine Portal → User Profile → SSH Keys → Add SSH Key
+   Paste the contents of `~/.ssh/id_ed25519.pub` (or your existing public key).
+3. **Test the connection** once the key is added (it can take a minute to propagate):
+   ```bash
+   ssh -p 22 <remote_user>@<ssh_host> -- wp core version
+   ```
+   If you see a WordPress version number, you're good to go.
+
+> See the internal guide for full details: [Setting Up SSH Access to WP Engine](https://slcrmit.atlassian.net/wiki/spaces/DLT/pages/4509139854/Guide+Setting+Up+SSH+Access+to+WP+Engine)
+
+### Other requirements
+
 - WP-CLI installed and available on your `PATH`.
-- SSH access to the target environments.
 - `rsync` available (macOS and most Linux distros ship with it by default).
 - A populated `.env` file at the project root. Copy `.env.example` and fill in the values that describe each remote:
   ```bash
