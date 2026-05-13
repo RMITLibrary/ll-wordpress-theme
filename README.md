@@ -55,7 +55,7 @@ These steps mirror how we run the theme locally with WP Engine data. Complete st
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/ll-wordpress-theme.git
+   git clone https://github.com/RMITLibrary/ll-wordpress-theme.git
    cd ll-wordpress-theme
    ```
 2. **Install WordPress core and uploads**
@@ -203,37 +203,13 @@ The repository ignores:
 - Build artifacts and source maps
 - Local configuration files
 
-## Local Development Setup
-
-### Recommended Tools
-
-1. **Laravel Herd** - Modern PHP/MySQL local development (macOS)
-2. **MAMP/XAMPP** - Traditional PHP/MySQL stack (macOS/Windows)
-3. **Docker-based stack** (DDEV, Lando, etc.) - if you prefer containers
-
-### Database Configuration
-
-1. Create a local database
-2. Configure `wp-config.php` with your local database credentials
-3. Never commit `wp-config.php` to version control
-
-### Sync Workflow (DB + Plugins)
-
-Operational scripts live in `scripts/` and are documented in `SYNC_GUIDE.md`.
-
-- Copy `.env.example` to `.env` and populate the WP Engine (or other host) credentials for each environment.
-- Use the npm scripts (or call the shell scripts directly) to pull the remote database and plugins locally.
-- Summaries print after each run so you can confirm replacements, backups, and plugin changes at a glance.
-
-See [`SYNC_GUIDE.md`](./SYNC_GUIDE.md) for step-by-step instructions, prerequisites (WP-CLI, rsync, SSH), and troubleshooting tips.
-
 ## Deployment
 
 This theme is hosted on WP Engine and uses GitHub Actions for automated deployment.
 
-### Deployment Process
+Push changes to the appropriate branch and GitHub Actions will deploy the `wp-content/themes/` directory to the mapped WP Engine environment. Cache is cleared after each deployment. Monitor builds at https://github.com/RMITLibrary/ll-wordpress-theme/actions.
 
-Push changes to the appropriate branch and GitHub Actions will deploy the `wp-content/themes/` directory to the mapped WP Engine environment (production, development, or staging). Cache is cleared after each deployment. Monitor builds at https://github.com/RMITLibrary/ll-wordpress-theme/actions.
+See [`GITFLOW_GUIDE.md`](./GITFLOW_GUIDE.md) for the full branching workflow, release process, hotfixes, and rollback steps.
 
 ## Troubleshooting Highlights
 
@@ -246,12 +222,25 @@ Push changes to the appropriate branch and GitHub Actions will deploy the `wp-co
 | `ENV_FILE=.env: command not found` | Ensure you’re calling scripts via `./scripts/*.sh` or the npm alias on the latest branch (wrapper now uses `env`). |
 | Permission denied (publickey) when syncing | Follow the internal SSH setup guide above and confirm the key matches the user in `.env`; test with `ssh <user>@<host>`. |
 
+## Git Workflow
+
+This project follows **GitFlow** using Sourcetree, with GitHub Actions deploying automatically on merge to `develop` or `main`.
+
+| Branch | Deploys To |
+|---|---|
+| `main` | PRD — `prdlearninglab.wpenginepowered.com` |
+| `develop` | DEV — `devlearninglab.wpenginepowered.com` |
+
+The standard path is `feature/*` → `develop` → release → `main`. For most changes the team releases straight to PRD; DEV is reserved for large structural changes. Primary validation is local testing against a PRD DB pull (`npm run site:pull:prod`).
+
+See [`GITFLOW_GUIDE.md`](./GITFLOW_GUIDE.md) for the full workflow — features, releases, hotfixes, and rollback.
+
 ## Contributing
 
-1. Create a feature branch
-2. Make your changes
-3. Test locally
-4. Submit a pull request
+1. Always branch from `develop` and follow the workflow in [`GITFLOW_GUIDE.md`](./GITFLOW_GUIDE.md)
+2. Use [Conventional Commits](https://www.conventionalcommits.org/) for all commit messages
+3. Run `npm run build` before merging to ensure compiled CSS is up to date
+4. Test locally against a PRD DB pull before releasing
 
 ## Support
 
