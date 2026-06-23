@@ -184,6 +184,7 @@ $img-width-sm: 18.5rem;     //296px*/
 	//trim-top to add visual punch, indicate right and wrong
 	.trim-top, .trim-top-wrong, .trim-top-right, .trim-top-neutral {
 		border-top: 0.25rem solid $red;
+		border-radius: 0.25rem;
 	}
 
 	.trim-top-right, {
