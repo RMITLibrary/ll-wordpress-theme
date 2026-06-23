@@ -193,7 +193,13 @@
     @include media-breakpoint-up(xl) { 
         position: sticky;
         top: 7.5rem;  
+
+		max-height: calc(100vh - 7.5rem);
+  		overflow-y: auto;
     }
+
+	
+
 }
 
 // Dark mode

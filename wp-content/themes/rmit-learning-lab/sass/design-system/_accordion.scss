@@ -91,15 +91,12 @@
 }
 
 //style for white text variation
+//style for white text variation
 .accordion-white {
     .accordion-item {
         border-color: $white;
         background-color: $rmit-blue;
     }
-
-	.accordion-button {
-		@include default-focus('dark');
-	}
     
     .accordion-button, .accordion-button:hover, .accordion-button:not(.collapsed):hover {
         color: $white;
@@ -113,10 +110,21 @@
     .accordion-button::before {
         @include carat-white;
     }
-
+    
+    /* 
+    Just change text underline. 
+    Focus state is retained when accordion is expanded until user clicks elsewhere.
+    */
+    .accordion-button:focus {
+        background-color: $rmit-blue;
+        text-decoration:underline;
+        box-shadow: 0 0 !important;
+    }
+    
     .accordion-button:not(.collapsed) {
         background-color: $rmit-blue;
         color: $white;
+		box-shadow: 0 0 !important;
     }
     
     .accordion-body {
