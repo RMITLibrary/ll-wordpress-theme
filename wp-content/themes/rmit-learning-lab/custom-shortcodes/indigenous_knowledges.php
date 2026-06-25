@@ -17,7 +17,7 @@
 function indigenous_knowledges_shortcode( $atts, $content = null ) {
     $default = array(
         'topic'    => '',
-        'heading-tag' => 'h3',
+        'heading-tag' => 'h2',
         'id'          => '',
         'classes'     => ''
     );
