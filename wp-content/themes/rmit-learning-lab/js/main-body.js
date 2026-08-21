@@ -260,6 +260,116 @@ document.addEventListener('DOMContentLoaded', function() {
 //END Script to handle embed modal
 
 
+// START Script to keep hash anchors aligned while the page is still loading
+// Lazy images without dimensions, MathJax typesetting and H5P embeds all resize
+// after the fragment scroll. scrollIntoView picks its destination once, so it
+// aims at wherever the target was; this glides towards a target free to move.
+(function() {
+    if (!window.location.hash) {
+        return;
+    }
+
+    var target;
+    try {
+        target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+    } catch (error) {
+        return;
+    }
+    if (!target) {
+        return;
+    }
+
+    // MathJax is enqueued sitewide, so its presence says nothing about whether
+    // this page has maths to typeset; look for unrendered TeX delimiters instead.
+    var hasMath = document.body.textContent.indexOf('\\(') !== -1 ||
+        !!document.querySelector('mjx-container');
+
+    // Lazy images above the target reserve no height until they load, and it is
+    // our own scroll that brings them into view, so they expand underneath us.
+    var lazyAbove = Array.prototype.filter.call(
+        document.querySelectorAll('img[loading="lazy"]'),
+        function(img) {
+            return img.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING;
+        }
+    ).length;
+
+    // Nothing here shifts the layout after load, so the browser's native
+    // fragment scroll is already correct; leave it alone.
+    if (!hasMath && !lazyAbove && !document.querySelector('iframe')) {
+        return;
+    }
+
+    var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var cancelled = false;
+    var settledFrames = 0;
+    var frames = 0;
+
+    ['wheel', 'touchstart', 'keydown'].forEach(function(eventName) {
+        window.addEventListener(eventName, function() {
+            cancelled = true;
+        }, { passive: true, once: true });
+    });
+
+    // Where the target should end up, honouring the fixed header's allowance.
+    function destination() {
+        var padding = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+        return target.getBoundingClientRect().top + window.scrollY - padding;
+    }
+
+    function start() {
+        // Cancel the browser's own fragment scroll so it isn't animating against us.
+        window.scrollTo({ top: 0, behavior: 'instant' });
+        requestAnimationFrame(glide);
+    }
+
+    // ponytail: exponential approach, recomputed per frame so a target that
+    // moves mid-flight is simply followed. Keeps running briefly after arrival
+    // so late shifts are absorbed a pixel at a time instead of as a jump.
+    function glide() {
+        if (cancelled) {
+            return;
+        }
+
+        var remaining = destination() - window.scrollY;
+        frames++;
+
+        if (Math.abs(remaining) < 1) {
+            settledFrames++;
+        } else {
+            settledFrames = 0;
+        }
+
+        // Budget in frames, not wall-clock: a backgrounded tab stops firing
+        // these, so time spent unwatched must not eat into the allowance.
+        if (settledFrames > 30 || frames > 600) {
+            window.scrollTo({ top: destination(), behavior: 'instant' });
+            return;
+        }
+
+        window.scrollTo({
+            top: window.scrollY + remaining * (reducedMotion ? 1 : 0.16),
+            behavior: 'instant'
+        });
+        requestAnimationFrame(glide);
+    }
+
+    // A background tab pauses requestAnimationFrame and defers lazy images, so
+    // the page only starts moving once the reader actually opens the tab. Wait
+    // for that rather than burning the whole budget while nobody is looking.
+    if (document.visibilityState === 'hidden') {
+        document.addEventListener('visibilitychange', function onVisible() {
+            if (document.visibilityState !== 'hidden') {
+                document.removeEventListener('visibilitychange', onVisible);
+                start();
+            }
+        });
+    } else {
+        start();
+    }
+})();
+// END Script to keep hash anchors aligned while the page is still loading
+
+
 // START Dark mode
 //There is additional code located in the <head> section of each page. It's not linked to an exterrnal js to minimise flash between content.
 (function() {

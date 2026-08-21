@@ -11,6 +11,7 @@
 
 //  $atts:      title           Optional card title
 //              heading-tag     h3, h4, h5 etc. - default is h2
+//              id              Optional id on the card, for linking to it with #anchor
 
 //  shortcode:  [ll-card][/ll-card]
 
@@ -42,7 +43,8 @@ function ll_card_att($atts, $content = null) {
         'trim' => '',
         'purpose' => '',
         'wide' => '',
-        'classes' => ''
+        'classes' => '',
+        'id' => ''
     );
     $a = shortcode_atts($default, $atts);
 
@@ -67,7 +69,13 @@ function ll_card_att($atts, $content = null) {
         $output .= $a['classes'] . ' '; 
     } 
 
-    $output .= '">' . "\n";
+    $output .= '"';
+
+    if ($a['id'] != '') {
+        $output .= ' id="' . esc_attr($a['id']) . '"';
+    }
+
+    $output .= '>' . "\n";
 
     //if there's an img property
     if($a['img'] != '') {  
