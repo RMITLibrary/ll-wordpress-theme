@@ -246,8 +246,11 @@ function copyCode(e) {
 	console.log("Code copied");
     navigator.clipboard.writeText(embedCodeBox.value);
 	
-	feedback.innerHTML = "Code copied to clipboard";
+	// Reveal before writing: .collapse:not(.show) is display:none, which keeps
+	// the live region out of the accessibility tree, so a change made while it
+	// is still hidden goes unannounced.
 	feedback.classList.add("show");
+	feedback.innerHTML = "Code copied to clipboard";
 }
 
 // Initialize the embed code on page load

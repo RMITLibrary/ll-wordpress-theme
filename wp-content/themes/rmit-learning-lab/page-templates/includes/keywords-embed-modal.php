@@ -48,15 +48,17 @@ if( $terms ): ?>
 					<div class="form-check-inline">
 						<input class="form-check-input" type="checkbox" id="hideTitle" onchange="updateEmbedCode()" aria-describedby="hideTitleDescription">
 						<label class="form-check-label small" for="hideTitle">Hide page title</label>
+						<span id="hideTitleDescription" class="visually-hidden">Removes the page title from the embedded content.</span>
 					</div>
 					<div class="form-check-inline">
 						<input class="form-check-input" type="checkbox" id="hideIntro" onchange="updateEmbedCode()" aria-describedby="hideIntroDescription">
 						<label class="form-check-label small" for="hideIntro">Hide introduction</label>
+						<span id="hideIntroDescription" class="visually-hidden">Removes the introduction from the embedded content.</span>
 					</div>
 				</form>
 				<div class="btn-container">
 					<button id="copy-code" type="button" class="btn btn-primary">Copy code</button>
-					<div id="feedback" class="collapse small"></div>
+					<div id="feedback" class="collapse small" aria-live="polite"></div>
 				</div>
 				<!-- START accordion item -->
 				<div class="accordion-item transcript margin-top-xs">
