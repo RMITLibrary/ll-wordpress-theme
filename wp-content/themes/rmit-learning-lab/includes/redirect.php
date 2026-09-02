@@ -475,6 +475,13 @@ function output_redirect_404_script_and_html($args = array())
             });
           }
 
+          // Last resort: match ignoring .html / index.html / trailing slash.
+          // Runs after exact and regex so no currently-matching URL changes target.
+          if (!mapping) {
+            const target = normalizePath(normalizeIndexPath(searchPath));
+            mapping = mappings.find((mapping) => !mapping.regex && normalizePath(normalizeIndexPath(mapping.oldPath)) === target);
+          }
+
           return mapping;
         }
 
