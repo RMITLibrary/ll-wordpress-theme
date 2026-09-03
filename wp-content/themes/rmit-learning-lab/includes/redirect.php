@@ -180,7 +180,7 @@ function output_redirect_404_script_and_html($args = array())
   // Output the HTML and CSS
 ?>
 
-  <script src="<?php echo esc_url(get_stylesheet_directory_uri()); ?>/js/redirects.js?v=<?php echo time(); ?>"></script>
+  <script src="<?php echo esc_url(get_stylesheet_directory_uri()); ?>/js/redirects.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/redirects.js' ) ); ?>"></script>
 
 
   <style>
