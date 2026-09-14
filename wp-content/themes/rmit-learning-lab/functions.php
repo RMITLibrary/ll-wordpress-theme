@@ -26,8 +26,7 @@ add_action( 'wp_enqueue_scripts', function() {
 
     //wp_enqueue_script( 'bootstrap5-childtheme', get_stylesheet_directory_uri() . "/js/bootstrap.bundle.min.js#deferload", array(), null, true );
 	//LC replaced the enqueue script above with the line below... to fix a problem with picostrap theme and the latest version of WordPress
-	$bootstrap_path    = get_stylesheet_directory() . '/js/bootstrap.bundle.min.js';
-	$bootstrap_version = file_exists( $bootstrap_path ) ? filemtime( $bootstrap_path ) : null;
+	$bootstrap_version = rmit_learning_lab_asset_version( 'js/bootstrap.bundle.min.js' );
 
 	wp_enqueue_script(
 		'bootstrap5-childtheme',
@@ -53,8 +52,7 @@ add_action( 'wp_enqueue_scripts', function() {
 
     // Enqueue search functionality globally for static exports (except on search page)
 	if ( ! is_page( 'search' ) ) {
-		$search_home_path    = get_stylesheet_directory() . '/js/search-home.js';
-		$search_home_version = file_exists( $search_home_path ) ? filemtime( $search_home_path ) : null;
+		$search_home_version = rmit_learning_lab_asset_version( 'js/search-home.js' );
 
 		wp_enqueue_script(
 			'search-home',
@@ -110,22 +108,60 @@ require_once $theme_includes_dir . 'seo-blog-public-reset.php';  // Nightly rese
 require_once $theme_includes_dir . 'analytics-dashboards.php';   // Analytics dashboards functionality
 
 /**
- * Utility for cache-busting local theme assets based on file modification time.
+ * Cache-busting version for a local theme asset.
+ *
+ * Hashes the contents rather than reading filemtime: a deploy rewrites the mtime
+ * of every theme file at once, which would change every asset URL on all 716
+ * exported pages even when nothing changed.
  */
 function rmit_learning_lab_asset_version( $relative_path ) {
-	$relative_path = ltrim( $relative_path, '/' );
-	$theme_path    = trailingslashit( get_stylesheet_directory() ) . $relative_path;
-	if ( file_exists( $theme_path ) ) {
-		return filemtime( $theme_path );
+	static $versions = array();
+
+	if ( isset( $versions[ $relative_path ] ) ) {
+		return $versions[ $relative_path ];
 	}
 
-	$root_path = trailingslashit( ABSPATH ) . $relative_path;
-	if ( file_exists( $root_path ) ) {
-		return filemtime( $root_path );
+	$candidates = array(
+		trailingslashit( get_stylesheet_directory() ) . ltrim( $relative_path, '/' ),
+		trailingslashit( get_template_directory() ) . ltrim( $relative_path, '/' ),
+		trailingslashit( ABSPATH ) . ltrim( $relative_path, '/' ),
+	);
+
+	$versions[ $relative_path ] = null;
+	foreach ( $candidates as $path ) {
+		if ( file_exists( $path ) ) {
+			$versions[ $relative_path ] = substr( md5_file( $path ), 0, 8 );
+			break;
+		}
 	}
 
-	return null;
+	return $versions[ $relative_path ];
 }
+
+/**
+ * Swap the version on every theme-hosted asset for a content hash, whatever
+ * enqueued it. Without this a deploy invalidates all of them at once.
+ */
+function rmit_learning_lab_hash_asset_src( $src ) {
+	foreach ( array( get_stylesheet_directory_uri(), get_template_directory_uri() ) as $base ) {
+		if ( 0 !== strpos( $src, $base ) ) {
+			continue;
+		}
+
+		$relative = strtok( substr( $src, strlen( $base ) ), '?' );
+		$version  = rmit_learning_lab_asset_version( $relative );
+
+		if ( null !== $version ) {
+			$src = add_query_arg( 'ver', $version, remove_query_arg( 'ver', $src ) );
+		}
+
+		break;
+	}
+
+	return $src;
+}
+add_filter( 'script_loader_src', 'rmit_learning_lab_hash_asset_src', 20 );
+add_filter( 'style_loader_src', 'rmit_learning_lab_hash_asset_src', 20 );
 
 add_action('wp_head', function () {
 	$origins = array(
@@ -155,21 +191,6 @@ add_action( 'wp_enqueue_scripts', function() {
 		'print'
 	);
 });
-
-/**
- * Replace default stylesheet version with the compiled bundle's mtime.
- */
-add_filter( 'style_loader_src', function( $src, $handle ) {
-	if ( 'picostrap-styles' === $handle ) {
-	$version = rmit_learning_lab_asset_version( 'css-output/bundle.css' );
-		if ( null !== $version ) {
-			$src = remove_query_arg( 'ver', $src );
-			$src = add_query_arg( 'ver', $version, $src );
-		}
-	}
-
-	return $src;
-}, 10, 2 );
 
 /**
  * Register theme-specific scripts with automatic cache-busting.
