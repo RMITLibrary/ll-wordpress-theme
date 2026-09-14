@@ -213,7 +213,7 @@ function doAccordion($type, $atts, $content = null) {
 //	Generate unique id
 
 //	Called from:	doAccordion
-//                  Note: these ids will change every time the page is loaded
+//                  Note: ids are stable across renders; repeated titles get -1, -2, ...
 
 //	args:			$string  the title of the accordion
 //                  $prefix either "head" or "body"
@@ -221,18 +221,22 @@ function doAccordion($type, $atts, $content = null) {
 //	usage:			$headId = generate_id($a['title'], "head");
 
 //	Expected output
-//	"head-myTitle-4035"
+//	"head-myTitle-1"
 
 function generate_id($string, $prefix) {
     //Make string lower case
     $lowercaseString = strtolower($string);
-    
+
     //Replace spaces with hypens
     $hyphenatedString = str_replace(' ', '-', $lowercaseString);
-    
-    //add a random number on the end to ensure uniqueness (important for multiple transcript accordions)
-    $randomNumber = rand(1000, 9999);
-    return $prefix . '-' . $hyphenatedString . '-' . $randomNumber;
+
+    //count occurrences instead of a random number, so repeated titles stay unique
+    //without rewriting the markup on every render (which churns the static export)
+    static $counts = array();
+    $key = $prefix . '-' . $hyphenatedString;
+    $counts[$key] = isset($counts[$key]) ? $counts[$key] + 1 : 1;
+
+    return $key . '-' . $counts[$key];
 }
 
 //add code to list (used in the_content_filter)
