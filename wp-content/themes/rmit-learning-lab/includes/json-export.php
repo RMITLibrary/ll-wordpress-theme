@@ -576,7 +576,7 @@ function export_json_page() {
                     <td>
                         <?php
                         if (!is_wp_error($meta) && !empty($meta['exists']) && !empty($meta['url'])) {
-                            $action_label = ('redirects' === $key) ? __('View file', 'rmit-learning-lab') : __('View JSON', 'rmit-learning-lab');
+                            $action_label = in_array($key, array('redirects', 'netlify'), true) ? __('View file', 'rmit-learning-lab') : __('View JSON', 'rmit-learning-lab');
                             echo '<a class="button" href="' . esc_url($meta['url']) . '" target="_blank" rel="noopener">' . esc_html($action_label) . '</a>';
                         } else {
                             echo '<span class="description">No file available</span>';
