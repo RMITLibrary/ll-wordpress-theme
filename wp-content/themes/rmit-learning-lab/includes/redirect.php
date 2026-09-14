@@ -103,9 +103,91 @@ function rmit_ll_generate_redirects_js_file()
   }
 }
 
+function rmit_ll_get_netlify_redirects_file_path()
+{
+  return trailingslashit(get_stylesheet_directory()) . '_redirects';
+}
+
+// Netlify has no regex. These replace the regex rules in the plugin and are
+// emitted after the literals, because first match wins.
+function rmit_ll_netlify_wildcard_rules()
+{
+  return array(
+    array('/keywords/*', '/keyword/:splat'),
+    array('/tags/:slug', '/keyword/:slug'),
+    array('/assessments/casestudies/*', '/assessments/case-studies/:splat'),
+    array('/university-essentials/online-learning-skills/*', '/digital-skills/online-learning-skills/:splat'),
+    array('/assessments/ve-assessments-1/*', '/assessments/ve-assessments/:splat'),
+    array('/node/*', '/'),
+    array('/content/*', '/:splat'),
+  );
+}
+
+// Whitespace is the field separator in _redirects, so it has to be encoded or
+// the line parses into the wrong columns. Returns null for anything unusable.
+function rmit_ll_netlify_field($value)
+{
+  $value = trim((string) $value);
+
+  if ('' === $value || false !== strpbrk($value, "\r\n")) {
+    return null;
+  }
+
+  if ('/' !== $value[0] && 0 !== strpos($value, 'http')) {
+    $value = '/' . $value;
+  }
+
+  return str_replace(' ', '%20', $value);
+}
+
+function rmit_ll_generate_netlify_redirects_file()
+{
+  global $wpdb;
+
+  $rows = $wpdb->get_results(
+    "SELECT url, action_data, action_code FROM {$wpdb->prefix}redirection_items
+      WHERE action_type = 'url' AND status = 'enabled' AND regex = 0
+      ORDER BY id ASC",
+    ARRAY_A
+  );
+
+  $lines = array();
+  $seen  = array();
+
+  foreach ((array) $rows as $row) {
+    $from = rmit_ll_netlify_field($row['url']);
+    $to   = rmit_ll_netlify_field($row['action_data']);
+
+    if (null === $from || null === $to) {
+      error_log('_redirects: unusable rule skipped: ' . $row['url']);
+      continue;
+    }
+
+    // Trailing slashes are normalised before matching, so /a and /a/ collide.
+    $key = rtrim($from, '/');
+    if (isset($seen[$key])) {
+      error_log('_redirects: duplicate source dropped: ' . $from . ' -> ' . $to);
+      continue;
+    }
+    $seen[$key] = true;
+
+    $lines[] = $from . ' ' . $to . ' ' . (int) $row['action_code'];
+  }
+
+  foreach (rmit_ll_netlify_wildcard_rules() as $rule) {
+    $lines[] = $rule[0] . ' ' . $rule[1] . ' 301';
+  }
+
+  $content = "# Generated from the Redirection plugin. Do not edit by hand.\n"
+           . implode("\n", $lines) . "\n";
+
+  return file_put_contents(rmit_ll_get_netlify_redirects_file_path(), $content);
+}
+
 function write_redirects_js_file()
 {
   rmit_ll_generate_redirects_js_file();
+  rmit_ll_generate_netlify_redirects_file();
 }
 
 function rmit_ll_maybe_generate_redirects_js_file()
@@ -114,12 +196,13 @@ function rmit_ll_maybe_generate_redirects_js_file()
     return;
   }
 
-  $js_file_path = rmit_ll_get_redirects_js_file_path();
-  if (file_exists($js_file_path)) {
-    return;
+  if (!file_exists(rmit_ll_get_redirects_js_file_path())) {
+    rmit_ll_generate_redirects_js_file();
   }
 
-  rmit_ll_generate_redirects_js_file();
+  if (!file_exists(rmit_ll_get_netlify_redirects_file_path())) {
+    rmit_ll_generate_netlify_redirects_file();
+  }
 }
 
 // Hook into Redirection plugin's actions
@@ -134,6 +217,7 @@ add_action('redirection_redirect_disabled', 'write_redirects_js_file');
 // Fallback - regenerate on any redirect table changes
 add_action('redirection_flush_cache', 'write_redirects_js_file');
 add_action('admin_init', 'rmit_ll_maybe_generate_redirects_js_file');
+add_action('rmit_ll_nightly_export', 'rmit_ll_generate_netlify_redirects_file');
 
 //-------------------------------------------
 //    output_redirect_404_script_and_html
@@ -432,6 +516,15 @@ function output_redirect_404_script_and_html($args = array())
       console.log('Extracted Path length: ' + extractedPath.length);
       console.log('Normalized Path: ' + normalizedPath);
       console.log('Normalized Path length: ' + normalizedPath.length);
+
+      // Flip to true to re-enable client-side redirects. Off while we test that
+      // the server-side _redirects file is doing the job.
+      const JS_REDIRECTS_ENABLED = false;
+
+      if (!JS_REDIRECTS_ENABLED) {
+        fourOhInfo.style.display = 'block';
+        return;
+      }
 
       const ignoredPaths = Array.isArray(redirectConfig.ignoredPaths) ? redirectConfig.ignoredPaths : [];
       const disableDatasetFallback = !!redirectConfig.disableDatasetFallback;
