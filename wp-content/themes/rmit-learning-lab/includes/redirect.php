@@ -181,7 +181,13 @@ function rmit_ll_generate_netlify_redirects_file()
   $content = "# Generated from the Redirection plugin. Do not edit by hand.\n"
            . implode("\n", $lines) . "\n";
 
-  return file_put_contents(rmit_ll_get_netlify_redirects_file_path(), $content);
+  $path = rmit_ll_get_netlify_redirects_file_path();
+  if (false === file_put_contents($path, $content)) {
+    return new WP_Error('redirects_write_failed', sprintf('Unable to write %s', $path));
+  }
+
+  clearstatcache(true, $path);
+  return $path;
 }
 
 function write_redirects_js_file()
