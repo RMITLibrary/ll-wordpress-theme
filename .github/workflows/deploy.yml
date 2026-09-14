@@ -37,7 +37,7 @@ jobs:
         if: steps.detect_lockfile.outputs.has_lock == 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.18'
           cache: 'npm'
           cache-dependency-path: ${{ env.LOCKFILE }}
 
@@ -45,7 +45,7 @@ jobs:
         if: steps.detect_lockfile.outputs.has_lock != 'true'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22.18'
 
       # Install deps where the lockfile (or package.json) actually is
       - name: Install deps

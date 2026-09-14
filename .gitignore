@@ -152,3 +152,6 @@ llms.txt
 
 # Generated from the Redirection plugin on each box
 /wp-content/themes/rmit-learning-lab/_redirects
+
+/.agents/
+/.codex/
