@@ -689,4 +689,29 @@ function rmit_ll_save_fuse_index() {
 
     wp_send_json_success($response);
 }
+
+//-----------------------------
+//	Nightly export refresh
+//
+//	Keeps the search dataset current without anyone visiting the export screen.
+//	The Fuse.js index (pages-index.json) is built in the browser, so it is not
+//	covered here and still needs a manual rebuild from the export screen.
+//-----------------------------
+
+add_action('init', function () {
+    if (!wp_next_scheduled('rmit_ll_nightly_export')) {
+        $next = new DateTimeImmutable('tomorrow 03:00', wp_timezone());
+        wp_schedule_event($next->getTimestamp(), 'daily', 'rmit_ll_nightly_export');
+    }
+});
+
+add_action('rmit_ll_nightly_export', function () {
+    foreach (array('export_content_to_json', 'export_page_urls_to_json') as $export) {
+        $result = $export();
+        if (is_wp_error($result)) {
+            error_log('rmit_ll_nightly_export: ' . $result->get_error_message());
+        }
+    }
+});
+
 ?>

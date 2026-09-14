@@ -106,6 +106,7 @@ require_once $theme_includes_dir . 'custom-shortcodes.php';      // Custom short
 require_once $theme_includes_dir . 'json-export.php';            // Exports the site data to json. Required for search to function
 require_once $theme_includes_dir . 'redirect.php';               // Redirect and 404 code for both admin and client side
 require_once $theme_includes_dir . 'seo-noindex-inheritance.php'; // Noindex inheritance for work in progress pages
+require_once $theme_includes_dir . 'seo-blog-public-reset.php';  // Nightly reset of "Discourage search engines" on non-production
 require_once $theme_includes_dir . 'analytics-dashboards.php';   // Analytics dashboards functionality
 
 /**
