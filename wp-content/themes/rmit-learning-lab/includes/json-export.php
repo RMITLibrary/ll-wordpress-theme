@@ -345,6 +345,12 @@ function export_json_page() {
             'filename' => 'redirects.js',
             'callback' => 'rmit_ll_generate_redirects_js_file',
         ),
+        'netlify' => array(
+            'label' => 'Redirects file',
+            'description' => 'Server-side redirect rules served from the site root.',
+            'filename' => '_redirects',
+            'callback' => 'rmit_ll_generate_netlify_redirects_file',
+        ),
     );
 
     $timezone_label = rmit_ll_get_timezone_label();
@@ -375,6 +381,8 @@ function export_json_page() {
     foreach ($export_tasks as $key => $task) {
         if ('redirects' === $key) {
             $meta = rmit_ll_get_theme_export_file_meta(rmit_ll_get_redirects_js_file_path(), $task['label']);
+        } elseif ('netlify' === $key) {
+            $meta = rmit_ll_get_theme_export_file_meta(rmit_ll_get_netlify_redirects_file_path(), $task['label']);
         } else {
             $meta = rmit_ll_get_export_file_meta($task['filename'], $task['label']);
         }
