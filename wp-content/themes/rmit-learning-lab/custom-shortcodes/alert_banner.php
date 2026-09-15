@@ -38,7 +38,7 @@ function alert_banner_att($atts, $content = null) {
         $atts
     );
 
-    $content = $content === null ? ($a['alert'] ?: $a['mess']) : do_shortcode($content);
+    $content = trim((string) $content) === '' ? ($a['alert'] ?: $a['mess']) : do_shortcode($content);
 
     return doAlertBanner($content, $a['type'], $a['close'] !== 'false' && $a['dismissible'] !== 'false');
 }
