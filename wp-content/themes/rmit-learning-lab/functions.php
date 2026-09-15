@@ -197,7 +197,9 @@ add_action( 'wp_enqueue_scripts', function() {
  * Replaces the Simple MathJax plugin, whose CDN build fetches fonts from an unpinned
  * jsDelivr path that static captures never see.
  */
-// ponytail: delete these two lines once Simple MathJax is deactivated on every environment
+// ponytail: guards against Simple MathJax double-loading if still active somewhere.
+// Deactivate it on DEV and PRD only after this theme version is deployed there.
+// Review 2026-12-15: if maths has rendered fine since, delete the plugin and these two lines.
 remove_action( 'wp_head', 'SimpleMathJax::configure_mathjax', 1 );
 remove_action( 'wp_enqueue_scripts', 'SimpleMathJax::add_mathjax' );
 
