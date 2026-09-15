@@ -193,6 +193,30 @@ add_action( 'wp_enqueue_scripts', function() {
 });
 
 /**
+ * Self-hosted MathJax, pinned in package.json and copied in by `npm run mathjax:vendor`.
+ * Replaces the Simple MathJax plugin, whose CDN build fetches fonts from an unpinned
+ * jsDelivr path that static captures never see.
+ */
+// ponytail: delete these two lines once Simple MathJax is deactivated on every environment
+remove_action( 'wp_head', 'SimpleMathJax::configure_mathjax', 1 );
+remove_action( 'wp_enqueue_scripts', 'SimpleMathJax::add_mathjax' );
+
+add_action( 'wp_enqueue_scripts', function() {
+	$mathjax_uri = trailingslashit( get_stylesheet_directory_uri() ) . 'mathjax/';
+	$config      = array(
+		'tex'     => array(
+			'inlineMath'     => array( array( '$', '$' ), array( '\\(', '\\)' ) ),
+			'processEscapes' => true,
+		),
+		'options' => array( 'ignoreHtmlClass' => 'tex2jax_ignore|editor-rich-text' ),
+		'loader'  => array( 'paths' => array( 'fonts' => $mathjax_uri . 'fonts' ) ),
+	);
+
+	wp_enqueue_script( 'mathjax', $mathjax_uri . 'tex-chtml.js', array(), null, true );
+	wp_add_inline_script( 'mathjax', 'window.MathJax = ' . wp_json_encode( $config, JSON_UNESCAPED_SLASHES ) . ';', 'before' );
+} );
+
+/**
  * Register theme-specific scripts with automatic cache-busting.
  */
 add_action( 'wp_enqueue_scripts', function() {
