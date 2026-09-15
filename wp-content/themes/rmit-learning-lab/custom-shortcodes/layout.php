@@ -32,6 +32,7 @@ function ll_grid_att($atts, $content = null) {
         'classes' => ''
     );
     $a = shortcode_atts($default, $atts);
+    $a['size'] = ll_normalise_size($a['size']);
 
     // Ensure content is processed correctly
     $content = do_shortcode(shortcode_unautop($content));

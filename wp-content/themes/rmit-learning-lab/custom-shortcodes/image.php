@@ -83,6 +83,7 @@ function image_att ($atts, $content = null) {
     );
     $atts = ll_image_recover_caption_attribute($atts);
     $a = shortcode_atts($default, $atts);
+    $a['size'] = ll_normalise_size($a['size']);
 
     $caption_from_content = '';
     $transcript_content = '';
