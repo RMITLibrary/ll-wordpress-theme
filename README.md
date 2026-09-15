@@ -14,7 +14,7 @@ WordPress theme development repository for the RMIT Learning Lab website.
 
 ## Prerequisites
 
-- Node.js v20+ (uses `.nvmrc`; install via nvm for easiest switching)
+- Node.js v22.18+ (uses `.nvmrc`; install via nvm for easiest switching)
 - nvm (Node Version Manager) – https://github.com/nvm-sh/nvm
 - npm or yarn
 - Local WordPress development environment (e.g., Laravel Herd or MAMP)
@@ -28,11 +28,11 @@ WordPress theme development repository for the RMIT Learning Lab website.
 # Install nvm (see https://github.com/nvm-sh/nvm for latest script)
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
-# Install Node.js 20 using nvm
+# Install Node.js 22.18 using nvm
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
-nvm install 20
+nvm install 22.18
 
 # Install MySQL via Homebrew (macOS)
 brew install mysql

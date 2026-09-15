@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-15T00:00:00Z",
+  "title": "Design System: RMIT Learning Lab — Library Design System",
+  "extensions": {
+    "colorMeta": {
+      "rmit-blue": {
+        "role": "primary",
+        "displayName": "RMIT Blue",
+        "canonical": "#000054",
+        "tonalRamp": ["#00001a", "#000030", "#000054", "#001a7a", "#0051a8", "#4d86c9", "#99b8e0", "#d6e3f4"]
+      },
+      "blue-hover": {
+        "role": "primary",
+        "displayName": "Interaction Blue",
+        "canonical": "#0051A8",
+        "tonalRamp": ["#001433", "#002a5c", "#003d80", "#0051a8", "#2d75c4", "#6b9fd8", "#a8c6e9", "#dce8f7"]
+      },
+      "rmit-red": {
+        "role": "secondary",
+        "displayName": "RMIT Red",
+        "canonical": "#E61E2A",
+        "tonalRamp": ["#3d0407", "#6b0a11", "#9c131d", "#c71824", "#e61e2a", "#ef5f68", "#f79ba1", "#fcd9dc"]
+      },
+      "correct-green": {
+        "role": "tertiary",
+        "displayName": "Correct Green",
+        "canonical": "#008057",
+        "tonalRamp": ["#002016", "#003a28", "#00573c", "#008057", "#00a873", "#4dc79b", "#99e0c4", "#d9f4e8"]
+      },
+      "dark-grey": {
+        "role": "neutral",
+        "displayName": "Reading Grey",
+        "canonical": "#333333",
+        "tonalRamp": ["#0d0d0d", "#1f1f1f", "#333333", "#4d4d4d", "#737373", "#a6a6a6", "#d4d4d4", "#f2f2f2"]
+      },
+      "interface-grey": {
+        "role": "neutral",
+        "displayName": "Interface Grey",
+        "canonical": "#BFBFBF",
+        "tonalRamp": ["#262626", "#404040", "#595959", "#8c8c8c", "#bfbfbf", "#d9d9d9", "#ebebeb", "#f7f7f7"]
+      },
+      "underlay-grey": {
+        "role": "neutral",
+        "displayName": "Underlay Grey",
+        "canonical": "#F5F5F5",
+        "tonalRamp": ["#1a1a1a", "#333333", "#4d4d4d", "#808080", "#b3b3b3", "#d9d9d9", "#f5f5f5", "#ffffff"]
+      },
+      "underlay-selected": {
+        "role": "neutral",
+        "displayName": "Underlay Selected",
+        "canonical": "#E6E6E6",
+        "tonalRamp": ["#171717", "#2e2e2e", "#454545", "#737373", "#a1a1a1", "#c4c4c4", "#e6e6e6", "#fafafa"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display / h1", "purpose": "One per page — the resource title. Museo700." },
+      "headline": { "displayName": "Headline / h2", "purpose": "Section breaks within a resource." },
+      "title": { "displayName": "Title / h3", "purpose": "Sub-sections inside a section." },
+      "body": { "displayName": "Body", "purpose": "All prose. Steps 1rem to 1.125rem at the md breakpoint." },
+      "lead": { "displayName": "Lead", "purpose": "Resource introductions; weight 500." },
+      "label": { "displayName": "Label / small", "purpose": "Captions and metadata. Letter-spacing aids legibility at size." }
+    },
+    "shadows": [
+      {
+        "name": "focus-ring",
+        "value": "0 0 0 .25rem rgba(13, 110, 253, 0.4)",
+        "purpose": "The only shadow in the system. Fires on :focus-within with outline-width: 0. Dark mode uses rgba(111, 183, 255, 0.6)."
+      }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px" }
+    ],
+    "spacingBehaviour": {
+      "mixin": "do-space(property, step)",
+      "purpose": "Emits different values per breakpoint: below md, lg collapses to 2rem and xl to 3rem, so vertical rhythm tightens on small screens."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The main action. Solid RMIT Blue, small radius, no shadow.",
+      "html": "<button class=\"ds-btn-primary\">Start the module</button>",
+      "css": ".ds-btn-primary { background: #000054; color: #fff; font-family: 'Helvetica Neue', Arial, system-ui, sans-serif; font-size: 1.125rem; line-height: 1.5; padding: 0.5rem 1rem; margin-right: 1rem; border: none; border-radius: 0.25rem; cursor: pointer; } .ds-btn-primary:hover { background: #0051A8; } .ds-btn-primary:focus-within, .ds-btn-primary:focus-visible { box-shadow: 0 0 0 .25rem rgba(13,110,253,0.4); outline-width: 0; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action. Bordered, transparent ground; the label underlines on hover rather than the ground filling.",
+      "html": "<button class=\"ds-btn-outline\">Download transcript</button>",
+      "css": ".ds-btn-outline { background: #fff; color: #000054; font-family: 'Helvetica Neue', Arial, system-ui, sans-serif; font-size: 1.125rem; padding: 8px 1rem; margin-right: 1rem; border: 1px solid #000054; border-radius: 0.25rem; box-sizing: border-box; cursor: pointer; } .ds-btn-outline:hover { color: #0051A8; border-color: #0051A8; text-decoration: underline; background: #fff; } .ds-btn-outline:focus-visible { box-shadow: 0 0 0 .25rem rgba(13,110,253,0.4); outline-width: 0; }"
+    },
+    {
+      "name": "Accordion Item",
+      "kind": "custom",
+      "refersTo": "accordion-item",
+      "description": "The signature component — squared, rules top and bottom only, no side borders, so items read as list entries rather than cards.",
+      "html": "<div class=\"ds-accordion\"><h3 class=\"ds-accordion-header\"><button class=\"ds-accordion-button\" aria-expanded=\"true\">Transcript</button></h3><div class=\"ds-accordion-body\"><p>The full text of the video, for anyone who would rather read it.</p></div></div>",
+      "css": ".ds-accordion { border-top: 1px solid #BFBFBF; border-bottom: 1px solid #BFBFBF; border-left: 0; border-right: 0; border-radius: 0; background: #fff; } .ds-accordion-header { margin: 0; } .ds-accordion-button { width: 100%; text-align: left; background: none; border: none; padding: 1rem 0; font-family: Museo700, serif; font-size: 1.4375rem; color: #000054; cursor: pointer; } .ds-accordion-button:focus-visible { box-shadow: 0 0 0 .25rem rgba(13,110,253,0.4); outline-width: 0; } .ds-accordion-body { padding: 1.5rem 0 0 0; font-family: 'Helvetica Neue', Arial, system-ui, sans-serif; font-size: 1.125rem; line-height: 1.5; color: #333; } .ds-accordion-body p { margin: 0 0 1rem; }"
+    },
+    {
+      "name": "Body Link",
+      "kind": "custom",
+      "refersTo": "link-normal",
+      "description": "Underlined by default; the underline is removed on hover — the inverse of the usual convention, applied consistently.",
+      "html": "<p class=\"ds-prose\">See the section on <a class=\"ds-link\" href=\"#\">referencing in APA 7th</a> for the full format.</p>",
+      "css": ".ds-prose { font-family: 'Helvetica Neue', Arial, system-ui, sans-serif; font-size: 1.125rem; line-height: 1.5; color: #333; text-wrap: pretty; } .ds-link { color: #000054; text-decoration: underline; overflow-wrap: break-word; } .ds-link:hover { color: #0051A8; text-decoration: none; } .ds-link:focus-visible { box-shadow: 0 0 0 .25rem rgba(13,110,253,0.4); outline-width: 0; }"
+    },
+    {
+      "name": "Breadcrumbs",
+      "kind": "nav",
+      "refersTo": "breadcrumbs",
+      "description": "Slash-separated, in body colour rather than link colour so navigation doesn't compete with content.",
+      "html": "<nav class=\"ds-breadcrumbs\" aria-label=\"Breadcrumb\"><ol><li><a href=\"#\">Home</a></li><li><a href=\"#\">Maths and statistics</a></li><li aria-current=\"page\">Algebra</li></ol></nav>",
+      "css": ".ds-breadcrumbs ol { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; margin: 0; padding: 0; font-family: 'Helvetica Neue', Arial, system-ui, sans-serif; font-size: 0.9375rem; letter-spacing: 0.02rem; color: #333; } .ds-breadcrumbs li + li::before { content: '/'; margin-right: 0.5rem; color: #333; } .ds-breadcrumbs a { color: #333; text-decoration: underline; } .ds-breadcrumbs a:hover { text-decoration: none; } .ds-breadcrumbs [aria-current='page'] { color: #333; }"
+    },
+    {
+      "name": "Panel Underlay",
+      "kind": "card",
+      "refersTo": "underlay-grey",
+      "description": "How the system conveys grouping without elevation: a tonal ground and no shadow.",
+      "html": "<div class=\"ds-panel\"><h3 class=\"ds-panel-title\">Before you start</h3><p>You'll need a rough draft and your unit's assessment brief.</p></div>",
+      "css": ".ds-panel { background: #F5F5F5; padding: 2rem; border-radius: 0; } .ds-panel-title { font-family: Museo700, serif; font-size: 1.4375rem; color: #000054; margin: 0 0 1rem; } .ds-panel p { font-family: 'Helvetica Neue', Arial, system-ui, sans-serif; font-size: 1.125rem; line-height: 1.5; color: #333; margin: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Library Design System",
+    "overview": "Not a metaphor — the actual name. This is the RMIT Library's own SASS system, layered over Bootstrap 5.3.3 via the Picostrap5 parent theme, and it behaves like library infrastructure rather than a brand expression: it is the substrate a thousand pages of discipline content sit on, and its job is to stay out of their way.\n\nThe system is almost entirely structural. Colour is carried by RMIT's institutional palette rather than a designed one, depth is refused outright, and the only ornament in the whole system is a serif heading face against a sans body. Everything else — spacing, borders, tints — is doing legibility work. The result reads as considered rather than styled, which is correct for a resource a student opens mid-assignment at 11pm.\n\nIt is built for two contexts at once. Pages render standalone on the site and embedded in a Canvas course shell with the chrome stripped, so no component may depend on site furniture being present around it.",
+    "keyCharacteristics": [
+      "Flat by conviction — tonal underlays and 1px borders, never shadows",
+      "Institutional colour, not chosen colour: RMIT blue and red carry the whole palette",
+      "A single serif (Museo700) for headings; system sans for everything else",
+      "Full light and dark modes through Bootstrap's color-mode()",
+      "A 6-step spacing scale that changes value at the md breakpoint, not just the layout",
+      "Focus is the one place the system raises its voice"
+    ],
+    "rules": [
+      { "name": "The Institutional Colour Rule", "body": "The palette is RMIT's, not ours. New colours are not introduced to solve a design problem; the problem is solved with space, weight or a border.", "section": "colors" },
+      { "name": "The Scarce Red Rule", "body": "#E61E2A is an accent, not a brand wash. If red appears more than once in a viewport, it has stopped meaning anything.", "section": "colors" },
+      { "name": "The Two Voices Rule", "body": "Museo700 for headings, the system sans for everything else. A third typeface is a bug.", "section": "typography" },
+      { "name": "The Responsive Type Rule", "body": "Body type steps up at md rather than scaling fluidly — 1rem on phones, 1.125rem above. Headings get text-wrap: balance, prose gets text-wrap: pretty.", "section": "typography" },
+      { "name": "The do-space Rule", "body": "Vertical rhythm goes through @include do-space(property, step), not mt-4. Hard-coded margins bypass the responsive scale.", "section": "layout" },
+      { "name": "The Flat Rule", "body": "Surfaces are flat. A drop shadow to separate two things means the border or the spacing isn't doing its job.", "section": "elevation" },
+      { "name": "The Focus-Is-The-Exception Rule", "body": "The focus ring is the one place the system uses depth, and it is suppressed on :focus and :active so it fires on :focus-within only — keyboard users get it, mouse users don't get a flash on every click.", "section": "elevation" },
+      { "name": "The Controls-Only Radius Rule", "body": "Rounding marks something as interactive. Content containers stay square.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do apply vertical spacing with @include do-space(property, step) so it responds at the md breakpoint.",
+      "Do use @include default-focus on anything focusable; it handles the dark-mode ring and the :focus-within behaviour.",
+      "Do separate content with a 1px #BFBFBF rule or an #F5F5F5 underlay.",
+      "Do keep the 0.25rem radius for controls and square corners for content.",
+      "Do build every component to survive with the page chrome stripped — any resource may be embedded in a Canvas iframe.",
+      "Do define both light and dark values through color-mode(dark) when adding colour."
+    ],
+    "donts": [
+      "Don't add a box-shadow for anything but focus.",
+      "Don't introduce a colour outside the RMIT palette to solve a hierarchy problem — use space, weight, or a border.",
+      "Don't add a third typeface. Museo700 for headings, system sans for everything else.",
+      "Don't round content containers; the squared accordion is the reference.",
+      "Don't use Bootstrap spacing utilities in place of do-space — they don't step down on small screens.",
+      "Don't rely on :focus alone; the system deliberately suppresses it in favour of :focus-within."
+    ]
+  }
+}
