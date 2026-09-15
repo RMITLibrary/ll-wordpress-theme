@@ -209,20 +209,7 @@ function image_att ($atts, $content = null) {
                   
     $output .= '</figure>' . "\n";
             
-    return $output; 
-    
-    /*$debug = '<pre><code>';
-    $debug .= $imageTag;
-    
-    //$debug .= 'img: ' . $a['img'] . "\n";
-    $debug .= 'alt: ' . $a['alt'] . "\n";
-    $debug .= 'left: ' . $a['left'] . "\n";
-    $debug .= 'border: ' . $a['border'] . "\n";
-    $debug .= 'size: ' . $a['size'] . "\n";
-    $debug .= '</code></pre>';
-    
-    
-    return $debug;*/
+    return $output;
 }
 
 function addAttribution($input) {
