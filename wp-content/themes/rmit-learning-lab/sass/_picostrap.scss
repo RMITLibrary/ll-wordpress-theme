@@ -25,18 +25,6 @@
 	}
 }
 
-// FOR LEGACY COMPATIBILITY WITH OLDER CHILD THEMES, INCLUDE COLOR SHADES IF NECESSARY 
-// conditional file import trick, as SASS conditional imports are not possible
-%loadFile {
-	@import "ninjabootstrap/theme_colors_shades"; 
-}
-html {
-	@if not variable-exists('primary-text-emphasis-dark') { //if using bs<= 5.2 - not 5.3 - so on legacy child themes
-		@extend %loadFile;
-		//body {border:5px solid lime} //to test if code is being executed
-	}
-}
-
 /* ============ HEADER HEIGHT VARIABLES  ============ */
 
 :root {
