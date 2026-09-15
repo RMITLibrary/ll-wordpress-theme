@@ -68,7 +68,7 @@ function video_att($atts, $content = null) {
 	else if($a['aspect'] == 'square' || $a['aspect'] == '1-1') {
 		$output .= 'video-square ';
 	}
-	else if($a['aspect'] == '3-2') {
+	else {
 		$output .= 'video ';
 	}
 	

@@ -288,6 +288,8 @@ function display_landing_columns() {
                 $nav_divider_name = get_field('nav-divider-other', $child_page->ID);
             }
 
+            //close the previous column's open list before starting a new column
+            echo $end_list_tag;
             echo $column_tag;
 
             //update column tag to close of previous column divs
@@ -298,9 +300,10 @@ function display_landing_columns() {
             //if only child pages, start the list
             if (empty($grandchild_pages)) {
                 echo '<ul class="link-list">';
+                $end_list_tag = '</ul>';
+            } else {
+                $end_list_tag = '';
             }
-            
-            $end_list_tag = '';
         }
         
 
@@ -322,10 +325,7 @@ function display_landing_columns() {
         // Check if this is the last element
         if ($key === array_key_last($child_pages)) {
 
-            //if only child pages, end the list
-            if (empty($grandchild_pages)) {
-                echo '</ul>';
-            }
+            echo $end_list_tag;
 
             echo '</div>'; // Close landing-column-inner
             echo '</div>'; // Close landing-column

@@ -73,6 +73,15 @@ jobs:
             exit 65
           }
 
+      # Dependabot bumps the pinned MathJax in package.json; the theme copy must be re-vendored to match.
+      - name: Verify vendored MathJax matches package.json
+        run: |
+          diff -q node_modules/mathjax/tex-chtml.js "${THEME_DIR}/mathjax/tex-chtml.js" &&
+          diff -q node_modules/@mathjax/mathjax-newcm-font/chtml.js "${THEME_DIR}/mathjax/fonts/mathjax-newcm-font/chtml.js" || {
+            echo "Vendored MathJax is out of date. Run: npm ci && npm run mathjax:vendor, then commit." >&2
+            exit 65
+          }
+
       # Build CSS using ONLY your theme sources. Add include paths to theme sass dirs.
       - name: Build CSS
         working-directory: ${{ env.WORKDIR }}

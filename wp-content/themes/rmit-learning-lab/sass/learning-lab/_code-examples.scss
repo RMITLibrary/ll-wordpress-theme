@@ -19,6 +19,15 @@ pre {
   overflow: hidden; // Ensure no scrolling
 }
 
+.kitchen-sink-code {
+    margin: 20px;
+    color: #104880;
+    background-color: #fff;
+    padding: 20px;
+    display: block;
+    border: 1px solid;
+}
+
 .wrap-code pre {
   white-space: pre-wrap; // Allow code to wrap
   word-break: break-word; // Break long words if necessary

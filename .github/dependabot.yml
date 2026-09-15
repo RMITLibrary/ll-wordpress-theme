@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Opens a PR when MathJax releases. Merge only after `npm run mathjax:vendor` is committed on the branch.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    target-branch: develop
+    allow:
+      - dependency-name: mathjax
+      - dependency-name: "@mathjax/*"
+    groups:
+      mathjax:
+        patterns:
+          - mathjax
+          - "@mathjax/*"

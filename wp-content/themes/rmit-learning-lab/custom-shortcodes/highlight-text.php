@@ -141,7 +141,7 @@ function highlight_att($atts, $content = null) {
 
     //if no id, apply highlight-1 but with no superscript
     if ($a['id'] == '') {
-        $output .= '1';
+        $output .= '1">';
     }
     else
     {

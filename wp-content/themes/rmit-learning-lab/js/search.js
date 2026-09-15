@@ -12,14 +12,7 @@
     var prebuiltIndexPromise = null;
     var parsedFuseIndex = null;
 
-    var urlParamsSearch;
-    try {
-        urlParamsSearch = new URLSearchParams(window.location.search);
-    } catch (error) {
-        urlParamsSearch = null;
-    }
-
-    var searchString = urlParamsSearch ? urlParamsSearch.get('query') : null;
+    var searchString = new URLSearchParams(window.location.search).get('query');
 
     var searchInput = document.getElementById('searchInput');
     if (!searchInput) {
@@ -97,9 +90,7 @@
                     parsedFuseIndex = FuseLib.parseIndex(indexData);
                 } catch (error) {
                     parsedFuseIndex = null;
-                    if (window.console && window.console.warn) {
-                        console.warn('Failed to parse Fuse index', error);
-                    }
+                    console.warn('Failed to parse Fuse index', error);
                 }
             }
 
@@ -135,9 +126,7 @@
                 })
                 .catch(function(error) {
                     prebuiltIndexPromise = null;
-                    if (window.console && window.console.warn) {
-                        console.warn('Unable to load prebuilt Fuse index', error);
-                    }
+                    console.warn('Unable to load prebuilt Fuse index', error);
                     return null;
                 });
         }
@@ -166,9 +155,7 @@
 
     function handleSearchError(error) {
         setStatusText('Unable to load the search index. Please try again.');
-        if (window.console && window.console.error) {
-            console.error(error);
-        }
+        console.error(error);
     }
 
     function getFuseOptions() {
@@ -228,9 +215,7 @@
 
             if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
                 window.MathJax.typesetPromise([li]).catch(function(mathError) {
-                    if (window.console && window.console.warn) {
-                        console.warn('MathJax rendering error', mathError);
-                    }
+                    console.warn('MathJax rendering error', mathError);
                 });
             }
 
@@ -598,26 +583,11 @@ function getFormulaCloseIndexWithinSnippet(snippet, openIndex, pattern) {
             });
     }
 
-    if (searchForm) {
-        searchForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            triggerSearch(false);
-        });
-    }
-
-    searchInput.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            triggerSearch(false);
-        }
+    // Enter in the input and the type="submit" button both fire this natively.
+    searchForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        triggerSearch(false);
     });
-
-    if (searchButton) {
-        searchButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            triggerSearch(false);
-        });
-    }
 
     searchInput.addEventListener('focus', function() {
         primeResources();
