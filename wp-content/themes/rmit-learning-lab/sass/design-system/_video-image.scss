@@ -259,6 +259,16 @@ figure:has(.image-caption-wrapper):not(:has(.transcript)) {
 
 
 // --- START #4 video styles
+
+// Bare .responsive-video without a .video wrapper, used in older content
+.responsive-video {
+	position: relative;
+	padding-bottom: 56.25%;
+	height: 0;
+	overflow: hidden;
+	max-width: 100%;
+}
+
 .video, .video-3-2, .video-4-3, .video-square, .video-portrait {
     border-bottom: 1px solid $interface-grey;
     

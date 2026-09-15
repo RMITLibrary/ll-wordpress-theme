@@ -19,6 +19,90 @@
 	border-bottom: 0 !important;
 }
 
+// Legacy colour classes used in post content.
+// Loaded after _colour.scss, so these override its highlight remap of .color-*.
+.color-blue, .alert-info, .btn-info {
+	color: var(--blue);
+	border-color: var(--blue-med);
+	background-color: var(--blue-light);
+}
+.color-teal {
+	color: var(--teal);
+	border-color: var(--teal-med);
+	background-color: var(--teal-light);
+}
+.color-brown {
+	color: var(--brown);
+	border-color: var(--brown-med);
+	background-color: var(--brown-light);
+}
+.color-red, .alert-danger, .btn-danger {
+	color: var(--red);
+	border-color: var(--red-med);
+	background-color: var(--red-light);
+}
+.color-purple {
+	color: var(--purple);
+	border-color: var(--purple-med);
+	background-color: var(--purple-light);
+}
+.color-pink {
+	color: var(--pink);
+	border-color: var(--pink-med);
+	background-color: var(--pink-light);
+}
+.color-green, .alert-success, .btn-success {
+	color: var(--green);
+	border-color: var(--green-med);
+	background-color: var(--green-light);
+}
+.color-yellow, .alert-warning, .btn-warning {
+	color: var(--yellow);
+	border-color: var(--yellow-med);
+	background-color: var(--yellow-light);
+}
+
+.no-bg {
+	background: none;
+}
+
+// Overrides Bootstrap's .border; content should move to .color-border
+.border, .color-border, .colour-border {
+	border: 1px solid !important;
+	padding: 1px 4px;
+}
+
+.color1 { color: var(--blue); }
+.color1-b { border: var(--blue-med) 1px solid; }
+.color1-h { background-color: var(--blue-light); }
+.color2, .correct, .fa-check { color: var(--teal); }
+.color2-b, .correct { border: var(--teal-med) 1px solid; }
+.color2-h, .correct, .correct input { background-color: var(--teal-light); }
+.color3 { color: var(--brown); }
+.color3-b { border: var(--brown-med) 1px solid; }
+.color3-h { background-color: var(--brown-light); }
+.color4, .incorrect, .fa-times { color: var(--red); }
+.color4-b, .incorrect { border: var(--red-med) 1px solid; }
+.color4-h, .incorrect, .incorrect input { background-color: var(--red-light); }
+.color5, .draggable { color: var(--purple); }
+.color5-b, .draggable { border: var(--purple-med) 1px solid; }
+.color5-h, .draggable { background-color: var(--purple-light); }
+.color6 { color: var(--pink); }
+.color6-b { border: var(--pink-med) 1px solid; }
+.color6-h { background-color: var(--pink-light); }
+.color7 { color: var(--green); }
+.color7-b { border: var(--green-med) 1px solid; }
+.color7-h { background-color: var(--green-light); }
+.color8 { color: var(--yellow); }
+.color8-b { border: var(--yellow-med) 1px solid; }
+.color8-h { background-color: var(--yellow-light); }
+
+.text-muted { color: var(--grey-med) !important; }
+.text-warning, .warning { color: var(--yellow) !important; }
+.text-danger, .danger { color: var(--red) !important; }
+.text-info { color: var(--blue) !important; }
+.text-success, .success { color: var(--green) !important; }
+
 @include color-mode(dark) {
 	iframe {
 		//drop the contrast in dark mode to reduce eye strain.

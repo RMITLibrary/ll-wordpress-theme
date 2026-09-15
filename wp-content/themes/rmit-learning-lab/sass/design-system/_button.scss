@@ -214,6 +214,17 @@
     }
 }
 
+// Legacy coloured buttons used in post content
+.btn-info, .btn-success, .btn-warning, .btn-danger {
+	padding: 8px 16px;
+	border-radius: 4px;
+}
+
+.btn-lg {
+	font-size: 20px;
+	border-radius: 4px;
+}
+
 
 
     
