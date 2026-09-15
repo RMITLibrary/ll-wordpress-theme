@@ -77,6 +77,7 @@ function image_att ($atts, $content = null) {
 		'float' => '',
 		'hide-sm' => '',
         'attribution-id' => '',
+        'attribution' => '', // writers reach for the shorter name; treated as attribution-id below
         'caption-gap' => '',
         'classes' => '',
         'loading' => 'lazy'
@@ -84,6 +85,10 @@ function image_att ($atts, $content = null) {
     $atts = ll_image_recover_caption_attribute($atts);
     $a = shortcode_atts($default, $atts);
     $a['size'] = ll_normalise_size($a['size']);
+
+    if ($a['attribution-id'] === '' && $a['attribution'] !== '') {
+        $a['attribution-id'] = $a['attribution'];
+    }
 
     $caption_from_content = '';
     $transcript_content = '';
