@@ -69,11 +69,6 @@ body.picostrap_header_navbar_position_fixed-top:not(.picostrap_header_navbar_col
     padding-top: var(--header-height); 
 }
 
-//...Exception for when fixed header is transparent, and viewing Woocommerce templates
-body.picostrap_header_navbar_position_fixed-top.picostrap_header_navbar_color_choice_bg-transparent.woocommerce {
-    padding-top: var(--header-height);   
-}
-
 //...Exception for when fixed header is transparent, and using topbar, move nav bar down a bit
 body.picostrap_topbar_enabled.picostrap_header_navbar_position_fixed-top.picostrap_header_navbar_color_choice_bg-transparent #wrapper-navbar nav.navbar{
     top:36px;
