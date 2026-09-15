@@ -137,7 +137,12 @@ function rmit_ll_netlify_field($value)
     $value = '/' . $value;
   }
 
-  return str_replace(' ', '%20', $value);
+  // Whitespace breaks the field split; the rest are regex metacharacters that a
+  // strict validator rejects in a source.
+  return strtr($value, array(
+    ' ' => '%20', '(' => '%28', ')' => '%29', '[' => '%5B', ']' => '%5D',
+    '{' => '%7B', '}' => '%7D', '^' => '%5E', '|' => '%7C', '\\' => '%5C',
+  ));
 }
 
 function rmit_ll_generate_netlify_redirects_file()
@@ -163,8 +168,9 @@ function rmit_ll_generate_netlify_redirects_file()
       continue;
     }
 
-    // Trailing slashes are normalised before matching, so /a and /a/ collide.
-    $key = rtrim($from, '/');
+    // index.html and trailing slashes are normalised before matching, so
+    // /a/index.html, /a/ and /a are all the same rule.
+    $key = rtrim(preg_replace('#/index\.html$#', '/', $from), '/');
     if (isset($seen[$key])) {
       error_log('_redirects: duplicate source dropped: ' . $from . ' -> ' . $to);
       continue;
