@@ -38,7 +38,8 @@ function ll_card_att($atts, $content = null) {
         'heading-size' => '',
         'float' => '',
         'img' => '',
-        'attibution-id' => '',
+        'attribution-id' => '',
+        'attibution-id' => '', // misspelling kept so older content still works
         'alt' => '',
         'trim' => '',
         'purpose' => '',
@@ -81,7 +82,7 @@ function ll_card_att($atts, $content = null) {
     if($a['img'] != '') {  
         $image_atts = array(
             'url' => $a['img'],
-            'attribution-id' => $a['attibution-id'],
+            'attribution-id' => $a['attribution-id'] !== '' ? $a['attribution-id'] : $a['attibution-id'],
             'alt' => $a['alt']
         );
 

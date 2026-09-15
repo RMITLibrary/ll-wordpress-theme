@@ -38,20 +38,14 @@ add_action( 'wp_enqueue_scripts', function() {
 			'in_footer' => true,
 		)
 	);
-
-    //optional: lottie (maybe...)
-    //wp_enqueue_script( 'lottie-player', 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js#deferload', array(), null, true );
-
-    //optional: rellax
-    //wp_enqueue_script( 'rellax', 'https://cdnjs.cloudflare.com/ajax/libs/rellax/1.12.1/rellax.min.js#deferload', array(), null, true );
-
 }, 101);
 
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED
 add_action( 'wp_enqueue_scripts', function() {
 
-    // Enqueue search functionality globally for static exports (except on search page)
-	if ( ! is_page( 'search' ) ) {
+    // Home page search box; the 404 template loads its own copy (includes/redirect.php).
+	// A plain GET form can't replace it: SiteSucker makes form actions relative, which breaks on 404.html.
+	if ( is_front_page() ) {
 		$search_home_version = rmit_learning_lab_asset_version( 'js/search-home.js' );
 
 		wp_enqueue_script(
@@ -65,15 +59,6 @@ add_action( 'wp_enqueue_scripts', function() {
 			)
 		);
 	}
-
-    //UNCOMMENT next row to include the js/custom.js file globally
-    //wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
-
-    //UNCOMMENT next 3 rows to load the js file only on one page
-    //if (is_page('mypageslug')) {
-    //    wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
-    //}
-
 }, 102);
 
 // OPTIONAL: ADD MORE NAV MENUS
@@ -193,6 +178,32 @@ add_action( 'wp_enqueue_scripts', function() {
 });
 
 /**
+ * Self-hosted MathJax, pinned in package.json and copied in by `npm run mathjax:vendor`.
+ * Replaces the Simple MathJax plugin, whose CDN build fetches fonts from an unpinned
+ * jsDelivr path that static captures never see.
+ */
+// ponytail: guards against Simple MathJax double-loading if still active somewhere.
+// Deactivate it on DEV and PRD only after this theme version is deployed there.
+// Review 2026-12-15: if maths has rendered fine since, delete the plugin and these two lines.
+remove_action( 'wp_head', 'SimpleMathJax::configure_mathjax', 1 );
+remove_action( 'wp_enqueue_scripts', 'SimpleMathJax::add_mathjax' );
+
+add_action( 'wp_enqueue_scripts', function() {
+	$mathjax_uri = trailingslashit( get_stylesheet_directory_uri() ) . 'mathjax/';
+	$config      = array(
+		'tex'     => array(
+			'inlineMath'     => array( array( '$', '$' ), array( '\\(', '\\)' ) ),
+			'processEscapes' => true,
+		),
+		'options' => array( 'ignoreHtmlClass' => 'tex2jax_ignore|editor-rich-text' ),
+		'loader'  => array( 'paths' => array( 'fonts' => $mathjax_uri . 'fonts' ) ),
+	);
+
+	wp_enqueue_script( 'mathjax', $mathjax_uri . 'tex-chtml.js', array(), null, true );
+	wp_add_inline_script( 'mathjax', 'window.MathJax = ' . wp_json_encode( $config, JSON_UNESCAPED_SLASHES ) . ';', 'before' );
+} );
+
+/**
  * Register theme-specific scripts with automatic cache-busting.
  */
 add_action( 'wp_enqueue_scripts', function() {
@@ -209,10 +220,6 @@ add_action( 'wp_enqueue_scripts', function() {
 	);
 	wp_enqueue_script( $main_handle );
 
-	$iframe_loader_handle = 'rmit-learning-lab-iframe-loader';
-	$iframe_loader_path   = 'js/iframe-loader.js';
-	$iframe_loader_ver    = rmit_learning_lab_asset_version( $iframe_loader_path );
-
 	$iframe_resizer_host_handle = 'rmit-learning-lab-iframe-resizer-host';
 	$iframe_resizer_host_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/iframeResizer.min.js';
 
@@ -223,6 +230,8 @@ add_action( 'wp_enqueue_scripts', function() {
 	$lti_resize_handle = 'rmit-learning-lab-lti-trigger-resize';
 	$lti_resize_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/ltiTriggerResize.js';
 
+	// All three load as plain tags on every page: SiteSucker only captures real script tags,
+	// and a static page can't know at build time whether it will be embedded.
 	wp_enqueue_script(
 		$iframe_resizer_host_handle,
 		$iframe_resizer_host_src,
@@ -230,6 +239,8 @@ add_action( 'wp_enqueue_scripts', function() {
 		null,
 		true
 	);
+	// ponytail: resizes iframes present at load; add a MutationObserver if JS ever inserts iframes later.
+	wp_add_inline_script( $iframe_resizer_host_handle, 'iFrameResize({log:false});' );
 
 	wp_enqueue_script(
 		$iframe_resizer_content_handle,
@@ -247,29 +258,6 @@ add_action( 'wp_enqueue_scripts', function() {
 		true
 	);
 
-	wp_register_script(
-		$iframe_loader_handle,
-		$theme_uri . $iframe_loader_path,
-		array(
-			$iframe_resizer_host_handle,
-			$iframe_resizer_content_handle,
-			$lti_resize_handle
-		),
-		$iframe_loader_ver,
-		true
-	);
-
-	wp_localize_script(
-		$iframe_loader_handle,
-		'RMITIframeAssets',
-		array(
-			'host'    => $iframe_resizer_host_src,
-			'content' => $theme_uri . 'js/iframeResizer.contentWindow.min.js',
-			'lti'     => $lti_resize_src,
-		)
-	);
-
-	wp_enqueue_script( $iframe_loader_handle );
 }, 200 );
 
 // Search index is now loaded lazily via JavaScript as users interact with search,

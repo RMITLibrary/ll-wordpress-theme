@@ -119,6 +119,54 @@ $input-btn-focus-color-dark: rgba(111, 183, 255, 0.6 );   //dark mode
 .color-red { @include set-colours($rmit-red, #FFE5E5); }
 .color-yellow { @include set-colours(#665200, #FFF9E0); }
 
+// Legacy palette, still referenced by inline styles in post content
+:root {
+	--white: #ffffff;
+	--black: #000;
+	--grey-rmit: #e3e5e0;
+	--grey-light: #AAB6AA;
+	--grey-dark: #333D33;
+	--grey-med: #4D5B4D;
+	--grey-superlight: #f5f5f5;
+
+	--blue-rmit: #000054;
+	--blue: #104880;
+	--blue-light: #D6E4FA;
+	--blue-med: #3587b5;
+	--blue-alt: #265A87;
+
+	--red-rmit: #e61e2a;
+	--red: #9E0000;
+	--red-light: #FFE5E5;
+	--red-med: #e48080;
+	--red-dark: #560B10;
+
+	--yellow-rmit: #fac800;
+	--yellow: #665200;
+	--yellow-light: #FFF9E0;
+	--yellow-med: #fac800;
+
+	--green: #2E562E;
+	--green-light: #E1EFE1;
+	--green-med: #6c946c;
+
+	--teal: #14523F;
+	--teal-light: #C6F1E4;
+	--teal-med: #46D2A8;
+
+	--brown: #704123;
+	--brown-light: #F4E7DC;
+	--brown-med: #CA8458;
+
+	--purple: #522E99;
+	--purple-light: #E6DCF4;
+	--purple-med: #906ED4;
+
+	--pink: #691668;
+	--pink-light: #F4C3F3;
+	--pink-med: #DC5BDA;
+}
+
 //Original colours
 /* .color-teal { @include set-colours(#14523F, #C6F1E4); }
 .color-pink { @include set-colours(#691668, #F4C3F3); }

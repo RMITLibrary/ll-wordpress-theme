@@ -64,13 +64,7 @@ function export_content_to_json() {
             $meta_description = '';
             $clean_content    = trim( $content );
             if ( '' === $clean_content ) {
-                $meta_description = trim( get_post_meta( get_the_ID(), '_yoast_wpseo_metadesc', true ) );
-                if ( '' === $meta_description ) {
-                    $meta_description = trim( get_post_meta( get_the_ID(), 'rank_math_description', true ) );
-                }
-                if ( '' === $meta_description ) {
-                    $meta_description = trim( get_post_meta( get_the_ID(), '_aioseo_description', true ) );
-                }
+                $meta_description = trim( get_post_meta( get_the_ID(), '_aioseo_description', true ) );
             }
 
             $posts_data[] = array(

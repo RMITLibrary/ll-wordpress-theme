@@ -23,8 +23,7 @@ defined('ABSPATH') || exit;
         // https://learninglab.rmit.edu.au/ before upload to prod
         //
         // Via other plug-ins
-        // 1. MathJax script and link to jsdeliver.net
-        // 2. Styles related to WordPress editor and plugins
+        // 1. Styles related to WordPress editor and plugins
         // 3. Site Stylesheets
         //
         // A Python script is deployed to remove some of these styles

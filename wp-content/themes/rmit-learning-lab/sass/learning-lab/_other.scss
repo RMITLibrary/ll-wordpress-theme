@@ -32,6 +32,11 @@ aside.visually-hidden-focusable div {
 
 .sidenote {
 	display: block;
+    width: 50%;
+    font-size: 0.9em;
+    margin-left: 1em;
+    margin-right: 1em;
+    border: 1px solid #ccc;
 	
     //set responsive padding and margins for blockquote
     @include do-space(margin-top, md); 
@@ -95,6 +100,64 @@ aside.visually-hidden-focusable div {
 
 .btn-embed {
     flex-shrink: 0;
+}
+
+// Legacy content: colour legend layout
+.colorBox {
+	padding: 10px;
+	margin: 10px 0px;
+}
+
+.legends {
+	width: 20%;
+	display: inline-block;
+	vertical-align: top;
+	margin-left: 3%;
+
+	div, button {
+		padding: 2px 5px;
+		width: 90%;
+		margin: 5px auto 10px auto;
+		border-radius: 5px;
+	}
+}
+
+// Legacy content: book page menu
+.media {
+	clear: both;
+}
+
+.media-menu {
+	.media-body {
+		border-bottom: 1px solid var(--grey-rmit);
+		padding-left: 40px;
+		display: block;
+		width: 95%;
+		padding-top: 20px;
+		background-repeat: no-repeat;
+		background-position: 0 25px;
+	}
+
+	h3 { color: var(--blue-rmit); }
+	a { font-weight: bold; }
+	a.plain { font-weight: normal; }
+}
+
+.media-body:last-of-type {
+	border-bottom: none;
+}
+
+// Legacy content: maths PDF download link
+a.mathspdf {
+	&:link, &:active, &:hover, &:visited, &:focus {
+		color: #fff !important;
+		margin-top: 40px;
+		padding: 10px;
+		background: #222160;
+		display: inline-block;
+	}
+	&:link, &:visited { text-decoration: none !important; }
+	&:hover, &:active, &:focus { text-decoration: underline !important; }
 }
 
 //consider moving this to a new scss file
