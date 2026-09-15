@@ -731,5 +731,3 @@ function output_redirect_404_script_and_html($args = array())
 
 <?php
 }
-  $ignored_paths[] = '/redirect-404';
-  $ignored_paths[] = '/redirect-404/';
