@@ -116,7 +116,8 @@ function title_icon($atts, $content = null) {
             $style_rules[] = sprintf('.%s::before { background-image: url("%s");%s }', $base_class, $img_url, $content_rule);
 
             if ($img_dark) {
-                $style_rules[] = sprintf('@media (prefers-color-scheme: dark) { .%s::before { background-image: url("%s"); } }', $base_class, $img_dark);
+                // The theme switch sets data-bs-theme; the media query only covers pages where it hasn't been set.
+                $style_rules[] = sprintf('[data-bs-theme="dark"] .%1$s::before { background-image: url("%2$s"); } @media (prefers-color-scheme: dark) { :root:not([data-bs-theme]) .%1$s::before { background-image: url("%2$s"); } }', $base_class, $img_dark);
             }
         }
 
