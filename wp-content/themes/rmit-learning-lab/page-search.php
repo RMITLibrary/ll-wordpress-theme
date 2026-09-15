@@ -236,5 +236,5 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
 <!-- END col-xs-12 -->
 </div>
 
-<script type="text/javascript" src="<?php echo get_stylesheet_directory_uri(); ?>/js/search.js?v=1.3.4"></script>
+<script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() ); ?>/js/search.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/search.js' ) ); ?>"></script>
 <?php get_footer();
