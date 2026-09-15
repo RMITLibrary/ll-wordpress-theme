@@ -156,7 +156,9 @@ printf '[db-sync] Resetting local database...\n'
 wp --path="$local_wp_path" db reset --yes
 
 printf '[db-sync] Importing downloaded dump...\n'
-wp --path="$local_wp_path" db import "$local_dump"
+# Import via stdin: `wp db import <file>` asks the mysql client to run SOURCE, which
+# the MySQL 9 client no longer accepts through --execute (ERROR 1064).
+wp --path="$local_wp_path" db import - < "$local_dump"
 
 trim_trailing_slash() {
   local value=$1
