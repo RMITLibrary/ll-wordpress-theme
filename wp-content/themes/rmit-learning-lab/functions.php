@@ -38,13 +38,6 @@ add_action( 'wp_enqueue_scripts', function() {
 			'in_footer' => true,
 		)
 	);
-
-    //optional: lottie (maybe...)
-    //wp_enqueue_script( 'lottie-player', 'https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js#deferload', array(), null, true );
-
-    //optional: rellax
-    //wp_enqueue_script( 'rellax', 'https://cdnjs.cloudflare.com/ajax/libs/rellax/1.12.1/rellax.min.js#deferload', array(), null, true );
-
 }, 101);
 
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED
@@ -66,15 +59,6 @@ add_action( 'wp_enqueue_scripts', function() {
 			)
 		);
 	}
-
-    //UNCOMMENT next row to include the js/custom.js file globally
-    //wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
-
-    //UNCOMMENT next 3 rows to load the js file only on one page
-    //if (is_page('mypageslug')) {
-    //    wp_enqueue_script('custom', get_stylesheet_directory_uri() . '/js/custom.js#deferload', array(/* 'jquery' */), null, true);
-    //}
-
 }, 102);
 
 // OPTIONAL: ADD MORE NAV MENUS
