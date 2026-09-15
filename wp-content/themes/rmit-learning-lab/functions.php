@@ -220,10 +220,6 @@ add_action( 'wp_enqueue_scripts', function() {
 	);
 	wp_enqueue_script( $main_handle );
 
-	$iframe_loader_handle = 'rmit-learning-lab-iframe-loader';
-	$iframe_loader_path   = 'js/iframe-loader.js';
-	$iframe_loader_ver    = rmit_learning_lab_asset_version( $iframe_loader_path );
-
 	$iframe_resizer_host_handle = 'rmit-learning-lab-iframe-resizer-host';
 	$iframe_resizer_host_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/iframeResizer.min.js';
 
@@ -234,6 +230,8 @@ add_action( 'wp_enqueue_scripts', function() {
 	$lti_resize_handle = 'rmit-learning-lab-lti-trigger-resize';
 	$lti_resize_src    = 'https://rmitlibrary.github.io/cdn/libraries/js/ltiTriggerResize.js';
 
+	// All three load as plain tags on every page: SiteSucker only captures real script tags,
+	// and a static page can't know at build time whether it will be embedded.
 	wp_enqueue_script(
 		$iframe_resizer_host_handle,
 		$iframe_resizer_host_src,
@@ -241,6 +239,8 @@ add_action( 'wp_enqueue_scripts', function() {
 		null,
 		true
 	);
+	// ponytail: resizes iframes present at load; add a MutationObserver if JS ever inserts iframes later.
+	wp_add_inline_script( $iframe_resizer_host_handle, 'iFrameResize({log:false});' );
 
 	wp_enqueue_script(
 		$iframe_resizer_content_handle,
@@ -258,29 +258,6 @@ add_action( 'wp_enqueue_scripts', function() {
 		true
 	);
 
-	wp_register_script(
-		$iframe_loader_handle,
-		$theme_uri . $iframe_loader_path,
-		array(
-			$iframe_resizer_host_handle,
-			$iframe_resizer_content_handle,
-			$lti_resize_handle
-		),
-		$iframe_loader_ver,
-		true
-	);
-
-	wp_localize_script(
-		$iframe_loader_handle,
-		'RMITIframeAssets',
-		array(
-			'host'    => $iframe_resizer_host_src,
-			'content' => $theme_uri . 'js/iframeResizer.contentWindow.min.js',
-			'lti'     => $lti_resize_src,
-		)
-	);
-
-	wp_enqueue_script( $iframe_loader_handle );
 }, 200 );
 
 // Search index is now loaded lazily via JavaScript as users interact with search,
