@@ -50,8 +50,9 @@ add_action( 'wp_enqueue_scripts', function() {
 // ENQUEUE YOUR CUSTOM JS FILES, IF NEEDED
 add_action( 'wp_enqueue_scripts', function() {
 
-    // Enqueue search functionality globally for static exports (except on search page)
-	if ( ! is_page( 'search' ) ) {
+    // Home page search box; the 404 template loads its own copy (includes/redirect.php).
+	// A plain GET form can't replace it: SiteSucker makes form actions relative, which breaks on 404.html.
+	if ( is_front_page() ) {
 		$search_home_version = rmit_learning_lab_asset_version( 'js/search-home.js' );
 
 		wp_enqueue_script(
