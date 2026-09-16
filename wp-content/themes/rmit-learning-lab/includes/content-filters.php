@@ -161,6 +161,10 @@ add_action('pre_get_posts', 'custom_order_archives_by_title');
 /**
  * Modify excerpt to add ellipsis
  *
+ * Overrides the parent theme, which hooks this name to wp_trim_excerpt and only
+ * defines its own version (an appended "Read More..." button) if nobody else has.
+ * Deleting this brings that button back on archives and in the search index.
+ *
  * @param string $post_excerpt The post excerpt
  * @return string Modified excerpt
  */

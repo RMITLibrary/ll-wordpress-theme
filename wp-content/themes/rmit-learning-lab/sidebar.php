@@ -1,31 +1,4 @@
-
-
-<!-- this style changes the page link style in the sidebar nav 
-to indicate the current page and removes bullets from unordered lists. 
-The wp_list_pages function allocates the classes automatically. 
-This should be moved to a stylesheet once style is determined. -->
-
-<!--<style>
-[aria-current="page"] {
-  pointer-events: none !important; 
-  cursor: default;
-  text-decoration: none !important;
-  color: #000054;
-}
-</style>-->
-
-	
 <?php
-/*
-// VARIABLE NAMING PROTOCOLS
-//------------------------------------------------
-$greatGrandParent = '';		// Landing page / Subject area page e.g. 'Art and design'
-$grandParent = '';			// Top-level section page e.g. 'Artist statement'
-$parent = '';				// Second-level page - i.e. child of top-level e.g. 'Writing process'
-							// Third-level page - i.e. child of second-level e.g. 'Mind mapping'
-							// Note: there should not be any further levels than these 4
-*/
-
 global $post;
 
 if (!($post instanceof WP_Post)) {
@@ -88,16 +61,6 @@ elseif ($parent && !empty($parent->ID)) {
 		outputChildNav($parent->ID, $post);
     }
 }
-/*elseif($parent->ID) {
-	// if the current page doesn't have a great-grandparent or grandparent (i.e. top-level page)
-	// show the following headings for parent and current page
-	// then recursively output current page's children
-	echo doNavHeading($parent, 'h2');
-	echo doNavHeading($post, 'h3', 'selected');
-	outputChildNav($post->ID, null);
-	
-	echo('If condition 3');
-}*/
 else
 {
 	// if the current page doesn't have a great-grandparent, grandparent or parent (i.e. landing / subject area page)
