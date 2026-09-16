@@ -3,14 +3,27 @@
 //-----------------------------
 // NIGHTLY "DISCOURAGE SEARCH ENGINES" RESET
 //
-// blog_public gets switched on for one-off crawls and then forgotten. This puts
-// it back at 2am site time. Never runs on production: wp_get_environment_type()
-// returns 'production' when WP_ENVIRONMENT_TYPE is unset, so an unconfigured
-// install is a no-op rather than a self-deindex.
+// None of these WordPress installs is the public site — that is the static export
+// — so every one of them gets "Discourage search engines" put back on overnight.
+// It gets switched off by hand so SiteSucker can capture PRD, then forgotten.
+//
+// Keyed off the host, not wp_get_environment_type(): nothing sets
+// WP_ENVIRONMENT_TYPE here, so that returned 'production' on every environment and
+// the event was cleared instead of ever being scheduled. An unlisted host stays a
+// no-op rather than a self-deindex.
+//
+// Capture window matters: SiteSucker must run while blog_public is 1. A capture
+// taken after this has fired bakes noindex into every static page.
 //-----------------------------
 
 add_action('init', function () {
-    if (wp_get_environment_type() === 'production') {
+    $discourage_hosts = array(
+        'prdlearninglab.wpenginepowered.com',
+        'devlearninglab.wpenginepowered.com',
+        'll-wordpress-theme.test',
+    );
+
+    if (!in_array(wp_parse_url(home_url(), PHP_URL_HOST), $discourage_hosts, true)) {
         wp_clear_scheduled_hook('ll_restore_blog_public');
         return;
     }
