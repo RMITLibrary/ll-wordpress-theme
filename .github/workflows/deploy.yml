@@ -5,6 +5,10 @@ on:
     branches: [main, develop, staging]
   workflow_dispatch:
 
+# Checkout is all this needs; the deploy itself goes over SSH, not the GitHub API.
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # ensure previous commit is available for diff checks
 
@@ -35,7 +39,7 @@ jobs:
       # Use cache only if we actually found a lockfile
       - name: Setup Node (cached)
         if: steps.detect_lockfile.outputs.has_lock == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
           cache: 'npm'
@@ -43,7 +47,7 @@ jobs:
 
       - name: Setup Node (no cache)
         if: steps.detect_lockfile.outputs.has_lock != 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
 
@@ -62,7 +66,6 @@ jobs:
             exit 1
           fi
           echo "WORKDIR=${WORKDIR}" >> $GITHUB_ENV
-          npx --yes sass@1.77.6 --version
 
       # Sanity check: ensure your theme's vendor/rfs exists (no npm bootstrap)
       - name: Verify theme vendor/rfs
