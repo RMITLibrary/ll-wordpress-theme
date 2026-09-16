@@ -110,30 +110,4 @@ get_header();
         <!-- END content --> 
     </div>
 </div>
-<!--
-
-<div class="end-of-section">
-	<div class="eos-title">
-		<div>
-			<p>Well done! You’ve finished:</p>
-			<h2>Essays</h2>
-		</div>
-	</div>
-	<div class="eos-content">
-		<div class="left">
-			<p class="eos-left-title">Key takeaways:</p>
-			<div class="eos-left-content">
-
-			</div>
-		</div>
-		<div class="right">
-			<p class="eos-left-title">Want more? Try these resources:</p>
-			<div class="eos-left-content">
-
-			</div>
-		</div>
-	</div>
-</div>
--->
-
 <?php get_footer();

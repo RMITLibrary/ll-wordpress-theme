@@ -12,21 +12,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * ACF Taxonomy Field Result Filter
- *
- * @param string $text The text to display
- * @param WP_Term $term The term object
- * @param array $field The ACF field settings
- * @param int $post_id The post ID
- * @return string The filtered text
- */
-add_filter('acf/fields/taxonomy/result', 'my_acf_fields_taxonomy_result', 10, 4);
-function my_acf_fields_taxonomy_result($text, $term, $field, $post_id) {
-    $text;
-    return $text;
-}
-
 if ( ! function_exists( 'custom_taxonomy' ) ) {
 
 // Register Custom Taxonomy
