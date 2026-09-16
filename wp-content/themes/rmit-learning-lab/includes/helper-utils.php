@@ -13,6 +13,28 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Normalise a shortcode size value.
+ *
+ * Content writers reach for words like "med" or "large", so accept those
+ * alongside the documented sm/md/lg values. Anything else is left alone.
+ *
+ * @param string $size Size value from a shortcode attribute.
+ * @return string Canonical size value.
+ */
+function ll_normalise_size($size) {
+    $synonyms = array(
+        'med'    => 'md',
+        'medium' => 'md',
+        'small'  => 'sm',
+        'large'  => 'lg',
+    );
+
+    $size = strtolower(trim((string) $size));
+
+    return isset($synonyms[$size]) ? $synonyms[$size] : $size;
+}
+
+/**
  * Format string after the colon
  *
  * Formats string - capitalizes string section after 1st colon.

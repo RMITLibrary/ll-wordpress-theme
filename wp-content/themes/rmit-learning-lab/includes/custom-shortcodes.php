@@ -87,20 +87,9 @@ $shortcode_files = glob($shortcode_dir . '/*.php');
 foreach ($shortcode_files as $file) {
     $filename = basename($file);
 
-    // Skip this main file and any files starting with underscore (private/utility files)
-    if ($filename === '_main.php' || strpos($filename, '_') === 0) {
+    // Skip private/utility files, which start with an underscore
+    if (strpos($filename, '_') === 0) {
         continue;
-    }
-
-    // Skip deprecated/excluded files
-    $excluded_files = array(
-        'redirect-listing.php', // DEPRECATED - consider renaming to _redirect-listing.php
-        // Add more files to exclude here as needed
-        // 'example-old-shortcode.php',
-    );
-
-    if (in_array($filename, $excluded_files)) {
-        continue; // Skip excluded files
     }
 
     include_once($file);
