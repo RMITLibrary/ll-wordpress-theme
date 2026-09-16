@@ -252,6 +252,16 @@ if [[ -n "$remote_host" && -n "$local_host" ]]; then
   add_pair "$remote_host" "$local_host"
 fi
 
+# Hosts this site lived on before WP Engine. They are not the remote URL, so the
+# pairs above leave them untouched and rows like wp_options.siteurl keep pointing
+# at a live third-party copy of the site.
+for legacy_host in lab.bitma.app; do
+  add_pair "https://$legacy_host" "$local_trim"
+  add_pair "http://$legacy_host" "$local_trim"
+  add_pair "//$legacy_host" "//$local_host"
+  add_pair "$legacy_host" "$local_host"
+done
+
 if [[ ${#search_pairs[@]} -eq 0 ]]; then
   error "No search-replace pairs generated. Check LOCAL_URL and DBSYNC_${upper_env}_URL."
 fi
