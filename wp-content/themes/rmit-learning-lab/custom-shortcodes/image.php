@@ -77,12 +77,18 @@ function image_att ($atts, $content = null) {
 		'float' => '',
 		'hide-sm' => '',
         'attribution-id' => '',
+        'attribution' => '', // writers reach for the shorter name; treated as attribution-id below
         'caption-gap' => '',
         'classes' => '',
         'loading' => 'lazy'
     );
     $atts = ll_image_recover_caption_attribute($atts);
     $a = shortcode_atts($default, $atts);
+    $a['size'] = ll_normalise_size($a['size']);
+
+    if ($a['attribution-id'] === '' && $a['attribution'] !== '') {
+        $a['attribution-id'] = $a['attribution'];
+    }
 
     $caption_from_content = '';
     $transcript_content = '';
@@ -209,20 +215,7 @@ function image_att ($atts, $content = null) {
                   
     $output .= '</figure>' . "\n";
             
-    return $output; 
-    
-    /*$debug = '<pre><code>';
-    $debug .= $imageTag;
-    
-    //$debug .= 'img: ' . $a['img'] . "\n";
-    $debug .= 'alt: ' . $a['alt'] . "\n";
-    $debug .= 'left: ' . $a['left'] . "\n";
-    $debug .= 'border: ' . $a['border'] . "\n";
-    $debug .= 'size: ' . $a['size'] . "\n";
-    $debug .= '</code></pre>';
-    
-    
-    return $debug;*/
+    return $output;
 }
 
 function addAttribution($input) {
