@@ -168,6 +168,50 @@ function rmit_ll_live_page_paths()
   return $paths;
 }
 
+/**
+ * Keys of rules that sit in a redirect loop.
+ *
+ * A rule pointing at itself is the one-node case. CloudFront follows a cycle hop
+ * by hop, so the browser spins until it gives up rather than showing a 404 — and
+ * the live-page guard misses these whenever the source isn't a published page.
+ *
+ * @param array $rules key => array(from, to, code)
+ * @return array keys of every rule inside a cycle
+ */
+function rmit_ll_redirect_cycle_keys(array $rules)
+{
+  $targets = array();
+  foreach ($rules as $key => $rule) {
+    $targets[$key] = rtrim(preg_replace('#/index\.html$#', '/', $rule[1]), '/');
+  }
+
+  $looped = array();
+  foreach (array_keys($rules) as $start) {
+    $walked = array();
+    $current = $start;
+
+    while (isset($targets[$current]) && !isset($walked[$current])) {
+      $walked[$current] = true;
+      $current = $targets[$current];
+    }
+
+    // Stopped on an already-walked node, so everything from it onward is the cycle.
+    if (isset($walked[$current])) {
+      $inLoop = false;
+      foreach (array_keys($walked) as $node) {
+        if ($node === $current) {
+          $inLoop = true;
+        }
+        if ($inLoop) {
+          $looped[$node] = true;
+        }
+      }
+    }
+  }
+
+  return array_keys($looped);
+}
+
 function rmit_ll_generate_netlify_redirects_file()
 {
   global $wpdb;
@@ -181,6 +225,7 @@ function rmit_ll_generate_netlify_redirects_file()
 
   $lines = array();
   $seen  = array();
+  $rules = array();
   $live  = rmit_ll_live_page_paths();
 
   foreach ((array) $rows as $row) {
@@ -209,7 +254,16 @@ function rmit_ll_generate_netlify_redirects_file()
     }
     $seen[$key] = true;
 
-    $lines[] = $from . ' ' . $to . ' ' . (int) $row['action_code'];
+    $rules[$key] = array($from, $to, (int) $row['action_code']);
+  }
+
+  foreach (rmit_ll_redirect_cycle_keys($rules) as $key) {
+    error_log('_redirects: rule in a redirect loop dropped: ' . $rules[$key][0] . ' -> ' . $rules[$key][1]);
+    unset($rules[$key]);
+  }
+
+  foreach ($rules as $rule) {
+    $lines[] = $rule[0] . ' ' . $rule[1] . ' ' . $rule[2];
   }
 
   foreach (rmit_ll_netlify_wildcard_rules() as $rule) {
