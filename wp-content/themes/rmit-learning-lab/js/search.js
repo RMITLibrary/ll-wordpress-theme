@@ -238,10 +238,13 @@
         (function attempt() {
             var mathJax = window.MathJax;
 
-            if (mathJax && mathJax.startup && mathJax.startup.promise) {
-                mathJax.startup.promise
-                    .then(function() { return mathJax.typesetPromise([el]); })
-                    .catch(function(mathError) { console.warn('MathJax rendering error', mathError); });
+            // Deliberately not chained off MathJax.startup.promise: when a runtime
+            // asset 404s (as on a static capture missing mathjax/) that promise never
+            // settles, and every result silently stays as raw LaTeX.
+            if (mathJax && typeof mathJax.typesetPromise === 'function') {
+                mathJax.typesetPromise([el]).catch(function(mathError) {
+                    console.warn('MathJax rendering error', mathError);
+                });
                 return;
             }
 
