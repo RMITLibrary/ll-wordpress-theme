@@ -202,7 +202,9 @@ add_action( 'wp_enqueue_scripts', function() {
 			'processEscapes' => true,
 		),
 		'options' => array( 'ignoreHtmlClass' => 'tex2jax_ignore|editor-rich-text' ),
-		'loader'  => array( 'paths' => array( 'fonts' => $mathjax_uri . 'fonts' ) ),
+		// Root-relative: MathJax fetches fonts at runtime, so an absolute URL sends the
+		// static copy back to the WordPress host, where it 404s and is CORS-blocked.
+		'loader'  => array( 'paths' => array( 'fonts' => wp_make_link_relative( $mathjax_uri ) . 'fonts' ) ),
 	);
 
 	wp_enqueue_script( 'mathjax', $mathjax_uri . 'tex-chtml.js', array(), null, true );
