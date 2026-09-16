@@ -37,11 +37,19 @@ function rmit_ll_get_redirects_js_file_path()
   return trailingslashit(get_stylesheet_directory()) . 'js/redirects.js';
 }
 
+// Per-rule drops are expected and unchanging — 29 duplicates on every run — and at
+// one regeneration per Redirection save they drowned the WP Engine log 997 rows to 3.
+// Real faults below still go straight to error_log().
+function rmit_ll_redirects_log($message)
+{
+  if (defined('WP_DEBUG') && WP_DEBUG) {
+    error_log($message);
+  }
+}
+
 function rmit_ll_generate_redirects_js_file()
 {
   global $wpdb;
-
-  error_log('rmit_ll_generate_redirects_js_file function called!');
 
   // Query the Redirection plugin's table
   $table_name = $wpdb->prefix . 'redirection_items';
@@ -97,7 +105,6 @@ function rmit_ll_generate_redirects_js_file()
     error_log('Failed to write JS file to: ' . esc_html($js_file_path));
     return new WP_Error('redirects_write_failed', sprintf('Failed to write JS file to: %s', $js_file_path));
   } else {
-    error_log('JS file successfully written to: ' . esc_html($js_file_path));
     clearstatcache(true, $js_file_path);
     return $js_file_path;
   }
@@ -233,7 +240,7 @@ function rmit_ll_generate_netlify_redirects_file()
     $to   = rmit_ll_netlify_field($row['action_data']);
 
     if (null === $from || null === $to) {
-      error_log('_redirects: unusable rule skipped: ' . $row['url']);
+      rmit_ll_redirects_log('_redirects: unusable rule skipped: ' . $row['url']);
       continue;
     }
 
@@ -244,12 +251,12 @@ function rmit_ll_generate_netlify_redirects_file()
     // A published page must never be redirected away from. Stale rules that
     // shadow a live URL produce 404s and redirect loops on the static site.
     if (isset($live[$key])) {
-      error_log('_redirects: rule shadowing live page dropped: ' . $from . ' -> ' . $to);
+      rmit_ll_redirects_log('_redirects: rule shadowing live page dropped: ' . $from . ' -> ' . $to);
       continue;
     }
 
     if (isset($seen[$key])) {
-      error_log('_redirects: duplicate source dropped: ' . $from . ' -> ' . $to);
+      rmit_ll_redirects_log('_redirects: duplicate source dropped: ' . $from . ' -> ' . $to);
       continue;
     }
     $seen[$key] = true;
@@ -258,7 +265,7 @@ function rmit_ll_generate_netlify_redirects_file()
   }
 
   foreach (rmit_ll_redirect_cycle_keys($rules) as $key) {
-    error_log('_redirects: rule in a redirect loop dropped: ' . $rules[$key][0] . ' -> ' . $rules[$key][1]);
+    rmit_ll_redirects_log('_redirects: rule in a redirect loop dropped: ' . $rules[$key][0] . ' -> ' . $rules[$key][1]);
     unset($rules[$key]);
   }
 
@@ -329,7 +336,7 @@ add_filter('redirection_permalink_changed', function ($changed, $before, $after)
 
 //    Outputs JavaScript for URL redirects and the HTML structure for redirect and 404 messages
 
-//    Called from:    404.php and pages using the redirect-404 page template (currently https://lab.bitma.app/redirect-404/ )
+//    Called from:    404.php and pages using the redirect-404 page template (/redirect-404/)
 
 //    Calls: createBreadcrumbs (ensure this function exists in your theme)
 
@@ -622,9 +629,9 @@ function output_redirect_404_script_and_html($args = array())
       console.log('Normalized Path: ' + normalizedPath);
       console.log('Normalized Path length: ' + normalizedPath.length);
 
-      // Flip to true to re-enable client-side redirects. Off while we test that
-      // the server-side _redirects file is doing the job.
-      const JS_REDIRECTS_ENABLED = false;
+      // Client-side fallback. Only reached once the server has already returned a
+      // 404, so on a server that honours _redirects this never runs.
+      const JS_REDIRECTS_ENABLED = true;
 
       if (!JS_REDIRECTS_ENABLED) {
         fourOhInfo.style.display = 'block';
