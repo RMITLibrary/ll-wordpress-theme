@@ -48,13 +48,9 @@ function dynamically_noindex_pages($robots) {
             // Check if this ancestor should have noindex
             $ancestor_robots = check_ancestor_robots_meta($ancestor_id);
 
-            if (!empty($ancestor_robots['noindex']) && $ancestor_robots['noindex'] === 'noindex') {
+            if (!empty($ancestor_robots)) {
                 // Inherit all robots directives from the ancestor, not just noindex
-                foreach ($ancestor_robots as $directive => $value) {
-                    if (!empty($value) && $value !== '') {
-                        $robots[$directive] = $value;
-                    }
-                }
+                $robots = array_merge($robots, $ancestor_robots);
                 break; // Exit early once we find a noindex ancestor
             }
         }
@@ -67,19 +63,6 @@ function dynamically_noindex_pages($robots) {
  * Simplified approach: check if ancestor is "Work in progress" page or child of it
  */
 function check_ancestor_robots_meta($page_id) {
-    $ancestor_robots = array(
-        'noindex' => '',
-        'nofollow' => '',
-        'noarchive' => '',
-        'nosnippet' => '',
-        'noimageindex' => '',
-        'noodp' => '',
-        'notranslate' => '',
-        'max-snippet' => '',
-        'max-image-preview' => '',
-        'max-video-preview' => '',
-    );
-
     // Get the page title and slug to identify "Work in progress" pages
     $page_title = get_the_title($page_id);
     $page_slug = get_post_field('post_name', $page_id);
@@ -89,33 +72,23 @@ function check_ancestor_robots_meta($page_id) {
         $page_slug === 'work-in-progress' || $page_slug === 'documentation' ||
         $page_title === 'Work in progress'
     ) {
-        // Set all robots directives that should be inherited for work in progress content
-        $ancestor_robots['noindex'] = 'noindex';
-        $ancestor_robots['nofollow'] = 'nofollow';
-        $ancestor_robots['noarchive'] = 'noarchive';
-        $ancestor_robots['nosnippet'] = 'nosnippet';
-        $ancestor_robots['noimageindex'] = 'noimageindex';
+        return array(
+            'noindex'      => 'noindex',
+            'nofollow'     => 'nofollow',
+            'noarchive'    => 'noarchive',
+            'nosnippet'    => 'nosnippet',
+            'noimageindex' => 'noimageindex',
+        );
     }
 
-    return $ancestor_robots;
+    return array();
 }
 
-// Hook into All in One SEO's robots meta filter
+// Hook into All in One SEO's robots meta filter.
+// There is no wp_robots fallback: AIOSEO's disableWpRobotsCore() calls
+// remove_all_filters('wp_robots'), so anything hooked there never runs.
 if (function_exists('aioseo') || class_exists('All_in_One_SEO_Pack')) {
-    // Try various AIOSEO filter hooks for different versions
-    add_filter('aioseop_robots_meta', 'dynamically_noindex_pages', 10, 1);
     add_filter('aioseo_robots_meta', 'dynamically_noindex_pages', 10, 1);
-    add_filter('aioseo_robots', 'dynamically_noindex_pages', 10, 1);
-}
-
-// Also try WordPress core robots filter as backup
-add_filter('wp_robots', 'dynamically_noindex_pages_wp_core', 10, 1);
-
-/**
- * WordPress core robots filter backup
- */
-function dynamically_noindex_pages_wp_core($robots) {
-    return dynamically_noindex_pages($robots);
 }
 
 //-----------------------------
