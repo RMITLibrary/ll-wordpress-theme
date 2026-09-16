@@ -80,7 +80,8 @@ jobs:
       - name: Verify vendored MathJax matches package.json
         run: |
           diff -q node_modules/mathjax/tex-chtml.js "${THEME_DIR}/mathjax/tex-chtml.js" &&
-          diff -q node_modules/@mathjax/mathjax-newcm-font/chtml.js "${THEME_DIR}/mathjax/fonts/mathjax-newcm-font/chtml.js" || {
+          diff -q node_modules/@mathjax/mathjax-newcm-font/chtml.js "${THEME_DIR}/mathjax/fonts/mathjax-newcm-font/chtml.js" &&
+          diff -q node_modules/@mathjax/mathjax-mhchem-font-extension/chtml.js "${THEME_DIR}/mathjax/fonts/mathjax-mhchem-font-extension/chtml.js" || {
             echo "Vendored MathJax is out of date. Run: npm ci && npm run mathjax:vendor, then commit." >&2
             exit 65
           }
