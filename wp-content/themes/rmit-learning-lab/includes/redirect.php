@@ -145,6 +145,29 @@ function rmit_ll_netlify_field($value)
   ));
 }
 
+/**
+ * Paths of every published page, keyed the same way redirect sources are.
+ *
+ * Used to drop rules that would redirect away from a page that is currently live.
+ */
+function rmit_ll_live_page_paths()
+{
+  $paths = array();
+
+  $pages = get_posts(array(
+    'post_type'      => 'page',
+    'post_status'    => 'publish',
+    'posts_per_page' => -1,
+    'fields'         => 'ids',
+  ));
+
+  foreach ($pages as $page_id) {
+    $paths[rtrim((string) wp_make_link_relative(get_permalink($page_id)), '/')] = true;
+  }
+
+  return $paths;
+}
+
 function rmit_ll_generate_netlify_redirects_file()
 {
   global $wpdb;
@@ -158,6 +181,7 @@ function rmit_ll_generate_netlify_redirects_file()
 
   $lines = array();
   $seen  = array();
+  $live  = rmit_ll_live_page_paths();
 
   foreach ((array) $rows as $row) {
     $from = rmit_ll_netlify_field($row['url']);
@@ -171,6 +195,14 @@ function rmit_ll_generate_netlify_redirects_file()
     // index.html and trailing slashes are normalised before matching, so
     // /a/index.html, /a/ and /a are all the same rule.
     $key = rtrim(preg_replace('#/index\.html$#', '/', $from), '/');
+
+    // A published page must never be redirected away from. Stale rules that
+    // shadow a live URL produce 404s and redirect loops on the static site.
+    if (isset($live[$key])) {
+      error_log('_redirects: rule shadowing live page dropped: ' . $from . ' -> ' . $to);
+      continue;
+    }
+
     if (isset($seen[$key])) {
       error_log('_redirects: duplicate source dropped: ' . $from . ' -> ' . $to);
       continue;
@@ -230,6 +262,13 @@ add_action('redirection_redirect_disabled', 'write_redirects_js_file');
 add_action('redirection_flush_cache', 'write_redirects_js_file');
 add_action('admin_init', 'rmit_ll_maybe_generate_redirects_js_file');
 add_action('rmit_ll_nightly_export', 'rmit_ll_generate_netlify_redirects_file');
+
+// Moving a page into work-in-progress shouldn't mint a redirect. The page usually
+// comes back out and the rule outlives the move, shadowing the live URL. Runs after
+// the plugin's own has_permalink_changed(), which is on the default priority.
+add_filter('redirection_permalink_changed', function ($changed, $before, $after) {
+  return strpos((string) $after, '/work-in-progress/') === 0 ? false : $changed;
+}, 20, 3);
 
 //-------------------------------------------
 //    output_redirect_404_script_and_html
