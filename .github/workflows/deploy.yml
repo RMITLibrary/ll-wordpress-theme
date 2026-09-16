@@ -5,6 +5,10 @@ on:
     branches: [main, develop, staging]
   workflow_dispatch:
 
+# Checkout is all this needs; the deploy itself goes over SSH, not the GitHub API.
+permissions:
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -62,7 +66,6 @@ jobs:
             exit 1
           fi
           echo "WORKDIR=${WORKDIR}" >> $GITHUB_ENV
-          npx --yes sass@1.77.6 --version
 
       # Sanity check: ensure your theme's vendor/rfs exists (no npm bootstrap)
       - name: Verify theme vendor/rfs
