@@ -213,11 +213,7 @@
 
             resultsList.appendChild(li);
 
-            if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-                window.MathJax.typesetPromise([li]).catch(function(mathError) {
-                    console.warn('MathJax rendering error', mathError);
-                });
-            }
+            typesetWhenReady(li);
 
             resultCount++;
         });
@@ -230,6 +226,29 @@
             var newUrl = window.location.pathname + '?query=' + encodeURIComponent(query);
             window.history.pushState({ query: query }, '', newUrl);
         }
+    }
+
+    // Results are built as soon as the index loads, which can be before MathJax has
+    // replaced window.MathJax with its real API. The old check silently skipped
+    // typesetting in that window, leaving raw LaTeX in the snippet.
+    // ponytail: bounded poll — MathJax offers no ready event before its core loads.
+    function typesetWhenReady(el) {
+        var waited = 0;
+
+        (function attempt() {
+            var mathJax = window.MathJax;
+
+            if (mathJax && mathJax.startup && mathJax.startup.promise) {
+                mathJax.startup.promise
+                    .then(function() { return mathJax.typesetPromise([el]); })
+                    .catch(function(mathError) { console.warn('MathJax rendering error', mathError); });
+                return;
+            }
+
+            if (waited >= 10000) { return; }
+            waited += 100;
+            setTimeout(attempt, 100);
+        })();
     }
 
     function getBreadcrumbs(arr) {
