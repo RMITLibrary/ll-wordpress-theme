@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # ensure previous commit is available for diff checks
 
@@ -39,7 +39,7 @@ jobs:
       # Use cache only if we actually found a lockfile
       - name: Setup Node (cached)
         if: steps.detect_lockfile.outputs.has_lock == 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
           cache: 'npm'
@@ -47,7 +47,7 @@ jobs:
 
       - name: Setup Node (no cache)
         if: steps.detect_lockfile.outputs.has_lock != 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22.18'
 
