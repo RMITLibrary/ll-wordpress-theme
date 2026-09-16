@@ -61,6 +61,12 @@ add_action( 'wp_enqueue_scripts', function() {
 	}
 }, 102);
 
+// MAIN MENU: lets the hamburger menu's sections be managed in Appearance > Menus.
+// Until a menu is assigned to this location, header.php falls back to its built-in list.
+add_action('after_setup_theme', function () {
+	register_nav_menus(array('main-menu' => __('Main menu', 'rmit-learning-lab')));
+});
+
 // OPTIONAL: ADD MORE NAV MENUS
 //register_nav_menus( array( 'third' => __( 'Third Menu', 'picostrap' ), 'fourth' => __( 'Fourth Menu', 'picostrap' ), 'fifth' => __( 'Fifth Menu', 'picostrap' ), ) );
 // THEN USE SHORTCODE:  [lc_nav_menu theme_location="third" container_class="" container_id="" menu_class="navbar-nav"]

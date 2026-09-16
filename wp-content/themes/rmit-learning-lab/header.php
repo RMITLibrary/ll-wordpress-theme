@@ -135,6 +135,14 @@ defined('ABSPATH') || exit;
           <div class="col-xl-8">
             <div class="accordion accordion-white" id="context-menu-accordion">
               <?php
+              // Sections come from the "Main menu" location when one is assigned.
+              $mainMenu = function_exists('doMainMenuAccordions') ? doMainMenuAccordions() : '';
+
+              if ($mainMenu) {
+                echo $mainMenu;
+              } else {
+              ?>
+              <?php
               //Identify the page ids of each landing page, doContextMenuAccordion
               //will generate the accordion code and list of child pages.
               if (function_exists('doContextMenuAccordion')) {
@@ -168,6 +176,7 @@ defined('ABSPATH') || exit;
                 </div>
               </div>
               <!-- END subject support - special case -->
+              <?php } // end fallback ?>
             </div>
           </div>
           <!-- END menu -->
