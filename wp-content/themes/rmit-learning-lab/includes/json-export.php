@@ -424,6 +424,9 @@ function export_json_page() {
         'nonce'          => wp_create_nonce('rmit_ll_save_fuse_index'),
         'pagesJson'      => trailingslashit(content_url()) . 'uploads/pages.json' . ( $pages_version ? '?ver=' . $pages_version : '' ),
         'statusSelector' => '#rmit-export-index-status',
+        // Field names only — Fuse stores the index by name and applies the per-key weights
+        // at search time, so these must match the key names in search.js getFuseOptions()
+        // but not its weights.
         'keys'           => array('title', 'content', 'keywords'),
         'fuseUrl'        => rmit_ll_fuse_url(),
         'messages'       => array(
