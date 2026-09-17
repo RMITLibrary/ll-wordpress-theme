@@ -17,7 +17,7 @@
 
 //  shortcode:  [landing-banner]
 
-//	usage:			
+//	usage:
 //  [landing-banner title='My title' img='https://path.to/image' alt='description of the image' width='800' height='450' caption='Image by creator name']Description of the landing page[/landing-banner]
 
 //  Expected output
@@ -81,8 +81,6 @@ function landing_banner_att($atts, $content = null) {
 
 }
 
-
-
 //-----------------------------
 //	landing_list_att
 
@@ -96,7 +94,7 @@ function landing_banner_att($atts, $content = null) {
 
 //  shortcode:  [landing-banner /]
 
-//	usage:			
+//	usage:
 //  [landing-list category='Optional category /]
 
 //  Expected output - change to Landing list in css?
@@ -116,26 +114,25 @@ function landing_list_att($atts) {
         'category' => ''
     );
     $a = shortcode_atts($default, $atts);
-    
+
     //get the id ofthe page we are on
     $pageId = get_the_ID();
 
     $output = '';
     $output .= '<div class="landing-list">' . "\n";
-    
-    //this won't ever get used as there's no way of differentiating 
+
+    //this won't ever get used as there's no way of differentiating
     //category while still using page list :(
     if($a['category'] != '') {
-		$output .= '<h2 class="h3">'. esc_html($a['category']) . '</h2>' . "\n";
-	}
-    
+        $output .= '<h2 class="h3">'. esc_html($a['category']) . '</h2>' . "\n";
+    }
+
     //doChildrenList() is defined in functions.php
     $output .= '<ul class="link-list">'. doChildrenList($pageId) . '</ul>' . "\n";
     $output .= '</div>';
 
     return $output;
 }
-
 
 //-----------------------------
 //	home_panel_atts
@@ -152,7 +149,7 @@ function landing_list_att($atts) {
 
 //  shortcode:  [home-panel]
 
-//	usage:			
+//	usage:
 //  [home-panel title='Numbers and measurement' link='/arithmetic/' img='path.to.img']<p>Description</p>[/home-panel]
 
 //  Expected output
@@ -170,8 +167,8 @@ function home_panel_atts($atts, $content = null) {
             'title' => '',
             'img' => '',
             'loading' => 'lazy',
-        ), 
-        $atts, 
+        ),
+        $atts,
         'home-panel'
     );
 
@@ -205,11 +202,9 @@ function home_panel_atts($atts, $content = null) {
     $output .= '<h2 class="link-large">' . esc_html($atts['title']) . '</h2>';
     $output .= '<p>' . do_shortcode($content) . '</p>';
     $output .= '</a>';
-    
+
     return $output;
 }
-
-
 
 //-----------------------------
 //	home_panel_container_atts
@@ -219,7 +214,7 @@ function home_panel_atts($atts, $content = null) {
 //	args:		$atts
 //  shortcode:  [home-panel-container]
 
-//	usage:			
+//	usage:
 //  [home-panel-container]
 //	... list of [home-panel] shortcodes
 //  [/home-panel-container]
@@ -235,20 +230,19 @@ function home_panel_container_atts($atts, $content = null) {
         '4-column' => ''
     );
     $a = shortcode_atts($default, $atts);
-    
+
     // Build the HTML output for the container
     $output = '<div class="home-panel-container">' . "\n";
 
     if($a['4-column'] == 'true') {
-		$output =  '<div class="home-panel-container panel-4up">' . "\n";
-	}
-    
+        $output =  '<div class="home-panel-container panel-4up">' . "\n";
+    }
+
     $output .= do_shortcode($content);
     $output .= '</div>';
 
     return $output;
 }
-
 
 //-----------------------------
 //	display_landing_columns
@@ -266,7 +260,7 @@ function display_landing_columns() {
     ));
 
     echo '<nav class="landing-column-container">';
-    
+
     $column_tag = '<div class="landing-column">' . "\n" . '<div class="landing-column-inner divider">';
 
     //used to close lists
@@ -279,7 +273,7 @@ function display_landing_columns() {
             'child_of' => $child_page->ID,
             'sort_column' => 'menu_order'
         ));
-        
+
         //if nav divider template is present, output divider name
         if (get_page_template_slug($child_page->ID) == 'page-templates/nav-divider.php') {
 
@@ -305,14 +299,13 @@ function display_landing_columns() {
                 $end_list_tag = '';
             }
         }
-        
 
         //If there are grandchildren
         if (!empty($grandchild_pages)) {
             //close the previous list if it exists
             echo $end_list_tag;
             echo '<h3>' . esc_html($child_page->post_title) . '</h3>';
-            echo '<ul class="link-list">';  
+            echo '<ul class="link-list">';
 
             //set var to close list tag, required if we have more than one grandchild list
             $end_list_tag = '</ul>';
@@ -321,7 +314,7 @@ function display_landing_columns() {
             //Wordpress pumps out a link regardless of child or grandchild. Thanks wordpress
             echo '<li><a href="' . esc_url(get_permalink($child_page->ID)) . '">' . esc_html($child_page->post_title) . '</a></li>';
         }
-        
+
         // Check if this is the last element
         if ($key === array_key_last($child_pages)) {
 
@@ -336,21 +329,9 @@ function display_landing_columns() {
 
     return ob_get_clean(); // Return the buffered content
 }
+ll_add_shortcode('landing-banner', 'landing_banner_att');
+ll_add_shortcode('landing-list', 'landing_list_att');
 
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("landing-banner");
-add_shortcode_to_list("landing-list");
-add_shortcode_to_list("home-panel");
-add_shortcode_to_list("home-panel-container");
-add_shortcode_to_list("landing-columns");
-
-//add code to wordpress itself
-add_shortcode('landing-banner', 'landing_banner_att');
-add_shortcode('landing-list', 'landing_list_att');
-
-add_shortcode('home-panel', 'home_panel_atts');
-add_shortcode('home-panel-container', 'home_panel_container_atts');
-add_shortcode('landing-columns', 'display_landing_columns');
-
-?>
+ll_add_shortcode('home-panel', 'home_panel_atts');
+ll_add_shortcode('home-panel-container', 'home_panel_container_atts');
+ll_add_shortcode('landing-columns', 'display_landing_columns');

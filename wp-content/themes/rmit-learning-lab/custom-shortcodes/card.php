@@ -15,7 +15,7 @@
 
 //  shortcode:  [ll-card][/ll-card]
 
-//	usage:		[ll-card title="Short report" heading-tag="h3"]Markup goes here[/ll-grid] 
+//	usage:		[ll-card title="Short report" heading-tag="h3"]Markup goes here[/ll-grid]
 
 //  Expected output
 // <div class="card">
@@ -39,7 +39,6 @@ function ll_card_att($atts, $content = null) {
         'float' => '',
         'img' => '',
         'attribution-id' => '',
-        'attibution-id' => '', // misspelling kept so older content still works
         'alt' => '',
         'trim' => '',
         'purpose' => '',
@@ -66,9 +65,9 @@ function ll_card_att($atts, $content = null) {
     }
 
      //if there's anything in clesses, add it (don't document this, for web devs only)
-     if($a['classes'] != '') { 
-        $output .= $a['classes'] . ' '; 
-    } 
+     if($a['classes'] != '') {
+        $output .= $a['classes'] . ' ';
+    }
 
     $output .= '"';
 
@@ -79,10 +78,10 @@ function ll_card_att($atts, $content = null) {
     $output .= '>' . "\n";
 
     //if there's an img property
-    if($a['img'] != '') {  
+    if($a['img'] != '') {
         $image_atts = array(
             'url' => $a['img'],
-            'attribution-id' => $a['attribution-id'] !== '' ? $a['attribution-id'] : $a['attibution-id'],
+            'attribution-id' => $a['attribution-id'],
             'alt' => $a['alt']
         );
 
@@ -126,7 +125,7 @@ function ll_card_att($atts, $content = null) {
 
     // Apply optional title div, allow to alter size via additional class
     if ($a['title'] != '') {
-        $output .= '<' . $labelTag .' class="card-title ' . $a['heading-size'] . '">';  
+        $output .= '<' . $labelTag .' class="card-title ' . $a['heading-size'] . '">';
 
         //if purpose isn't blank, add purpose visually hidden tag to title
         if ($a['purpose'] != '') {
@@ -145,12 +144,7 @@ function ll_card_att($atts, $content = null) {
 
     //close divs
     $output .= "\n" . '</div></div>' . "\n";
-            
-    return $output; 
+
+    return $output;
 }
-add_shortcode_to_list("ll-card");
-
-//add code to wordpress itself
-add_shortcode('ll-card', 'll_card_att');
-
-?>
+ll_add_shortcode('ll-card', 'll_card_att');

@@ -40,14 +40,13 @@
 //  </style>
 //  <h3 class="title-icon my-type">Your Heading Content</h3>
 
-
 function title_icon($atts, $content = null) {
-	$default = array(
+    $default = array(
         'heading-tag' => '',
         'heading-size' => '',
         'type' => '',
-		'img' => '',
-		'img-dark' => '',
+        'img' => '',
+        'img-dark' => '',
         'alt' => '',
         'id' => ''
     );
@@ -129,11 +128,4 @@ function title_icon($atts, $content = null) {
     $output = $style . $heading .  "\n";
     return $output;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("title-icon");
-
-//add code to wordpress itself
-add_shortcode('title-icon', 'title_icon');
-
-?>
+ll_add_shortcode('title-icon', 'title_icon');

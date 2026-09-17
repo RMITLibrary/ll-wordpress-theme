@@ -25,10 +25,10 @@ function indigenous_knowledges_shortcode( $atts, $content = null ) {
     $a = shortcode_atts( $default, $atts );
 
     $subtitle   = "Indigenous knowledges";
-	if ( ! empty( $a['topic'] ) ) {
-		$subtitle   = "Indigenous knowledges in " . wp_kses_post( $a['topic'] );
-	}
-	
+    if ( ! empty( $a['topic'] ) ) {
+        $subtitle   = "Indigenous knowledges in " . wp_kses_post( $a['topic'] );
+    }
+
     $content    = wp_kses_post( do_shortcode( $content ) );
 
     // Sanitize heading tag
@@ -65,14 +65,6 @@ function indigenous_knowledges_shortcode( $atts, $content = null ) {
 <?php
     return ob_get_clean();
 }
-
-// add code to list (used in the_content_filter)
-add_shortcode_to_list( 'indigenous-knowledges' );
 // optional shorter alias
-add_shortcode_to_list( 'ik-title' );
-
-// add code to wordpress itself
-add_shortcode( 'indigenous-knowledges', 'indigenous_knowledges_shortcode' );
-add_shortcode( 'ik-title', 'indigenous_knowledges_shortcode' );
-
-?>
+ll_add_shortcode( 'indigenous-knowledges', 'indigenous_knowledges_shortcode' );
+ll_add_shortcode( 'ik-title', 'indigenous_knowledges_shortcode' );

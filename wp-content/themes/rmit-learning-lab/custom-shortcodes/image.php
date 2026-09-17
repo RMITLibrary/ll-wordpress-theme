@@ -1,4 +1,4 @@
-<?php 
+<?php
 //-----------------------------
 //	image_att
 
@@ -9,9 +9,9 @@
 
 //  $atts:      url         Absolute path to image
 //              alt         Alt tag for the above image
-//              caption     Attribution for the image (optional) 
+//              caption     Attribution for the image (optional)
 
-//              caption-id  If multiple images use the same attribution  
+//              caption-id  If multiple images use the same attribution
 //                          this id will point to it via aria-labelledBy
 
 //              align       center or centre -  to align img to centre (optional)
@@ -19,17 +19,16 @@
 //              loading     lazy (default), eager or auto (optional)
 
 //              portrait    true - if omitted landscape is default (optional)
-//              
+//
 //              border      true  - Adds a 1px border (optional)
 //              shadow      true  - Adds a dropshadow (optional)
 //              rounded     true  - Adds rounded corners (optional)
-//              classes     adds whatever is placed in here into the figure class 
+//              classes     adds whatever is placed in here into the figure class
 //                          can be useful to adjust margins - margin-top-sm (most definitely optional)
-
 
 //  shortcode:  [ll-image][/ll-image]
 
-//	usage:			
+//	usage:
 //  [ll-image url='https://path.to/image' alt='Alt tag for the image' caption='Caption here' portrait='true' centre='true' border='true' size='sm'][/ll-image]
 //
 //  Captions can also be provided within the shortcode body when richer markup is required:
@@ -46,8 +45,8 @@
 //    <figure>
 //        <img src="my-image.jpg" alt="An example image" />
 //        <figcaption>An example caption for this image.</figcaption>
-//        <div class="accordion-item transcript"> 
-//            <!-- lots of additional accordion code goes here -->	
+//        <div class="accordion-item transcript">
+//            <!-- lots of additional accordion code goes here -->
 //        </div>
 //    </figure>
 //
@@ -74,8 +73,8 @@ function image_att ($atts, $content = null) {
         'portrait' => '',
         'size' => '',
         'caption' => '',
-		'float' => '',
-		'hide-sm' => '',
+        'float' => '',
+        'hide-sm' => '',
         'attribution-id' => '',
         'attribution' => '', // writers reach for the shorter name; treated as attribution-id below
         'caption-gap' => '',
@@ -166,13 +165,13 @@ function image_att ($atts, $content = null) {
     //Wrapper div not required for most cases
     $wrapperDiv = '';
     $wrapperDivEnd = '';
-    
+
     //if aspect is portrait, create wrapper div code
-    if($a['portrait'] == 'true') { 
-        $wrapperDiv = '<div class="image-caption-wrapper">'; 
+    if($a['portrait'] == 'true') {
+        $wrapperDiv = '<div class="image-caption-wrapper">';
         $wrapperDivEnd = '</div>';
     }
-            
+
     $figCaptionTag = '';
 
     if ($a['caption'] !== '') {
@@ -188,8 +187,7 @@ function image_att ($atts, $content = null) {
             $figCaptionTag .= '<figcaption>' . $caption . '</figcaption>' . "\n";
         }
     }
-             
-            
+
     //Build <img> tag with alt tag, add border if present
     $loading_mode = strtolower($a['loading']);
     $allowed_loading_modes = array('lazy', 'eager', 'auto');
@@ -198,39 +196,38 @@ function image_att ($atts, $content = null) {
     }
 
     $imageTag = '<img src="' . esc_url($a['url']) . '" alt="' . esc_attr($a['alt']) . '" loading="' . esc_attr($loading_mode) . '" decoding="async" />' . "\n";
-           
- 
-    //Start output phase       
+
+    //Start output phase
     $output = '';
     $output .= $figureTag . "\n";
     $output .= $wrapperDiv . "\n";
     $output .= $imageTag . "\n";
     $output .= $figCaptionTag;
-    $output .= $wrapperDivEnd . "\n"; 
-    
-    //If $content exists, there's a transcript, add output from [transcript-accordion] 
+    $output .= $wrapperDivEnd . "\n";
+
+    //If $content exists, there's a transcript, add output from [transcript-accordion]
     if($transcript_content !== '') {
         $output .= $transcript_content;
     }
-                  
+
     $output .= '</figure>' . "\n";
-            
+
     return $output;
 }
 
 function addAttribution($input) {
     // Define the attribution string
     $attribution = ", by <a href='https://rmit.edu.au/'>RMIT</a>, licensed under <a href='https://creativecommons.org/licenses/by/4.0/'>CC BY-NC 4.0</a>";
-    
+
     // Check if the input string contains "|attrib"
     if (strpos($input, '|attrib') !== false) {
         // Remove "|attrib" from the input string
         $input = str_replace('|attrib', '', $input);
-        
+
         // Append the attribution string
         $input .= $attribution;
     }
-    
+
     return $input;
 }
 
@@ -357,11 +354,4 @@ function ll_image_recover_caption_attribute($atts) {
 
     return $atts;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("ll-image");
-
-//add code to wordpress itself
-add_shortcode('ll-image', 'image_att');
-
-?>
+ll_add_shortcode('ll-image', 'image_att');
