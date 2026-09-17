@@ -63,9 +63,31 @@ add_action( 'wp_enqueue_scripts', function() {
 
 // MAIN MENU: lets the hamburger menu's sections be managed in Appearance > Menus.
 // Until a menu is assigned to this location, header.php falls back to its built-in list.
+// FOOTER MENU: same deal for the About / Accessibility / What's new / feedback list.
 add_action('after_setup_theme', function () {
-	register_nav_menus(array('main-menu' => __('Main menu', 'rmit-learning-lab')));
+	register_nav_menus(array(
+		'main-menu'   => __('Main menu', 'rmit-learning-lab'),
+		'footer-menu' => __('Footer menu', 'rmit-learning-lab'),
+	));
 });
+
+// Printed by wp_nav_menu() when no menu is assigned to the footer-menu location,
+// so an environment without one keeps the links it has always had.
+function rmit_ll_footer_menu_fallback()
+{
+	$links = array(
+		'/about-the-learning-lab/'               => 'About Learning Lab',
+		'/about-the-learning-lab/accessibility/' => 'Accessibility',
+		'/about-the-learning-lab/whats-new/'     => "What's new",
+		'https://forms.office.com/r/YvquUHdtE5'  => 'Learning Lab feedback',
+	);
+
+	echo '<ul class="footer-links">';
+	foreach ($links as $href => $label) {
+		printf('<li><a href="%s">%s</a></li>', esc_url($href), esc_html($label));
+	}
+	echo '</ul>';
+}
 
 // OPTIONAL: ADD MORE NAV MENUS
 //register_nav_menus( array( 'third' => __( 'Third Menu', 'picostrap' ), 'fourth' => __( 'Fourth Menu', 'picostrap' ), 'fifth' => __( 'Fifth Menu', 'picostrap' ), ) );
