@@ -114,6 +114,7 @@ require_once $theme_includes_dir . 'breadcrumbs-navigation.php'; // Breadcrumbs 
 require_once $theme_includes_dir . 'content-filters.php';        // Content filtering and query modifications
 require_once $theme_includes_dir . 'custom-taxonomy.php';        // Custom taxonomy registration and ACF filters
 require_once $theme_includes_dir . 'custom-shortcodes.php';      // Custom shortcodes manager - auto-discovers shortcode files
+require_once $theme_includes_dir . 'editor-shortcode-buttons.php'; // Shortcode buttons in the Text editor toolbar
 require_once $theme_includes_dir . 'news-post-type.php';       // "What's new" announcements post type
 require_once $theme_includes_dir . 'json-export.php';            // Exports the site data to json. Required for search to function
 require_once $theme_includes_dir . 'redirect.php';               // Redirect and 404 code for both admin and client side

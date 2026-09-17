@@ -343,6 +343,7 @@ add_shortcode_to_list("landing-banner");
 add_shortcode_to_list("landing-list");
 add_shortcode_to_list("home-panel");
 add_shortcode_to_list("home-panel-container");
+add_shortcode_to_list("landing-columns");
 
 //add code to wordpress itself
 add_shortcode('landing-banner', 'landing_banner_att');

@@ -62,8 +62,7 @@ add_filter("the_content", "the_content_filter");
 //When the above isn't working, use this function right before echoing 
 //content to definitely get rid of <br> and <p></p> (but not <br />)
 
-//called by: Additional_resources page-template
-//Maybe this should reside in functions.php ????
+//called by: highlight-text.php and the additional-resources page template
 
 function strip_tags_before_echo($content) {
     // Strip out <br> tags
@@ -99,5 +98,6 @@ function custom_line_break() {
     return '<br />';
 }
 add_shortcode('br', 'custom_line_break');
+add_shortcode_to_list('br');
 
 ?>
