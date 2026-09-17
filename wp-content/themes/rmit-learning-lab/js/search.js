@@ -232,6 +232,60 @@
         return String(item.keywords || '').toLowerCase();
     }
 
+    // What students type, mapped to what the site calls it. The keyword taxonomy is a
+    // controlled vocabulary, so this covers the gap without adding terms to it — and
+    // several of these (RMIT Harvard, APA, AGLC4) exist as terms but are on no page.
+    var PHRASE_SYNONYMS = {
+        'sig figs': 'significant figures',
+        'group assignment': 'group work',
+        'lit review': 'literature review',
+        'reference list': 'referencing',
+        'reading list': 'referencing'
+    };
+
+    var WORD_SYNONYMS = {
+        harvard: ['referencing', 'cite'],
+        apa: ['referencing', 'cite'],
+        vancouver: ['referencing', 'cite'],
+        aglc: ['referencing', 'legal'],
+        aglc4: ['referencing', 'legal'],
+        footnote: ['citation'],
+        footnotes: ['citation'],
+        endnote: ['referencing', 'cite'],
+        zotero: ['referencing', 'cite'],
+        mendeley: ['referencing', 'cite'],
+        powerpoint: ['presentation'],
+        slides: ['presentation'],
+        slideshow: ['presentation'],
+        stats: ['statistics'],
+        sigfigs: ['significant', 'figures'],
+        chatgpt: ['artificial', 'intelligence'],
+        copilot: ['artificial', 'intelligence']
+    };
+
+    function expandQuery(query) {
+        var text = query.toLowerCase();
+
+        Object.keys(PHRASE_SYNONYMS).forEach(function(phrase) {
+            if (text.indexOf(phrase) !== -1) {
+                text = text.split(phrase).join(PHRASE_SYNONYMS[phrase]);
+            }
+        });
+
+        var words = meaningfulWords(text);
+        var expanded = words.slice();
+
+        words.forEach(function(word) {
+            (WORD_SYNONYMS[word] || []).forEach(function(alias) {
+                if (expanded.indexOf(alias) === -1) {
+                    expanded.push(alias);
+                }
+            });
+        });
+
+        return expanded;
+    }
+
     function meaningfulWords(query) {
         return query.toLowerCase().split(/[^a-z0-9]+/).filter(function(word) {
             return word.length > 2 && STOP_WORDS.indexOf(word) === -1;
@@ -291,7 +345,7 @@
 
         var fuseOptions = getFuseOptions();
         var fuse = parsedIndex ? new FuseLib(data, fuseOptions, parsedIndex) : new FuseLib(data, fuseOptions);
-        var words = meaningfulWords(query);
+        var words = expandQuery(query);
         var results = words.length > 1
             ? searchByWord(fuse, words)
             : sortResults(fuse.search(query), query);
