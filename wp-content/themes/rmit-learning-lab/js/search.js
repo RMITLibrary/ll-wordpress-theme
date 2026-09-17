@@ -1,8 +1,11 @@
 (function() {
     'use strict';
 
-    var dataURL = "../wp-content/uploads/pages.json?v=1.1.3";
-    var indexURL = "../wp-content/uploads/pages-index.json?v=1.1.3";
+    // Set by page-search.php from the index file's mtime; 1.1.3 was hardcoded and never
+    // moved, so a returning visitor kept whatever 4.6 MB their cache already held.
+    var version = window.LL_SEARCH_VERSION || "1";
+    var dataURL = "../wp-content/uploads/pages.json?v=" + version;
+    var indexURL = "../wp-content/uploads/pages-index.json?v=" + version;
     var fuseScriptURL = "https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js";
 
     var fuseScriptPromise = null;
