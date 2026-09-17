@@ -16,7 +16,7 @@
 
 //  shortcode:  [alert-banner]
 
-//	usage:			
+//	usage:
 //  [alert-banner alert='<strong>Warning!</strong> Message goes here' /]
 //  [alert-banner type='info' close='false']<strong>Info.</strong> Message goes here[/alert-banner]
 
@@ -25,7 +25,7 @@
 //    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 //    <strong>Warning!</strong> Message here.
 //</div>
-    
+
 function alert_banner_att($atts, $content = null) {
     $a = shortcode_atts(
         array(
@@ -42,7 +42,7 @@ function alert_banner_att($atts, $content = null) {
 
     return doAlertBanner($content, $a['type'], $a['close'] !== 'false' && $a['dismissible'] !== 'false');
 }
-    
+
 //-----------------------------
 //	alert_banner_att
 
@@ -58,7 +58,7 @@ function alert_banner_att($atts, $content = null) {
 //              aler_banner_att
 
 function doAlertBanner($content, $type = 'danger', $dismissible = true)
-{ 
+{
     $type = in_array($type, array('danger', 'warning', 'info'), true) ? $type : 'danger';
     $classes = 'alert alert-' . $type . ($dismissible ? ' alert-dismissible' : '');
 
@@ -67,18 +67,11 @@ function doAlertBanner($content, $type = 'danger', $dismissible = true)
     if($dismissible) {
         $output .= '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>' . "\n";
     }
-    
+
     //strips out <script> tags etc.
     $output .= wp_kses_post($content);
     $output .= '</div>';
 
-    return $output;    
+    return $output;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("alert-banner");
-
-//add code to wordpress itself
-add_shortcode('alert-banner', 'alert_banner_att');
-
-?>
+ll_add_shortcode('alert-banner', 'alert_banner_att');
