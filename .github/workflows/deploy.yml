@@ -86,6 +86,14 @@ jobs:
             exit 65
           }
 
+      # Dependabot bumps the pinned Fuse.js in package.json; the theme copy must match.
+      - name: Verify vendored Fuse.js matches package.json
+        run: |
+          diff -q node_modules/fuse.js/dist/fuse.min.js "${THEME_DIR}/js/fuse/fuse.min.js" || {
+            echo "Vendored Fuse.js is out of date. Run: npm ci && npm run fuse:vendor, then commit." >&2
+            exit 65
+          }
+
       # Build CSS using ONLY your theme sources. Add include paths to theme sass dirs.
       - name: Build CSS
         working-directory: ${{ env.WORKDIR }}

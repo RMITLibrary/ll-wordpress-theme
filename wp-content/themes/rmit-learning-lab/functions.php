@@ -179,8 +179,9 @@ add_filter( 'script_loader_src', 'rmit_learning_lab_hash_asset_src', 20 );
 add_filter( 'style_loader_src', 'rmit_learning_lab_hash_asset_src', 20 );
 
 add_action('wp_head', function () {
+	// jsDelivr was dropped here when MathJax (2.0.54) and Fuse.js were self-hosted —
+	// nothing loads from it any more, so the handshake was pure cost on every page.
 	$origins = array(
-		'https://cdn.jsdelivr.net',
 		'https://www.googletagmanager.com',
 		'https://www.rmit.edu.au',
 		'https://rmitlibrary.github.io',

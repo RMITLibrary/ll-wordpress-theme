@@ -44,41 +44,6 @@ get_header();
     </form>
 </div>
 <!-- END search -->
-<!-- START debug -->
-        <div id="search-debug" class="search-debug">
-            <div>            
-                <!-- START debug -->
-                <label for="threshold">
-                    <a href="https://www.fusejs.io/api/options.html#threshold" target="docs">Threshold:</a>
-                </label>
-                <input type="number" id="threshold" min="0" max="1" step="0.05" value="0.4">
-                </div>
-                <div>
-                    <label for="distance">
-                        <a href="https://www.fusejs.io/api/options.html#distance" target="docs">Distance:</a>
-                    </label>
-                    <input type="number" id="distance" min="0" max="10000" step="50" value="1200">
-                </div>
-                <div>
-                    <label for="location">
-                        <a href="https://www.fusejs.io/api/options.html#location" target="docs">Location:</a>
-                    </label>
-                    <input type="number" id="location" min="0" max="10000" step="50" value="0">
-                </div>
-                <div>
-                    <label for="minMatchCharLength" class="small">
-                        <a href="https://www.fusejs.io/api/options.html#minmatchcharlength" target="docs">Min Match Char Length:</a>
-                    </label>
-                    <input type="number" id="minMatchCharLength" min="1" max="100" step="1" value="4">
-                </div>
-                <div>
-                <label for="useExtendedSearch" class="small">
-                    <a href="https://www.fusejs.io/api/options.html#useextendedsearch" target="_blank">Use Extended Search:</a>
-                </label>
-                <input type="checkbox" id="useExtendedSearch">
-            </div>
-        </div>
-<!-- END debug -->
 <!-- START results div -->
 <div id="results-container" class="collapse">
     <div>
@@ -236,5 +201,13 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
 <!-- END col-xs-12 -->
 </div>
 
+<script>
+// The index is rewritten on every export, so the cache buster has to move with it.
+window.LL_SEARCH_VERSION = <?php
+    $index_file = trailingslashit( wp_upload_dir()['basedir'] ) . 'pages.json';
+    echo wp_json_encode( file_exists( $index_file ) ? (string) filemtime( $index_file ) : '0' );
+?>;
+window.LL_FUSE_URL = <?php echo wp_json_encode( rmit_ll_fuse_url() ); ?>;
+</script>
 <script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() ); ?>/js/search.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/search.js' ) ); ?>"></script>
 <?php get_footer();
