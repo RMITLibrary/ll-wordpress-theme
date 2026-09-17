@@ -150,11 +150,6 @@ function format_youtube_video_url($url) {
         return $url;
     }
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("ll-video");
-
-//add code to wordpress itself
-add_shortcode('ll-video', 'video_att');
+ll_add_shortcode('ll-video', 'video_att');
 
 ?>

@@ -14,7 +14,6 @@
 //   Content here
 // </div>
 
-
 function hscroll_panel_att($atts, $content = null) {
     // $default = array(
     //     'id' => 'my-attribution'
@@ -33,11 +32,6 @@ function hscroll_panel_att($atts, $content = null) {
 
     return $tag;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("hscroll");
-
-//add code to wordpress itself
-add_shortcode('hscroll', 'hscroll_panel_att');
+ll_add_shortcode('hscroll', 'hscroll_panel_att');
 
 ?>

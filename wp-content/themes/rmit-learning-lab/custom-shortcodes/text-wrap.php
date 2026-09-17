@@ -49,13 +49,8 @@ function break_all_shortcode($atts, $content = null) {
     $content = do_shortcode($content);
     return '<span class="break-all">' . $content . '</span>';
 }
-
-add_shortcode_to_list('nowrap');
-add_shortcode_to_list('break-word');
-add_shortcode_to_list('break-all');
-
-add_shortcode('nowrap', 'nowrap_shortcode');
-add_shortcode('break-word', 'break_word_shortcode');
-add_shortcode('break-all', 'break_all_shortcode');
+ll_add_shortcode('nowrap', 'nowrap_shortcode');
+ll_add_shortcode('break-word', 'break_word_shortcode');
+ll_add_shortcode('break-all', 'break_all_shortcode');
 
 ?>

@@ -29,6 +29,14 @@ function add_shortcode_to_list($shortcode) {
     }
 }
 
+// Registers a shortcode and records it for the_content_filter in one go. Keeping the
+// two calls together is what stops the list drifting out of step with what is actually
+// registered — [landing-columns] and [br] were both missed while they were separate.
+function ll_add_shortcode($tag, $callback) {
+    add_shortcode($tag, $callback);
+    add_shortcode_to_list($tag);
+}
+
 // Function to get the list of shortcodes
 function get_shortcodes_list() {
     global $shortcodes;
@@ -97,7 +105,6 @@ foreach ($shortcode_files as $file) {
 function custom_line_break() {
     return '<br />';
 }
-add_shortcode('br', 'custom_line_break');
-add_shortcode_to_list('br');
+ll_add_shortcode('br', 'custom_line_break');
 
 ?>

@@ -26,7 +26,6 @@
 //              classes     adds whatever is placed in here into the figure class 
 //                          can be useful to adjust margins - margin-top-sm (most definitely optional)
 
-
 //  shortcode:  [ll-image][/ll-image]
 
 //	usage:			
@@ -357,11 +356,6 @@ function ll_image_recover_caption_attribute($atts) {
 
     return $atts;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("ll-image");
-
-//add code to wordpress itself
-add_shortcode('ll-image', 'image_att');
+ll_add_shortcode('ll-image', 'image_att');
 
 ?>

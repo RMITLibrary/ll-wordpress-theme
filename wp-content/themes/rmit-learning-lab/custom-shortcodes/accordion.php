@@ -38,7 +38,6 @@ function transcript_accordion_att($atts, $content = null) {
 	return doAccordion("transcript", $atts, $content);
 }
 
-
 //-----------------------------
 //	bootstrap_accordion_att
 
@@ -79,8 +78,6 @@ function transcript_accordion_att($atts, $content = null) {
 function bootstrap_accordion_att($atts, $content = null) {
 	return doAccordion("regular", $atts, $content);
 }
-
-
 
 //-----------------------------
 //	doAccordion
@@ -205,8 +202,6 @@ function doAccordion($type, $atts, $content = null) {
     return $output;
 }
 
-
-
 //-----------------------------
 //	generate_id
 
@@ -238,29 +233,15 @@ function generate_id($string, $prefix) {
 
     return $key . '-' . $counts[$key];
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("ll-accordion");
-add_shortcode_to_list("transcript");
-
-//add code to wordpress itself
-add_shortcode('ll-accordion', 'bootstrap_accordion_att');
-add_shortcode('transcript', 'transcript_accordion_att');
+ll_add_shortcode('ll-accordion', 'bootstrap_accordion_att');
+ll_add_shortcode('transcript', 'transcript_accordion_att');
 
 //Look to phase out these older names
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("transcript-accordion");
-add_shortcode_to_list("bs-accordion");
-
-add_shortcode('transcript-accordion', 'transcript_accordion_att'); 
-add_shortcode('bs-accordion', 'bootstrap_accordion_att');
+ll_add_shortcode('transcript-accordion', 'transcript_accordion_att'); 
+ll_add_shortcode('bs-accordion', 'bootstrap_accordion_att');
 
 // Point lightweight-accordion to transcript_accordion_att temporarily. 
 // Look to find and replace "lightweight-accordion" with "transcript" over time.
-
-add_shortcode_to_list("lightweight-accordion");
-
-add_shortcode('lightweight-accordion', 'transcript_accordion_att'); 
+ll_add_shortcode('lightweight-accordion', 'transcript_accordion_att'); 
 
 ?>

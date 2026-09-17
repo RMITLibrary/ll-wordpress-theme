@@ -21,7 +21,6 @@
 //    </pre>
 //</div>
 
-
 function attribution_att($atts, $content = null)
 {
   $default = array(
@@ -41,9 +40,4 @@ function attribution_att($atts, $content = null)
 
   return $tag;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("attribution");
-
-//add code to wordpress itself
-add_shortcode('attribution', 'attribution_att');
+ll_add_shortcode('attribution', 'attribution_att');

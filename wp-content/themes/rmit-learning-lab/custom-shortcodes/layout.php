@@ -79,7 +79,6 @@ function ll_grid_att($atts, $content = null) {
     return $tag . $content . '</div>';
 }
 
-
 //-----------------------------
 //	img_text_att
 
@@ -152,13 +151,7 @@ function img_text_att($atts, $content = null) {
     // Return the complete output
     return $tag . $imgOutput . $content . '</div>';
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("ll-grid");
-add_shortcode_to_list("img-text");
-
-//add code to wordpress itself
-add_shortcode('ll-grid', 'll_grid_att');
-add_shortcode('img-text', 'img_text_att');
+ll_add_shortcode('ll-grid', 'll_grid_att');
+ll_add_shortcode('img-text', 'img_text_att');
 
 ?>

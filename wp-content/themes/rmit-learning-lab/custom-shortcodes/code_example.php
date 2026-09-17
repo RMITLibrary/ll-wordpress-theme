@@ -21,7 +21,6 @@
 //    </pre>
 //</div>
 
-
 function ll_code_example_att($atts, $content = null) {
     $default = array(
         'wrap' => ''
@@ -42,11 +41,6 @@ function ll_code_example_att($atts, $content = null) {
     
     return $tag . $content . '</code></pre></div>';
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("ll-code");
-
-//add code to wordpress itself
-add_shortcode('ll-code', 'll_code_example_att');
+ll_add_shortcode('ll-code', 'll_code_example_att');
 
 ?>

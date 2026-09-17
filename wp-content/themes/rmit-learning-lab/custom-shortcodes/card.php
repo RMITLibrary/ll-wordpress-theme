@@ -148,9 +148,6 @@ function ll_card_att($atts, $content = null) {
             
     return $output; 
 }
-add_shortcode_to_list("ll-card");
-
-//add code to wordpress itself
-add_shortcode('ll-card', 'll_card_att');
+ll_add_shortcode('ll-card', 'll_card_att');
 
 ?>

@@ -94,15 +94,9 @@ function nav_panel_att($atts, $content = null) {
     $output .= '</a></blockquote>';
 	return $output;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("nav-panel");
-add_shortcode_to_list("blockquote-nav");
-
-//add code to wordpress itself
-add_shortcode('nav-panel', 'nav_panel_att');
+ll_add_shortcode('nav-panel', 'nav_panel_att');
     
 //Look to phase out this old name
-add_shortcode('blockquote-nav', 'nav_panel_att');
+ll_add_shortcode('blockquote-nav', 'nav_panel_att');
 
 ?>

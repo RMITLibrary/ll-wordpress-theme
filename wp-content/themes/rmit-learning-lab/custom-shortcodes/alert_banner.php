@@ -74,11 +74,6 @@ function doAlertBanner($content, $type = 'danger', $dismissible = true)
 
     return $output;    
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("alert-banner");
-
-//add code to wordpress itself
-add_shortcode('alert-banner', 'alert_banner_att');
+ll_add_shortcode('alert-banner', 'alert_banner_att');
 
 ?>

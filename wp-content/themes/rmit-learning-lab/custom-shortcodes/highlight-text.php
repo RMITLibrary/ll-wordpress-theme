@@ -66,7 +66,6 @@ function highlight_text_att($atts, $content = null) {
 
     $tag .= '">';
 
-
     $key = '';
     //Format key, check if the 'key' attribute is not empty
     if ($a['key'] != '') { 
@@ -102,8 +101,6 @@ function highlight_text_att($atts, $content = null) {
     return $output;
 }
 
-
-
 //-----------------------------
 //	highlight_att
 
@@ -126,7 +123,6 @@ function highlight_text_att($atts, $content = null) {
 // <sup aria-hidden="true">1</sup>
 // <span class="visually-hidden">Screen reader users, this is an example of highlighted content.</span>
 // </span>
-
 
 function highlight_att($atts, $content = null) {
     $default = array(
@@ -169,13 +165,7 @@ function highlight_att($atts, $content = null) {
 
     return $output;
 }
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("hl");
-add_shortcode_to_list("highlight-text");
-
-//add code to wordpress itself
-add_shortcode('hl', 'highlight_att');
-add_shortcode('highlight-text', 'highlight_text_att');
+ll_add_shortcode('hl', 'highlight_att');
+ll_add_shortcode('highlight-text', 'highlight_text_att');
 
 ?>

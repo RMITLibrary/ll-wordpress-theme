@@ -81,8 +81,6 @@ function landing_banner_att($atts, $content = null) {
 
 }
 
-
-
 //-----------------------------
 //	landing_list_att
 
@@ -135,7 +133,6 @@ function landing_list_att($atts) {
 
     return $output;
 }
-
 
 //-----------------------------
 //	home_panel_atts
@@ -209,8 +206,6 @@ function home_panel_atts($atts, $content = null) {
     return $output;
 }
 
-
-
 //-----------------------------
 //	home_panel_container_atts
 
@@ -248,7 +243,6 @@ function home_panel_container_atts($atts, $content = null) {
 
     return $output;
 }
-
 
 //-----------------------------
 //	display_landing_columns
@@ -336,21 +330,11 @@ function display_landing_columns() {
 
     return ob_get_clean(); // Return the buffered content
 }
+ll_add_shortcode('landing-banner', 'landing_banner_att');
+ll_add_shortcode('landing-list', 'landing_list_att');
 
-
-//add code to list (used in the_content_filter)
-add_shortcode_to_list("landing-banner");
-add_shortcode_to_list("landing-list");
-add_shortcode_to_list("home-panel");
-add_shortcode_to_list("home-panel-container");
-add_shortcode_to_list("landing-columns");
-
-//add code to wordpress itself
-add_shortcode('landing-banner', 'landing_banner_att');
-add_shortcode('landing-list', 'landing_list_att');
-
-add_shortcode('home-panel', 'home_panel_atts');
-add_shortcode('home-panel-container', 'home_panel_container_atts');
-add_shortcode('landing-columns', 'display_landing_columns');
+ll_add_shortcode('home-panel', 'home_panel_atts');
+ll_add_shortcode('home-panel-container', 'home_panel_container_atts');
+ll_add_shortcode('landing-columns', 'display_landing_columns');
 
 ?>
