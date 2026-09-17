@@ -6,7 +6,9 @@
     var version = window.LL_SEARCH_VERSION || "1";
     var dataURL = "../wp-content/uploads/pages.json?v=" + version;
     var indexURL = "../wp-content/uploads/pages-index.json?v=" + version;
-    var fuseScriptURL = "https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.min.js";
+    // Set by page-search.php. Self-hosted so search does not depend on a third-party
+    // CDN being reachable; the literal below is only a fallback if the global is missing.
+    var fuseScriptURL = window.LL_FUSE_URL || "../wp-content/themes/rmit-learning-lab/js/fuse/fuse.min.js";
 
     var fuseScriptPromise = null;
     var pagesData = null;

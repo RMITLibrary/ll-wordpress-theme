@@ -75,3 +75,19 @@ function doChildrenList($pageId) {
         )
     );
 }
+
+/**
+ * URL of the vendored Fuse.js.
+ *
+ * Self-hosted rather than loaded from jsDelivr: search is the one feature that
+ * breaks completely without it, and the static export cannot help with a script
+ * fetched at runtime from a third party. Pinned in package.json, copied by
+ * `npm run fuse:vendor`, checked by the deploy workflow.
+ *
+ * Both the search page and the index builder read this, so they cannot end up on
+ * different versions — an index built by one is read by the other.
+ */
+function rmit_ll_fuse_url() {
+    return trailingslashit( get_stylesheet_directory_uri() ) . 'js/fuse/fuse.min.js?v='
+        . rmit_learning_lab_asset_version( 'js/fuse/fuse.min.js' );
+}

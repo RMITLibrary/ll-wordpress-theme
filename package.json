@@ -7,6 +7,7 @@
     "sass": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --style=compressed --source-map --quiet-deps",
     "watch": "sass wp-content/themes/rmit-learning-lab/sass/main.scss wp-content/themes/rmit-learning-lab/css-output/bundle.css --watch --style=compressed --source-map --quiet-deps",
     "build": "npm run sass",
+    "fuse:vendor": "mkdir -p wp-content/themes/rmit-learning-lab/js/fuse && cp node_modules/fuse.js/dist/fuse.min.js node_modules/fuse.js/LICENSE wp-content/themes/rmit-learning-lab/js/fuse/",
     "mathjax:vendor": "rm -rf wp-content/themes/rmit-learning-lab/mathjax && mkdir -p wp-content/themes/rmit-learning-lab/mathjax/fonts/mathjax-newcm-font wp-content/themes/rmit-learning-lab/mathjax/fonts/mathjax-mhchem-font-extension && cp -R node_modules/mathjax/tex-chtml.js node_modules/mathjax/input node_modules/mathjax/output node_modules/mathjax/a11y node_modules/mathjax/ui node_modules/mathjax/sre node_modules/mathjax/LICENSE wp-content/themes/rmit-learning-lab/mathjax/ && cp -R node_modules/@mathjax/mathjax-newcm-font/chtml.js node_modules/@mathjax/mathjax-newcm-font/chtml wp-content/themes/rmit-learning-lab/mathjax/fonts/mathjax-newcm-font/ && cp -R node_modules/@mathjax/mathjax-mhchem-font-extension/chtml.js node_modules/@mathjax/mathjax-mhchem-font-extension/chtml wp-content/themes/rmit-learning-lab/mathjax/fonts/mathjax-mhchem-font-extension/",
     "dev": "npm run watch",
     "clean": "rm -f wp-content/themes/rmit-learning-lab/css-output/bundle.css*",
@@ -34,6 +35,7 @@
   "devDependencies": {
     "@mathjax/mathjax-mhchem-font-extension": "4.1.3",
     "@mathjax/mathjax-newcm-font": "4.1.3",
+    "fuse.js": "6.6.2",
     "mathjax": "4.1.3",
     "playwright": "^1.58.2",
     "sass": "^1.83.2"

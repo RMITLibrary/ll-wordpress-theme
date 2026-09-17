@@ -207,6 +207,7 @@ window.LL_SEARCH_VERSION = <?php
     $index_file = trailingslashit( wp_upload_dir()['basedir'] ) . 'pages.json';
     echo wp_json_encode( file_exists( $index_file ) ? (string) filemtime( $index_file ) : '0' );
 ?>;
+window.LL_FUSE_URL = <?php echo wp_json_encode( rmit_ll_fuse_url() ); ?>;
 </script>
 <script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() ); ?>/js/search.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/search.js' ) ); ?>"></script>
 <?php get_footer();
