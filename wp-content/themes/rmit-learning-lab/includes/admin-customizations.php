@@ -114,3 +114,31 @@ add_action('admin_head', function() {
         </style>';
     }
 });
+/**
+ * Unregister the parent theme's widget areas.
+ *
+ * The child theme never calls dynamic_sidebar() — sidebar.php builds the page
+ * navigation by hand — so every area picostrap registers renders nowhere. Leaving
+ * them makes Appearance > Widgets look like a place where changing something has
+ * an effect, which is how five stock widgets ended up parked in Main Sidebar.
+ *
+ * Priority 11 so it runs after picostrap_widgets_init, which is on the default 10.
+ * Widgets assigned to an unregistered area are kept by WordPress and reappear if
+ * the area ever comes back; nothing is deleted here.
+ */
+add_action('widgets_init', function () {
+    $areas = array(
+        'right-sidebar',
+        'left-sidebar',
+        'hero',
+        'herocanvas',
+        'statichero',
+        'main-sidebar',
+        'footerfull',
+        'wc-sidebar',
+    );
+
+    foreach ($areas as $area) {
+        unregister_sidebar($area);
+    }
+}, 11);
