@@ -163,14 +163,120 @@
         console.error(error);
     }
 
+    // Weak matches worth keeping sit at or below 0.048; the first junk result across the
+    // queries tested came in at 0.111, so the cut goes in the gap between them.
+    var SCORE_CUTOFF = 0.1;
+    var MAX_RESULTS = 40;
+
+    // Fuse matches the query as one string, so a question scores badly against everything
+    // — "how to reference a website" returned nothing. These carry no meaning on their own.
+    var STOP_WORDS = ['how', 'the', 'and', 'for', 'with', 'you', 'your', 'are', 'can', 'what',
+        'when', 'where', 'why', 'does', 'from', 'that', 'this', 'into', 'about', 'should',
+        'would', 'need', 'want', 'use', 'using', 'any', 'there', 'been', 'have', 'its'];
+
     function getFuseOptions() {
         return {
-            keys: ['title', 'content', 'keywords'],
+            // Pages are indexed whole, so a title match and a word buried in 38kB of body
+            // text would otherwise count the same.
+            keys: [
+                { name: 'title', weight: 3 },
+                { name: 'keywords', weight: 2 },
+                { name: 'content', weight: 1 }
+            ],
             threshold: 0.4,
-            distance: 1200,
-            location: 0,
-            minMatchCharLength: 4
+            minMatchCharLength: 4,
+            includeScore: true,
+            // location/distance made anything past roughly the first 1200 characters of a
+            // page score badly, which hid most of the content.
+            ignoreLocation: true,
+            // Without this an exact match is penalised for appearing in a long page, so
+            // "harvard" ranked a short fuzzy match above the Easy Cite page that says it.
+            ignoreFieldNorm: true
         };
+    }
+
+    // Turning off field-norm scoring leaves a lot of results tied at 0, and Fuse returns
+    // ties in index order — so "referencing" put an images page above the Referencing
+    // section. Break ties by where the term actually appears.
+    function matchRank(item, needle) {
+        if (String(item.title || '').toLowerCase().indexOf(needle) !== -1) {
+            return 0;
+        }
+        if (String(item.keywords || '').toLowerCase().indexOf(needle) !== -1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    function sortResults(results, query) {
+        var needle = query.trim().toLowerCase();
+
+        return results.slice().sort(function(a, b) {
+            var byScore = (a.score || 0) - (b.score || 0);
+            if (Math.abs(byScore) > 0.0001) {
+                return byScore;
+            }
+
+            var byWhere = matchRank(a.item, needle) - matchRank(b.item, needle);
+            if (byWhere !== 0) {
+                return byWhere;
+            }
+
+            // Shorter titles are the more general page: "Referencing" over
+            // "Referencing an oral presentation".
+            return String(a.item.title || '').length - String(b.item.title || '').length;
+        });
+    }
+
+    function keywordsOf(item) {
+        return String(item.keywords || '').toLowerCase();
+    }
+
+    function meaningfulWords(query) {
+        return query.toLowerCase().split(/[^a-z0-9]+/).filter(function(word) {
+            return word.length > 2 && STOP_WORDS.indexOf(word) === -1;
+        });
+    }
+
+    // Search each word, then rank by how many of them a page matched. A page matching
+    // every word comes first, but a page matching one still appears — "paraphrasing and
+    // summarising" should surface Synthesising, then Summarising and Paraphrasing.
+    function searchByWord(fuse, words) {
+        var found = {};
+
+        words.forEach(function(word) {
+            fuse.search(word).forEach(function(result) {
+                if (result.score > SCORE_CUTOFF) {
+                    return;
+                }
+                var key = result.item.link;
+                if (!found[key]) {
+                    found[key] = { item: result.item, scores: [], matched: 0 };
+                }
+                found[key].scores.push(result.score);
+                found[key].matched += 1;
+            });
+        });
+
+        return Object.keys(found).map(function(key) {
+            var hit = found[key];
+            var title = String(hit.item.title || '').toLowerCase();
+            var total = hit.scores.reduce(function(sum, score) { return sum + score; }, 0);
+
+            return {
+                item: hit.item,
+                score: total / hit.scores.length,
+                matched: hit.matched,
+                inTitle: words.filter(function(word) {
+                    return title.indexOf(word) !== -1 || keywordsOf(hit.item).indexOf(word) !== -1;
+                }).length
+            };
+        }).sort(function(a, b) {
+            return (b.matched - a.matched)
+                || (b.inTitle - a.inTitle)
+                || (a.score - b.score)
+                || (String(a.item.title || '').length - String(b.item.title || '').length);
+        });
     }
 
     function performSearch(FuseLib, data, parsedIndex, fromQuery) {
@@ -185,7 +291,10 @@
 
         var fuseOptions = getFuseOptions();
         var fuse = parsedIndex ? new FuseLib(data, fuseOptions, parsedIndex) : new FuseLib(data, fuseOptions);
-        var results = fuse.search(query);
+        var words = meaningfulWords(query);
+        var results = words.length > 1
+            ? searchByWord(fuse, words)
+            : sortResults(fuse.search(query), query);
 
         if (!resultsList) {
             return;
@@ -194,8 +303,13 @@
         resultsList.innerHTML = '';
         var resultCount = 0;
 
+        results = results.slice(0, MAX_RESULTS);
+
         results.forEach(function(result) {
             var item = result.item;
+            if (typeof result.score === 'number' && result.score > SCORE_CUTOFF) {
+                return;
+            }
             if (!shouldIncludeResult(item.keywords, item.link)) {
                 return;
             }
