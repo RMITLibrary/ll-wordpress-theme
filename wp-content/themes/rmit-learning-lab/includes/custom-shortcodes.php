@@ -60,14 +60,10 @@ function the_content_filter($content) {
 
 add_filter("the_content", "the_content_filter");
 
-
-
-
-
 //-----------------------------
 //	strip_tags_before_echo
 
-//When the above isn't working, use this function right before echoing 
+//When the above isn't working, use this function right before echoing
 //content to definitely get rid of <br> and <p></p> (but not <br />)
 
 //called by: highlight-text.php and the additional-resources page template
@@ -75,14 +71,13 @@ add_filter("the_content", "the_content_filter");
 function strip_tags_before_echo($content) {
     // Strip out <br> tags
     $content = preg_replace('/<br\s*\/?>/', '', $content);
-    
+
     // Strip out <p></p> tags
     $content = preg_replace('/<p[^>]*>[\s|&nbsp;]*<\/p>/', '', $content);
-    
+
     // Return the stripped content
     return $content;
 }
-
 
 // Auto-include all shortcode files
 // Automatically discovers and includes all PHP files in the custom-shortcodes directory
@@ -106,5 +101,3 @@ function custom_line_break() {
     return '<br />';
 }
 ll_add_shortcode('br', 'custom_line_break');
-
-?>

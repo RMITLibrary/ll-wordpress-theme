@@ -3,7 +3,7 @@
 //-----------------------------
 //	ll_grid_att
 
-//	Outputs a a css grid, avoiding blank p and br tags. 
+//	Outputs a a css grid, avoiding blank p and br tags.
 //
 
 //	args:		$content - the html markup to be put into the grid
@@ -15,7 +15,7 @@
 
 //  shortcode:  [ll-grid][/ll-grid]
 
-//	usage:		[ll-grid wrap="true"]Markup goes here[/ll-grid] 
+//	usage:		[ll-grid wrap="true"]Markup goes here[/ll-grid]
 
 //  Expected output
 //<div class="my-grid my-grid-3up grid-width-lg">
@@ -68,9 +68,9 @@ function ll_grid_att($atts, $content = null) {
     }
 
     //if there's anything in clesses, add it (don't document this, for web devs only)
-    if($a['classes'] != '') { 
-        $tag .= $a['classes']; 
-    } 
+    if($a['classes'] != '') {
+        $tag .= $a['classes'];
+    }
 
     // Complete tag
     $tag .= '">';
@@ -82,7 +82,7 @@ function ll_grid_att($atts, $content = null) {
 //-----------------------------
 //	img_text_att
 
-//	Outputs a a css grid, avoiding blank p and br tags. 
+//	Outputs a a css grid, avoiding blank p and br tags.
 //
 
 //	args:		$content - the html markup to be put into the grid
@@ -96,7 +96,7 @@ function ll_grid_att($atts, $content = null) {
 
 //  shortcode:  [img-text][/img-text]
 
-//	usage:		[img-text align-top="true" url="https://path.to/image.jpg" alt=""]Content goes here[/img-text] 
+//	usage:		[img-text align-top="true" url="https://path.to/image.jpg" alt=""]Content goes here[/img-text]
 
 //  Expected output
 // <div class="img-text align-items-top">
@@ -110,7 +110,7 @@ function ll_grid_att($atts, $content = null) {
 // 	</div>
 // </div>
 
-function img_text_att($atts, $content = null) { 
+function img_text_att($atts, $content = null) {
     $default = array(
         'align-top' => '',
         'icon' => '',
@@ -135,9 +135,9 @@ function img_text_att($atts, $content = null) {
         $tag .= 'align-items-top ';
     }
 
-    if($a['classes'] != '') { 
-        $tag .= $a['classes']; 
-    } 
+    if($a['classes'] != '') {
+        $tag .= $a['classes'];
+    }
 
     // Complete tag
     $tag .= '">';
@@ -153,5 +153,3 @@ function img_text_att($atts, $content = null) {
 }
 ll_add_shortcode('ll-grid', 'll_grid_att');
 ll_add_shortcode('img-text', 'img_text_att');
-
-?>

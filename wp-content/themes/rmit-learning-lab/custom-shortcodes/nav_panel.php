@@ -16,7 +16,7 @@
 
 //  shortcode:  [nav-panel]
 
-//	usage:			
+//	usage:
 //  [nav-panel category='Category' link='/cohesion' title='This is the title' extra-info='Extra information' icon='https://path.to/icon.svg']This is the blockquote content.[/nav-panel]
 
 //	Expected output
@@ -35,68 +35,66 @@
 //  </blockquote>
 
 function nav_panel_att($atts, $content = null) {
-	$default = array(
+    $default = array(
         'link' => 'https://www.rmit.edu.au',
         'category' => '',
-		'title' => 'My blockquote nav',
-		'extra-info' => '',
-		'icon' => '',
+        'title' => 'My blockquote nav',
+        'extra-info' => '',
+        'icon' => '',
         'classes' => ''
     );
-    
+
     //merges user-defined attributes with a set of default values ($default)
     $a = shortcode_atts($default, $atts);
-    
+
     //grab content from within the two shortcode tags
     $content = do_shortcode($content);
-	
-	$output = '';
-    
+
+    $output = '';
+
     $output .= '<blockquote class="complex ';
-    
+
     //if there's anything in clesses, add it (don't document this, for web devs only)
-    if($a['classes'] != '') { 
-        $output .= $a['classes'] . ' '; 
-    } 
-    
+    if($a['classes'] != '') {
+        $output .= $a['classes'] . ' ';
+    }
+
     $output .= '">' . "\n";
-    
+
     $output .= '<a href="' . $a['link'] .'">' . "\n";
     $output .= '<div class="content">' . "\n";
-	
+
     //If $category exists, add it to the output
-	if($a['category'] != '') {
-		$output .= '<p class="category">'. $a['category'] . '</p>' . "\n";
-	}
-	
+    if($a['category'] != '') {
+        $output .= '<p class="category">'. $a['category'] . '</p>' . "\n";
+    }
+
     //Title has to exist
     $output .= '<h3>' . $a['title'] . '</h3>' . "\n";
-    
+
     //If $content exists, add it to the output
-	if($content != null) {
-		$output .= '<p>' . $content . '</p>' . "\n";
-	}
-	
+    if($content != null) {
+        $output .= '<p>' . $content . '</p>' . "\n";
+    }
+
      //If extra-info exists, add it to the output
-	if($a['extra-info'] != '') {
-		$output .= '<small>'. $a['extra-info'] . '</small>' . "\n";
-	}
-	
+    if($a['extra-info'] != '') {
+        $output .= '<small>'. $a['extra-info'] . '</small>' . "\n";
+    }
+
     $output .= '</div>';
-	
+
      //If icon exists, add it to the output
-	if($a['icon'] != '') {
-		$output .= '<div class="icon-wrap">';
-		$output .= '<img src="'. $a['icon'] . '" alt="" />';
-		$output .= '</div>' . "\n";
-	}
-	
+    if($a['icon'] != '') {
+        $output .= '<div class="icon-wrap">';
+        $output .= '<img src="'. $a['icon'] . '" alt="" />';
+        $output .= '</div>' . "\n";
+    }
+
     $output .= '</a></blockquote>';
-	return $output;
+    return $output;
 }
 ll_add_shortcode('nav-panel', 'nav_panel_att');
-    
+
 //Look to phase out this old name
 ll_add_shortcode('blockquote-nav', 'nav_panel_att');
-
-?>

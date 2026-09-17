@@ -52,5 +52,3 @@ function break_all_shortcode($atts, $content = null) {
 ll_add_shortcode('nowrap', 'nowrap_shortcode');
 ll_add_shortcode('break-word', 'break_word_shortcode');
 ll_add_shortcode('break-all', 'break_all_shortcode');
-
-?>

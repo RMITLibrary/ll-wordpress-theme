@@ -9,18 +9,18 @@
 //              $atts - attributes as follows:
 
 //  $atts:      url         Absolute path to video - eg https://www.youtube.com/embed/w_IEpVVdNrE
-//              caption     Attribution for the video (optional)  
+//              caption     Attribution for the video (optional)
 //              align       center or centre -  to align img to centre (optional)
 //              alert       html message for an alert banner (optional)
 
 //				aspect		4-3, 3-2, square - default is 16-9
 //              portrait    true - does 9-16. If omitted landscape is default (optional)
-//              classes     adds whatever is placed in here into the figure class 
+//              classes     adds whatever is placed in here into the figure class
 //                          can be useful to adjust margins - margin-top-sm (most definitely optional)
 
 //  shortcode:  [ll-video][/ll-video]
 
-//	usage:			
+//	usage:
 //  [ll-image img='' alt='Alt tag for the image' caption='Caption here' aspect='portrait' left='true' border='true' size='sm'][/ll-image]
 //
 //  [ll-video url='']
@@ -30,12 +30,12 @@
 //  Expected output
 //<figure class="video">
 //	<div class="responsive-video">
-//		<iframe src="https://www.youtube.com/embed/video-id" frameborder="0" 
+//		<iframe src="https://www.youtube.com/embed/video-id" frameborder="0"
 //		allowfullscreen=""></iframe>
 //	</div>
 //	<figcaption>An example caption for this image.</figcaption>
 //	<div class="accordion-item transcript">
-//		<!-- lots of additional accordion code goes here -->	
+//		<!-- lots of additional accordion code goes here -->
 //	</div>
 //</figure>
 
@@ -44,83 +44,81 @@ function video_att($atts, $content = null) {
         'url' => '',
         'left' => '',
         'caption' => '',
-		'align' => '',
+        'align' => '',
         'alert' => '',
-		'aspect' => '',
-		'portrait' => '',
-        'classes' => ''   
+        'aspect' => '',
+        'portrait' => '',
+        'classes' => ''
     );
     $a = shortcode_atts($default, $atts);
     $content = do_shortcode($content);
-        
+
     $output = '<figure class="';
 
-	 //if portrait is true, add a class
-    if($a['portrait'] == 'true') { 
-        $output .= 'video-portrait ';  
+     //if portrait is true, add a class
+    if($a['portrait'] == 'true') {
+        $output .= 'video-portrait ';
     }
-	else if($a['aspect'] == '4-3') {
-		$output .= 'video-4-3 ';
-	}
-	else if($a['aspect'] == '3-2') {
-		$output .= 'video-3-2 ';
-	}
-	else if($a['aspect'] == 'square' || $a['aspect'] == '1-1') {
-		$output .= 'video-square ';
-	}
-	else {
-		$output .= 'video ';
-	}
-	
-	//if align = center or centre, add class to align image to the centre
+    else if($a['aspect'] == '4-3') {
+        $output .= 'video-4-3 ';
+    }
+    else if($a['aspect'] == '3-2') {
+        $output .= 'video-3-2 ';
+    }
+    else if($a['aspect'] == 'square' || $a['aspect'] == '1-1') {
+        $output .= 'video-square ';
+    }
+    else {
+        $output .= 'video ';
+    }
+
+    //if align = center or centre, add class to align image to the centre
     if ($a['align'] == 'center' || $a['align'] == 'centre') {
-        $output .= 'centre'; 
+        $output .= 'centre';
     }
-	
-	//if there's anything in clesses, add it (don't document this, for web devs only)
-    if($a['classes'] != '') { 
-        $output .= $a['classes'] . ' '; 
-    } 
-	
+
+    //if there's anything in clesses, add it (don't document this, for web devs only)
+    if($a['classes'] != '') {
+        $output .= $a['classes'] . ' ';
+    }
+
     $output .= '">' . "\n";
 
     //if there's an alert message, call alert_banner_att to do the mark-up
-    if($a['alert'] != '') { 
-        $output .= doAlertBanner($a['alert']);   
-    }      
-    
-	if($a['portrait'] == 'true') { 
-        $output .= '<div class="video-wrapper">' . "\n";  
+    if($a['alert'] != '') {
+        $output .= doAlertBanner($a['alert']);
     }
-    
+
+    if($a['portrait'] == 'true') {
+        $output .= '<div class="video-wrapper">' . "\n";
+    }
+
     //format url to https://www.youtube.com/embed/video-id
     $url = format_youtube_video_url($a['url']);
-	
-    $output .= '<div class="responsive-video">' . "\n"; 
+
+    $output .= '<div class="responsive-video">' . "\n";
     $output .= '<iframe src="' . $url . '" frameborder="0" allowfullscreen="" loading="lazy"></iframe>' . "\n";
-            
-    $output .= '</div>' . "\n"; 
-	
+
+    $output .= '</div>' . "\n";
 
     //If caption exists
-    if($a['caption'] != '') { 
-        $output .= '<figcaption>' . $a['caption'] . '</figcaption>' . "\n"; 
-    }  
-	
-	if($a['portrait'] == 'true') { 
-		//close wrapper div
-        $output .= '</div>' . "\n";  
+    if($a['caption'] != '') {
+        $output .= '<figcaption>' . $a['caption'] . '</figcaption>' . "\n";
     }
-     
-        
+
+    if($a['portrait'] == 'true') {
+        //close wrapper div
+        $output .= '</div>' . "\n";
+    }
+
     //If $content exists, there's a transcript, add output from [transcript-accordion]
-	if($content != null) {
-		$output .= $content;
-	}   
-        
+    if($content != null) {
+        $output .= $content;
+    }
+
     $output .= '</figure>' . "\n";
-            
-    return $output; 
+
+    return $output;
 }
 
 //-----------------------------
@@ -141,7 +139,7 @@ function format_youtube_video_url($url) {
     if (isset($parsed_url['host']) && $parsed_url['host'] === 'youtu.be') {
         // Extract the path and remove the leading slash
         $video_id = ltrim($parsed_url['path'], '/');
-        
+
         $formatted_url = 'https://www.youtube.com/embed/' . $video_id;
         return $formatted_url;
     }
@@ -151,5 +149,3 @@ function format_youtube_video_url($url) {
     }
 }
 ll_add_shortcode('ll-video', 'video_att');
-
-?>

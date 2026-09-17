@@ -5,21 +5,21 @@
 
 //	Creates a transcript accordion
 
-//	args:		$content - html content in the accordion 
+//	args:		$content - html content in the accordion
 //              $atts - attributes as follows:
 
 //  $atts:      title  Title of the accordion (optional - defaults to "Transcript")
 //				size	If set to "wide", transcript is set to 100% width (optional)
-//              id      Allows an id to be directly assigned to the button. 
-//                      required to get "skip to text only content" to work 
-//              classes     adds whatever is placed in here into the figure class 
+//              id      Allows an id to be directly assigned to the button.
+//                      required to get "skip to text only content" to work
+//              classes     adds whatever is placed in here into the figure class
 //                          can be useful to adjust margins - margin-top-sm (most definitely optional)
 
 //	calls:		doAccordion - with arg "transcript"
 
 //  shortcode:  [transcript]
 
-//	usage:			
+//	usage:
 //  [transcript]<p>Transcript content (wrap in p tags recommended).</p>[/transcript]
 
 //  Expected output
@@ -35,7 +35,7 @@
 //</div>
 
 function transcript_accordion_att($atts, $content = null) {
-	return doAccordion("transcript", $atts, $content);
+    return doAccordion("transcript", $atts, $content);
 }
 
 //-----------------------------
@@ -43,7 +43,7 @@ function transcript_accordion_att($atts, $content = null) {
 
 //	Creates an accordion, suitable to hoyse large amounts of content
 
-//	args:		$content - html content in the accordion 
+//	args:		$content - html content in the accordion
 //              $atts - attributes as follows:
 
 //  $atts:      title   Title of the accordion (optional - defaults to "Transcript")
@@ -54,10 +54,10 @@ function transcript_accordion_att($atts, $content = null) {
 
 //  shortcode:  [ll-accordion]
 
-//	usage:			
+//	usage:
 //  [bs-accordion title="My accordion"]<p>Accordion content (wrap in p tags recommended).</p>[/bs-accordion]
 
-//  Wrap multiple accordions in a div: 
+//  Wrap multiple accordions in a div:
 //  <div class="accordion" id="accordion-example">
 //  [bs-accordion title="My accordion 1"]<p>Transcript content</p>[/bs-accordion]
 //  [bs-accordion title="My accordion 2"]<p>Transcript content</p>[/bs-accordion]
@@ -76,7 +76,7 @@ function transcript_accordion_att($atts, $content = null) {
 //</div>
 
 function bootstrap_accordion_att($atts, $content = null) {
-	return doAccordion("regular", $atts, $content);
+    return doAccordion("regular", $atts, $content);
 }
 
 //-----------------------------
@@ -99,32 +99,32 @@ function doAccordion($type, $atts, $content = null) {
     //If title attribute is omitted, default to "Transcript"
     $default = array(
         'title' => 'Transcript',
-		'size' => '',
+        'size' => '',
         'open' => '',
         'id' => '',
         'heading-tag' => '',
         'classes' => ''
     );
-    
+
     //merges user-defined attributes with a set of default values ($default)
     $a = shortcode_atts($default, $atts);
-    
+
     //grab content from within the two shortcode tags
     $content = do_shortcode($content);
-    
+
     //generate a unique id for head and body sections of the accordion
     $headId = generate_id($a['title'], "head");
     $bodyId = generate_id($a['title'], "body");
-    
+
     //default state is h2
     $labelTag = 'h2';
     $extraClass = '';
-    
+
     //these vars control whether accordion is open or not. It's closed by default
     $buttonState = 'collapsed';
     $ariaExpanded = 'false';
     $bodyState  = '';
-    
+
     //if we have a attribute of open=true, set variable to make this happen
     if($a['open'] == 'true')
     {
@@ -132,19 +132,19 @@ function doAccordion($type, $atts, $content = null) {
         $ariaExpanded = 'true';
         $bodyState = 'show';
     }
-    
+
     //if type is transcript, adjust some of the tags to style differently
     if ($type == 'transcript') {
         $labelTag = 'p';
         $extraClass = 'transcript ';
-		
-		//this additional class stratches the transcript accordion to 100% of container width
-		if($a['size'] == 'wide' || $a['size'] == 'full-width')
-		{
-			$extraClass .= ' transcript-full-width ';
-		}
+
+        //this additional class stratches the transcript accordion to 100% of container width
+        if($a['size'] == 'wide' || $a['size'] == 'full-width')
+        {
+            $extraClass .= ' transcript-full-width ';
+        }
     }
-    
+
     //if heading tag has a value, update $labelTag, otherwise it will retain h2 as default
     if($a['heading-tag'] != '')
     {
@@ -154,12 +154,12 @@ function doAccordion($type, $atts, $content = null) {
             $labelTag = $a['heading-tag'];
         }
     }
-	
-	//if there's anything in clesses, add it (don't document this, for web devs only)
-    if($a['classes'] != '') { 
-        $extraClass .= $a['classes']; 
-    } 
-    
+
+    //if there's anything in clesses, add it (don't document this, for web devs only)
+    if($a['classes'] != '') {
+        $extraClass .= $a['classes'];
+    }
+
     //output the html markup
     $labelTag   = tag_escape( $labelTag );
     $content    = wp_kses_post( $content );
@@ -237,11 +237,9 @@ ll_add_shortcode('ll-accordion', 'bootstrap_accordion_att');
 ll_add_shortcode('transcript', 'transcript_accordion_att');
 
 //Look to phase out these older names
-ll_add_shortcode('transcript-accordion', 'transcript_accordion_att'); 
+ll_add_shortcode('transcript-accordion', 'transcript_accordion_att');
 ll_add_shortcode('bs-accordion', 'bootstrap_accordion_att');
 
-// Point lightweight-accordion to transcript_accordion_att temporarily. 
+// Point lightweight-accordion to transcript_accordion_att temporarily.
 // Look to find and replace "lightweight-accordion" with "transcript" over time.
-ll_add_shortcode('lightweight-accordion', 'transcript_accordion_att'); 
-
-?>
+ll_add_shortcode('lightweight-accordion', 'transcript_accordion_att');
