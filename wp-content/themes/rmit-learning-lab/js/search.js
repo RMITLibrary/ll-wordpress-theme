@@ -163,14 +163,62 @@
         console.error(error);
     }
 
+    // Weak matches worth keeping sit at or below 0.048; the first junk result across the
+    // queries tested came in at 0.111, so the cut goes in the gap between them.
+    var SCORE_CUTOFF = 0.1;
+
     function getFuseOptions() {
         return {
-            keys: ['title', 'content', 'keywords'],
+            // Pages are indexed whole, so a title match and a word buried in 38kB of body
+            // text would otherwise count the same.
+            keys: [
+                { name: 'title', weight: 3 },
+                { name: 'keywords', weight: 2 },
+                { name: 'content', weight: 1 }
+            ],
             threshold: 0.4,
-            distance: 1200,
-            location: 0,
-            minMatchCharLength: 4
+            minMatchCharLength: 4,
+            includeScore: true,
+            // location/distance made anything past roughly the first 1200 characters of a
+            // page score badly, which hid most of the content.
+            ignoreLocation: true,
+            // Without this an exact match is penalised for appearing in a long page, so
+            // "harvard" ranked a short fuzzy match above the Easy Cite page that says it.
+            ignoreFieldNorm: true
         };
+    }
+
+    // Turning off field-norm scoring leaves a lot of results tied at 0, and Fuse returns
+    // ties in index order — so "referencing" put an images page above the Referencing
+    // section. Break ties by where the term actually appears.
+    function matchRank(item, needle) {
+        if (String(item.title || '').toLowerCase().indexOf(needle) !== -1) {
+            return 0;
+        }
+        if (String(item.keywords || '').toLowerCase().indexOf(needle) !== -1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    function sortResults(results, query) {
+        var needle = query.trim().toLowerCase();
+
+        return results.slice().sort(function(a, b) {
+            var byScore = (a.score || 0) - (b.score || 0);
+            if (Math.abs(byScore) > 0.0001) {
+                return byScore;
+            }
+
+            var byWhere = matchRank(a.item, needle) - matchRank(b.item, needle);
+            if (byWhere !== 0) {
+                return byWhere;
+            }
+
+            // Shorter titles are the more general page: "Referencing" over
+            // "Referencing an oral presentation".
+            return String(a.item.title || '').length - String(b.item.title || '').length;
+        });
     }
 
     function performSearch(FuseLib, data, parsedIndex, fromQuery) {
@@ -194,8 +242,13 @@
         resultsList.innerHTML = '';
         var resultCount = 0;
 
+        results = sortResults(results, query);
+
         results.forEach(function(result) {
             var item = result.item;
+            if (typeof result.score === 'number' && result.score > SCORE_CUTOFF) {
+                return;
+            }
             if (!shouldIncludeResult(item.keywords, item.link)) {
                 return;
             }
