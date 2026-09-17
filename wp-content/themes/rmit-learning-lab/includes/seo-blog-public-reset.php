@@ -19,35 +19,22 @@
 // taken after this has fired bakes noindex into every static page.
 //-----------------------------
 
-// TESTING ONLY. Seconds between resets; 0 restores the nightly 2am schedule.
-// While this is non-zero the capture window is only this long — do not leave it set.
-if (!defined('RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL')) {
-    define('RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL', 5 * MINUTE_IN_SECONDS);
+// TESTING ONLY. true resets hourly instead of nightly at 2am, so Alternate Cron can
+// be checked in one sitting. While it is on the capture window is one hour.
+if (!defined('RMIT_LL_BLOG_PUBLIC_TEST_HOURLY')) {
+    define('RMIT_LL_BLOG_PUBLIC_TEST_HOURLY', true);
 }
-
-add_filter('cron_schedules', function ($schedules) {
-    if (RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL > 0) {
-        $schedules['ll_blog_public_test'] = array(
-            'interval' => RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL,
-            'display'  => 'Discourage-search-engines reset (testing)',
-        );
-    }
-
-    return $schedules;
-});
 
 function rmit_ll_blog_public_recurrence()
 {
-    return RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL > 0 ? 'll_blog_public_test' : 'daily';
+    return RMIT_LL_BLOG_PUBLIC_TEST_HOURLY ? 'hourly' : 'daily';
 }
 
 function rmit_ll_blog_public_next_run()
 {
-    if (RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL > 0) {
-        return time() + RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL;
-    }
-
-    return (new DateTimeImmutable('tomorrow 02:00', wp_timezone()))->getTimestamp();
+    return RMIT_LL_BLOG_PUBLIC_TEST_HOURLY
+        ? time() + HOUR_IN_SECONDS
+        : (new DateTimeImmutable('tomorrow 02:00', wp_timezone()))->getTimestamp();
 }
 
 add_action('init', function () {
