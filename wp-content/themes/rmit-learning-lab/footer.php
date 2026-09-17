@@ -57,12 +57,13 @@
 				</a>
                 <!-- END logo -->
                 <!-- START links -->
-				<ul class="footer-links">
-					<li><a href="/about-the-learning-lab/">About Learning Lab</a></li>
-					<li><a href="/about-the-learning-lab/accessibility/">Accessibility</a></li>
-					<li><a href="/about-the-learning-lab/whats-new/">What's new</a></li>
-					<li><a href="https://forms.office.com/r/YvquUHdtE5">Learning Lab feedback</a></li>
-				</ul>
+				<?php wp_nav_menu(array(
+					'theme_location' => 'footer-menu',
+					'container'      => false,
+					'menu_class'     => 'footer-links',
+					'depth'          => 1,
+					'fallback_cb'    => 'rmit_ll_footer_menu_fallback',
+				)); ?>
                 <!-- END links -->
                 <!-- START legal-social -->
                 <div class="footerlegalShareItems">
