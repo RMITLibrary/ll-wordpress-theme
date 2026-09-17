@@ -78,7 +78,7 @@ function rmit_ll_footer_menu_fallback()
 	$links = array(
 		'/about-the-learning-lab/'               => 'About Learning Lab',
 		'/about-the-learning-lab/accessibility/' => 'Accessibility',
-		'/about-the-learning-lab/whats-new/'     => "What's new",
+		'/whats-new/'                            => "What's new",
 		'https://forms.office.com/r/YvquUHdtE5'  => 'Learning Lab feedback',
 	);
 
@@ -114,6 +114,7 @@ require_once $theme_includes_dir . 'breadcrumbs-navigation.php'; // Breadcrumbs 
 require_once $theme_includes_dir . 'content-filters.php';        // Content filtering and query modifications
 require_once $theme_includes_dir . 'custom-taxonomy.php';        // Custom taxonomy registration and ACF filters
 require_once $theme_includes_dir . 'custom-shortcodes.php';      // Custom shortcodes manager - auto-discovers shortcode files
+require_once $theme_includes_dir . 'news-post-type.php';       // "What's new" announcements post type
 require_once $theme_includes_dir . 'json-export.php';            // Exports the site data to json. Required for search to function
 require_once $theme_includes_dir . 'redirect.php';               // Redirect and 404 code for both admin and client side
 require_once $theme_includes_dir . 'seo-noindex-inheritance.php'; // Noindex inheritance for work in progress pages
