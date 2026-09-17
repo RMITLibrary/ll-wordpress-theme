@@ -12,9 +12,8 @@
 // the event was cleared instead of ever being scheduled. An unlisted host stays a
 // no-op rather than a self-deindex.
 //
-// The event is scheduled the normal way, but it has never been observed firing on
-// PRD, so an overdue event is also run inline on the next request of any kind.
-// ll_blog_public_last_reset records which path did it.
+// Plain WP-Cron on purpose. WP Engine's Alternate Cron is meant to curl wp-cron.php
+// every minute; ll_blog_public_last_reset is how we tell whether it does.
 //
 // Capture window matters: SiteSucker must run while blog_public is 1. A capture
 // taken after this has fired bakes noindex into every static page.
@@ -37,17 +36,6 @@ add_filter('cron_schedules', function ($schedules) {
     return $schedules;
 });
 
-function rmit_ll_blog_public_is_discouraged_host()
-{
-    $discourage_hosts = array(
-        'prdlearninglab.wpenginepowered.com',
-        'devlearninglab.wpenginepowered.com',
-        'll-wordpress-theme.test',
-    );
-
-    return in_array(wp_parse_url(home_url(), PHP_URL_HOST), $discourage_hosts, true);
-}
-
 function rmit_ll_blog_public_recurrence()
 {
     return RMIT_LL_BLOG_PUBLIC_TEST_INTERVAL > 0 ? 'll_blog_public_test' : 'daily';
@@ -63,40 +51,32 @@ function rmit_ll_blog_public_next_run()
 }
 
 add_action('init', function () {
-    if (!rmit_ll_blog_public_is_discouraged_host()) {
+    $discourage_hosts = array(
+        'prdlearninglab.wpenginepowered.com',
+        'devlearninglab.wpenginepowered.com',
+        'll-wordpress-theme.test',
+    );
+
+    if (!in_array(wp_parse_url(home_url(), PHP_URL_HOST), $discourage_hosts, true)) {
         wp_clear_scheduled_hook('ll_restore_blog_public');
         return;
     }
 
-    $next = wp_next_scheduled('ll_restore_blog_public');
-
-    // Switching between the test interval and the nightly one leaves the old event
-    // behind, so drop anything on the wrong recurrence.
-    if ($next && wp_get_schedule('ll_restore_blog_public') !== rmit_ll_blog_public_recurrence()) {
+    // Changing the interval leaves the old event behind on the wrong recurrence.
+    if (wp_next_scheduled('ll_restore_blog_public')
+        && wp_get_schedule('ll_restore_blog_public') !== rmit_ll_blog_public_recurrence()) {
         wp_clear_scheduled_hook('ll_restore_blog_public');
-        $next = false;
     }
 
-    if (!$next) {
-        wp_schedule_event(rmit_ll_blog_public_next_run(), rmit_ll_blog_public_recurrence(), 'll_restore_blog_public');
-        return;
-    }
-
-    // Overdue means WP-Cron never ran it. Do it here and move the event on.
-    if ($next <= time()) {
-        wp_unschedule_event($next, 'll_restore_blog_public');
-        do_action('ll_restore_blog_public', 'inline');
+    if (!wp_next_scheduled('ll_restore_blog_public')) {
         wp_schedule_event(rmit_ll_blog_public_next_run(), rmit_ll_blog_public_recurrence(), 'll_restore_blog_public');
     }
 });
 
-add_action('ll_restore_blog_public', function ($source = '') {
-    // do_action() with no args passes '', not the parameter default.
-    $source = $source ?: 'cron';
-
+add_action('ll_restore_blog_public', function () {
     update_option('blog_public', '0');
 
-    // Whether WP-Cron ever fires this on PRD is the open question, and WP Engine log
-    // access is awkward. Read it with `wp option get ll_blog_public_last_reset`.
-    update_option('ll_blog_public_last_reset', gmdate('c') . ' ' . $source);
+    // Proof the event actually fired, without needing WP Engine log access.
+    // Read it with `wp option get ll_blog_public_last_reset`.
+    update_option('ll_blog_public_last_reset', gmdate('c'));
 });
