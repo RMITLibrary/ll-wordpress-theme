@@ -243,12 +243,15 @@
         'group assignment': 'group work',
         'lit review': 'literature review',
         'reference list': 'referencing',
-        'reading list': 'referencing'
+        'reading list': 'referencing',
+        'apa 7': 'apa',
+        'apa7': 'apa'
     };
 
     var WORD_SYNONYMS = {
         harvard: ['referencing', 'cite'],
         apa: ['referencing', 'cite'],
+        apa7: ['referencing', 'cite'],
         vancouver: ['referencing', 'cite'],
         aglc: ['referencing', 'legal'],
         aglc4: ['referencing', 'legal'],
