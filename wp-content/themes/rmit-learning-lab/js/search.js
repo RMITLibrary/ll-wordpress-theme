@@ -531,8 +531,11 @@
     }
 
     function shouldIncludeResult(keywords, link) {
-        var excludeKeywords = ["documentation", "archive", "redirect"];
-        var excludePaths = ["/work-in-progress/", "/documentation/"];
+        // Defined once in helper-utils.php and passed in by page-search.php, so the browse
+        // list and the results cannot drift apart. The literals are only a fallback.
+        var exclusions = window.LL_SEARCH_EXCLUSIONS || {};
+        var excludeKeywords = exclusions.keywords || ["documentation", "archive", "redirect"];
+        var excludePaths = exclusions.paths || ["/work-in-progress/", "/documentation/"];
 
         var includeByKeyword = !keywords || !keywords.some(function(keyword) {
             return excludeKeywords.indexOf(keyword.toLowerCase()) !== -1;
