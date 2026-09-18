@@ -243,16 +243,15 @@
         'group assignment': 'group work',
         'lit review': 'literature review',
         'reference list': 'referencing',
-        'reading list': 'referencing',
-        'apa 7': 'apa',
-        'apa7': 'apa'
+        'reading list': 'referencing'
     };
 
     var WORD_SYNONYMS = {
         harvard: ['referencing', 'cite'],
         apa: ['referencing', 'cite'],
-        apa7: ['referencing', 'cite'],
         vancouver: ['referencing', 'cite'],
+        ieee: ['referencing', 'cite'],
+        chicago: ['referencing', 'cite'],
         aglc: ['referencing', 'legal'],
         aglc4: ['referencing', 'legal'],
         footnote: ['citation'],
@@ -270,8 +269,17 @@
         copilot: ['artificial', 'intelligence']
     };
 
+    // Citation styles carry an edition number that changes: APA 7 becomes APA 8, AGLC4
+    // becomes AGLC5. Strip it so a new edition needs no code change — "apa7", "apa 7",
+    // "apa-7" and a future "apa 8" all resolve to the same entry.
+    var VERSIONED_STYLES = /\b(apa|aglc|mla|chicago|ieee|vancouver|harvard|oscola)\s*-?\s*\d+(?:th|nd|rd|st)?\b/g;
+
+    function normaliseStyles(text) {
+        return text.replace(VERSIONED_STYLES, '$1');
+    }
+
     function expandQuery(query) {
-        var text = query.toLowerCase();
+        var text = normaliseStyles(query.toLowerCase());
 
         Object.keys(PHRASE_SYNONYMS).forEach(function(phrase) {
             if (text.indexOf(phrase) !== -1) {
@@ -354,9 +362,12 @@
         var fuseOptions = getFuseOptions();
         var fuse = parsedIndex ? new FuseLib(data, fuseOptions, parsedIndex) : new FuseLib(data, fuseOptions);
         var words = expandQuery(query);
+        // Search the normalised text, not the raw query — otherwise "ieee 2018" still goes
+        // to Fuse with the edition number attached and matches nothing.
+        var single = words.length === 1 ? words[0] : normaliseStyles(query.toLowerCase());
         var results = words.length > 1
             ? searchByWord(fuse, words)
-            : sortResults(fuse.search(query), query);
+            : sortResults(fuse.search(single), single);
 
         if (!resultsList) {
             return;
