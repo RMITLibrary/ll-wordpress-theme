@@ -129,20 +129,19 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
                         continue;
                     }
 
-                    $has_archive_term = false;
+                    $is_excluded = false;
                     foreach ($post_terms as $term) {
-                        if (strcasecmp($term->name, 'Archive') === 0) {
-                            $has_archive_term = true;
+                        if (rmit_ll_is_excluded_keyword($term->name)) {
+                            $is_excluded = true;
                             break;
                         }
                     }
 
-                    if ($has_archive_term) {
+                    if ($is_excluded) {
                         continue;
                     }
 
-                    $post_url = get_permalink($post_id);
-                    if ($post_url && stripos($post_url, 'work-in-progress') !== false) {
+                    if (rmit_ll_is_excluded_path(get_permalink($post_id))) {
                         continue;
                     }
 
@@ -178,8 +177,8 @@ if (!empty($keywords) && !is_wp_error($keywords)) {
         $link = get_term_link($keyword);
         $link = is_wp_error($link) ? '' : $link;
 
-        // Output the keyword as a list item with a link, exclude "Documentation" and "Archive"
-        if ($keyword->name != "Documentation" && $keyword->name != "Archive") {
+        // Output the keyword as a list item with a link, skipping the excluded ones
+        if (!rmit_ll_is_excluded_keyword($keyword->name)) {
             $has_valid_post = !empty($keyword_status_map[$keyword->term_id]);
 
             if ($has_valid_post && !empty($link)) {
@@ -208,6 +207,7 @@ window.LL_SEARCH_VERSION = <?php
     echo wp_json_encode( file_exists( $index_file ) ? (string) filemtime( $index_file ) : '0' );
 ?>;
 window.LL_FUSE_URL = <?php echo wp_json_encode( rmit_ll_fuse_url() ); ?>;
+window.LL_SEARCH_EXCLUSIONS = <?php echo wp_json_encode( rmit_ll_search_exclusions() ); ?>;
 </script>
 <script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() ); ?>/js/search.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/search.js' ) ); ?>"></script>
 <?php get_footer();

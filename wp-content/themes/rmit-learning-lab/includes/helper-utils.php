@@ -91,3 +91,40 @@ function rmit_ll_fuse_url() {
     return trailingslashit( get_stylesheet_directory_uri() ) . 'js/fuse/fuse.min.js?v='
         . rmit_learning_lab_asset_version( 'js/fuse/fuse.min.js' );
 }
+
+/**
+ * Pages and keywords that never belong in search.
+ *
+ * One definition for both ends: page-search.php filters the keyword list with it and
+ * hands it to search.js, which filters the results. It used to live in four places with
+ * three different rules — the browse list checked only "Archive" when deciding whether a
+ * keyword had any qualifying pages, while the results also dropped "redirect".
+ */
+function rmit_ll_search_exclusions() {
+    return array(
+        'keywords' => array( 'documentation', 'archive', 'redirect' ),
+        'paths'    => array( '/work-in-progress/', '/documentation/' ),
+    );
+}
+
+/**
+ * True when a term name is one of the excluded keywords.
+ */
+function rmit_ll_is_excluded_keyword( $name ) {
+    $excluded = rmit_ll_search_exclusions()['keywords'];
+
+    return in_array( strtolower( (string) $name ), $excluded, true );
+}
+
+/**
+ * True when a URL or path sits under an excluded section.
+ */
+function rmit_ll_is_excluded_path( $url ) {
+    foreach ( rmit_ll_search_exclusions()['paths'] as $path ) {
+        if ( stripos( (string) $url, $path ) !== false ) {
+            return true;
+        }
+    }
+
+    return false;
+}
