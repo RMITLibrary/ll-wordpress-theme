@@ -172,7 +172,10 @@
     // — "how to reference a website" returned nothing. These carry no meaning on their own.
     var STOP_WORDS = ['how', 'the', 'and', 'for', 'with', 'you', 'your', 'are', 'can', 'what',
         'when', 'where', 'why', 'does', 'from', 'that', 'this', 'into', 'about', 'should',
-        'would', 'need', 'want', 'use', 'using', 'any', 'there', 'been', 'have', 'its'];
+        'would', 'need', 'want', 'use', 'using', 'any', 'there', 'been', 'have', 'its',
+        // two-letter words are allowed through below, so the common ones belong here
+        'to', 'of', 'in', 'on', 'is', 'it', 'my', 'me', 'we', 'us', 'an', 'as', 'at', 'be',
+        'by', 'do', 'if', 'or', 'so', 'up'];
 
     function getFuseOptions() {
         return {
@@ -259,6 +262,7 @@
         slideshow: ['presentation'],
         stats: ['statistics'],
         sigfigs: ['significant', 'figures'],
+        ai: ['artificial', 'intelligence'],
         chatgpt: ['artificial', 'intelligence'],
         copilot: ['artificial', 'intelligence']
     };
@@ -288,7 +292,8 @@
 
     function meaningfulWords(query) {
         return query.toLowerCase().split(/[^a-z0-9]+/).filter(function(word) {
-            return word.length > 2 && STOP_WORDS.indexOf(word) === -1;
+            // Two-character terms are real here — AI and pH are both searched for.
+            return word.length > 1 && STOP_WORDS.indexOf(word) === -1;
         });
     }
 
