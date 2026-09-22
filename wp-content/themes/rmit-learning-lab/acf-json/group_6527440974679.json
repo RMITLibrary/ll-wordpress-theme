@@ -9,7 +9,7 @@
             "aria-label": "",
             "type": "taxonomy",
             "instructions": "Keywords are required for all pages. Please add between 1-4 tags for this page",
-            "required": 1,
+            "required": 0,
             "conditional_logic": 0,
             "wrapper": {
                 "width": "",
@@ -23,6 +23,7 @@
             "return_format": "object",
             "field_type": "multi_select",
             "allow_null": 0,
+            "allow_in_bindings": 1,
             "bidirectional": 0,
             "multiple": 0,
             "bidirectional_target": []
@@ -34,7 +35,7 @@
             "aria-label": "",
             "type": "taxonomy",
             "instructions": "",
-            "required": 1,
+            "required": 0,
             "conditional_logic": 0,
             "wrapper": {
                 "width": "",
@@ -48,6 +49,7 @@
             "return_format": "object",
             "field_type": "multi_select",
             "allow_null": 0,
+            "allow_in_bindings": 1,
             "bidirectional": 0,
             "multiple": 0,
             "bidirectional_target": []
@@ -95,5 +97,5 @@
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1790057694
+    "modified": 1790061710
 }

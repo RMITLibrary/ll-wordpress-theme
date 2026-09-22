@@ -54,6 +54,56 @@ add_action('admin_bar_menu', function() {
 }, 999);
 
 /**
+ * Put author documentation and its main sections last in the admin sidebar.
+ */
+add_action('admin_menu', function () {
+    $documentation = get_page_by_path('documentation');
+
+    if (!$documentation || 'publish' !== $documentation->post_status) {
+        return;
+    }
+
+    $documentation_url = get_permalink($documentation);
+    $hook = add_menu_page(
+        'Documentation',
+        'Documentation',
+        'edit_pages',
+        'rmit-ll-documentation',
+        '__return_null',
+        'dashicons-book-alt',
+        9999
+    );
+
+    add_action('load-' . $hook, function () use ($documentation_url) {
+        wp_safe_redirect($documentation_url);
+        exit;
+    });
+
+    $sections = get_pages(array(
+        'parent'      => $documentation->ID,
+        'post_status' => 'publish',
+        'sort_column' => 'menu_order,post_title',
+    ));
+
+    foreach ($sections as $section) {
+        $section_url = get_permalink($section);
+        $section_hook = add_submenu_page(
+            'rmit-ll-documentation',
+            wp_strip_all_tags($section->post_title),
+            wp_strip_all_tags($section->post_title),
+            'edit_pages',
+            'rmit-ll-documentation-' . $section->ID,
+            '__return_null'
+        );
+
+        add_action('load-' . $section_hook, function () use ($section_url) {
+            wp_safe_redirect($section_url);
+            exit;
+        });
+    }
+}, 9999);
+
+/**
  * "Can I capture right now?" dashboard widget.
  *
  * Two things silently ruin a SiteSucker capture and neither is visible on the
@@ -174,14 +224,69 @@ add_filter('aioseo_post_metabox_priority', function () {
     return 'low';
 });
 
+/**
+ * Disable AIOSEO Writing Assistant before it can register its metabox or assets.
+ */
+add_action('after_setup_theme', function () {
+    global $wp_filter;
+
+    if (empty($wp_filter['add_meta_boxes']->callbacks)) {
+        return;
+    }
+
+    foreach ($wp_filter['add_meta_boxes']->callbacks as $priority => $callbacks) {
+        foreach ($callbacks as $callback) {
+            $function = $callback['function'];
+
+            if (
+                is_array($function) &&
+                is_object($function[0]) &&
+                'AIOSEO\\Plugin\\Common\\Admin\\WritingAssistant' === get_class($function[0])
+            ) {
+                remove_action('add_meta_boxes', $function, $priority);
+            }
+        }
+    }
+});
+
 add_action('current_screen', function ($screen) {
     if ('post' !== $screen->base) {
         return;
     }
 
+    if (function_exists('aioseo') && isset(aioseo()->admin)) {
+        remove_action('post_submitbox_misc_actions', array(aioseo()->admin, 'addPublishScore'));
+    }
+
     // Registered per screen id so every post type is covered without listing them.
     add_filter('get_user_option_meta-box-order_' . $screen->id, 'rmit_ll_aioseo_metabox_last');
+
+    if ('page' === $screen->id) {
+        add_filter('get_user_option_closedpostboxes_page', 'rmit_ll_metaboxes_closed_by_default');
+    }
 });
+
+function rmit_ll_metaboxes_closed_by_default($closed)
+{
+    $user_id  = get_current_user_id();
+    $defaults = array('aioseo-settings', 'revisionsdiv', 'acf-group_668dedab7afe4');
+    $migrated = 'rmit_ll_page_metabox_defaults_20260922';
+
+    if (!$user_id) {
+        return false === $closed ? $defaults : $closed;
+    }
+
+    if (get_user_meta($user_id, $migrated, true)) {
+        return $closed;
+    }
+
+    $closed = array_values(array_unique(array_merge(is_array($closed) ? $closed : array(), $defaults)));
+
+    update_user_option($user_id, 'closedpostboxes_page', $closed, true);
+    update_user_meta($user_id, $migrated, 1);
+
+    return $closed;
+}
 
 function rmit_ll_aioseo_metabox_last($order)
 {
@@ -207,6 +312,137 @@ function rmit_ll_aioseo_metabox_last($order)
 }
 
 /**
+ * The ACF taxonomy fields are the single editor for these terms.
+ */
+add_action('add_meta_boxes_page', function () {
+    remove_meta_box('tagsdiv-taxonomy', 'page', 'side');
+    remove_meta_box('tagsdiv-keyword', 'page', 'side');
+    remove_meta_box('tagsdiv-subject-area', 'page', 'side');
+}, 100);
+
+/**
+ * Surface publishing details that are otherwise easy to miss in the editor.
+ */
+add_action('post_submitbox_misc_actions', function ($post) {
+    if (!$post || 'page' !== $post->post_type) {
+        return;
+    }
+
+    $work_in_progress = get_page_by_path('work-in-progress');
+    if (
+        $work_in_progress &&
+        ($post->ID === $work_in_progress->ID || in_array($work_in_progress->ID, get_post_ancestors($post), true))
+    ) {
+        ?>
+        <div class="misc-pub-section rmit-ll-wip-notice">
+            <span class="dashicons dashicons-warning" aria-hidden="true"></span>
+            <span>
+                <strong><?php esc_html_e('Work in progress', 'rmit-learning-lab'); ?></strong>
+                <?php esc_html_e('This page sits inside the Work in progress section.', 'rmit-learning-lab'); ?>
+            </span>
+        </div>
+        <?php
+    }
+
+    $taxonomy_group_visible = function_exists('acf_get_field_groups') && array_filter(
+        acf_get_field_groups(array('post_id' => $post->ID, 'post_type' => 'page')),
+        function ($group) {
+            return 'group_6527440974679' === $group['key'];
+        }
+    );
+
+    if ($taxonomy_group_visible) {
+        $missing = array();
+
+        if (!has_term('', 'keyword', $post)) {
+            $missing[] = __('Keywords', 'rmit-learning-lab');
+        }
+
+        if (!has_term('', 'subject-area', $post)) {
+            $missing[] = __('Subject areas', 'rmit-learning-lab');
+        }
+
+        if ($missing) {
+            ?>
+            <div class="misc-pub-section rmit-ll-taxonomy-notice">
+                <span class="dashicons dashicons-warning" aria-hidden="true"></span>
+                <span>
+                    <strong><?php esc_html_e('Taxonomy details missing', 'rmit-learning-lab'); ?></strong>
+                    <?php
+                    printf(
+                        esc_html__('Add %s in the Taxonomy panel.', 'rmit-learning-lab'),
+                        esc_html(implode(__(' and ', 'rmit-learning-lab'), $missing))
+                    );
+                    ?>
+                </span>
+            </div>
+            <?php
+        }
+    }
+
+    if (!preg_match('/<!--(?!\s*(?:\/?wp:|more\b|nextpage\b))[\s\S]*?-->/', $post->post_content)) {
+        return;
+    }
+    ?>
+    <div class="misc-pub-section rmit-ll-comment-notice">
+        <span class="dashicons dashicons-editor-code" aria-hidden="true"></span>
+        <span>
+            <strong><?php esc_html_e('HTML comments in content', 'rmit-learning-lab'); ?></strong>
+            <?php esc_html_e('Hidden on the page, but still included in its HTML source. Remove them in the Text editor if they are no longer needed.', 'rmit-learning-lab'); ?>
+        </span>
+    </div>
+    <?php
+});
+
+add_action('admin_head-post.php', function () {
+    ?>
+    <style>
+        .rmit-ll-wip-notice,
+        .rmit-ll-taxonomy-notice,
+        .rmit-ll-comment-notice {
+            align-items: flex-start;
+            display: flex;
+            gap: 8px;
+            line-height: 1.4;
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+
+        .rmit-ll-wip-notice {
+            background: #000054;
+            color: #fff;
+        }
+
+        .rmit-ll-taxonomy-notice,
+        .rmit-ll-comment-notice {
+            background: #fff3cd;
+            color: #664d03;
+        }
+
+        .rmit-ll-wip-notice .dashicons,
+        .rmit-ll-taxonomy-notice .dashicons,
+        .rmit-ll-comment-notice .dashicons {
+            flex: 0 0 20px;
+            margin-top: 1px;
+        }
+
+        .rmit-ll-taxonomy-notice .dashicons,
+        .rmit-ll-taxonomy-notice strong,
+        .rmit-ll-comment-notice .dashicons,
+        .rmit-ll-comment-notice strong {
+            color: #664d03;
+        }
+
+        .rmit-ll-wip-notice strong,
+        .rmit-ll-taxonomy-notice strong,
+        .rmit-ll-comment-notice strong {
+            display: block;
+        }
+    </style>
+    <?php
+});
+
+/**
  * Close comments everywhere.
  *
  * The public site is the static export, which has no PHP to accept a comment, so
@@ -216,6 +452,13 @@ function rmit_ll_aioseo_metabox_last($order)
  */
 add_filter('comments_open', '__return_false', 20);
 add_filter('pings_open', '__return_false', 20);
+
+add_action('admin_init', function () {
+    foreach (get_post_types() as $post_type) {
+        remove_post_type_support($post_type, 'comments');
+        remove_post_type_support($post_type, 'trackbacks');
+    }
+});
 
 add_action('admin_menu', function () {
     remove_menu_page('edit-comments.php');
