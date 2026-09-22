@@ -106,12 +106,6 @@ function rmit_ll_render_capture_readiness() {
     }
     echo '</p>';
 
-    if (defined('RMIT_LL_BLOG_PUBLIC_TEST_HOURLY') && RMIT_LL_BLOG_PUBLIC_TEST_HOURLY) {
-        echo '<p style="color:#b32d2e;"><strong>Hourly test mode is on</strong> '
-            . '<span class="description">— RMIT_LL_BLOG_PUBLIC_TEST_HOURLY in seo-blog-public-reset.php. '
-            . 'The capture window is one hour, not a night.</span></p>';
-    }
-
     $tasks    = rmit_ll_export_tasks();
     $statuses = array();
 
