@@ -3,6 +3,27 @@
     "title": "Nav divider",
     "fields": [
         {
+            "key": "field_67ce729b0aaa1",
+            "label": "Show custom sidebar heading",
+            "name": "nav-divider-show",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Adds a heading above this page in the section navigation.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "allow_in_bindings": 0,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        },
+        {
             "key": "field_67ce729b5335b",
             "label": "Divider label",
             "name": "nav-divider",
@@ -10,7 +31,15 @@
             "type": "select",
             "instructions": "",
             "required": 0,
-            "conditional_logic": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_67ce729b0aaa1",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
             "wrapper": {
                 "width": "",
                 "class": "",
@@ -45,6 +74,11 @@
             "conditional_logic": [
                 [
                     {
+                        "field": "field_67ce729b0aaa1",
+                        "operator": "==",
+                        "value": "1"
+                    },
+                    {
                         "field": "field_67ce729b5335b",
                         "operator": "==contains",
                         "value": "Other"
@@ -67,23 +101,24 @@
     "location": [
         [
             {
-                "param": "page_template",
+                "param": "post_type",
                 "operator": "==",
-                "value": "page-templates\/nav-divider.php"
+                "value": "page"
             }
         ]
     ],
     "menu_order": 0,
-    "position": "normal",
+    "position": "side",
     "style": "default",
     "label_placement": "top",
     "instruction_placement": "label",
     "hide_on_screen": "",
     "active": true,
-    "description": "",
+    "description": "Adds a heading above this page in the section navigation. Toggle on, pick a label, or choose Other to type one. Read by sidebar.php as it walks the section's pages.",
     "show_in_rest": 0,
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1741583134
+    "modified": 1790059684,
+    "local_file": "\/Users\/karlervine\/Sites\/ll-wordpress-theme\/wp-content\/themes\/rmit-learning-lab\/acf-json\/group_67ce729b90a57.json"
 }

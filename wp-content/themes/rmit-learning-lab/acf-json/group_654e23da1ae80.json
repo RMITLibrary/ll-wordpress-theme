@@ -46,10 +46,10 @@
         "tags"
     ],
     "active": false,
-    "description": "",
+    "description": "Internal authoring notes, never rendered on the site. Deactivated 2026-09-22; 394 pages still hold notes, so the group is disabled rather than deleted.",
     "show_in_rest": 0,
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1790057191
+    "modified": 1790057694
 }
