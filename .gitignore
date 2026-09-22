@@ -152,6 +152,10 @@ llms.txt
 
 # Generated from the Redirection plugin on each box
 /wp-content/themes/rmit-learning-lab/_redirects
+# Generated per server from that server's Redirection table. Tracking it shipped one
+# database's rules to every environment, and the admin_init generator only writes when
+# the file is missing, so a deployed copy was never refreshed.
+/wp-content/themes/rmit-learning-lab/js/redirects.js
 
 /.agents/
 /.codex/

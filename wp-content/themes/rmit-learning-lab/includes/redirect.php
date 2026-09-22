@@ -297,7 +297,11 @@ function write_redirects_js_file()
 
 function rmit_ll_maybe_generate_redirects_js_file()
 {
-  if (!class_exists('Redirection')) {
+  // REDIRECTION_FILE, not class_exists('Redirection'): that class lives in
+  // redirection-front.php, which the plugin loads only on non-admin requests
+  // (redirection.php:203-207), so on admin_init the guard was always false and this
+  // never ran anywhere.
+  if (!defined('REDIRECTION_FILE')) {
     return;
   }
 
@@ -310,17 +314,17 @@ function rmit_ll_maybe_generate_redirects_js_file()
   }
 }
 
-// Hook into Redirection plugin's actions
+// Every action the Redirection plugin actually fires for a rule change. It has no
+// redirection_redirect_created — an insert fires redirection_redirect_updated with
+// the new id — and no redirection_flush_cache at all; both were hooked here and
+// neither had ever run.
 add_action('redirection_redirect_updated', 'write_redirects_js_file');
 add_action('redirection_redirect_deleted', 'write_redirects_js_file');
-add_action('redirection_redirect_created', 'write_redirects_js_file');
-
-// Additional hooks to catch status changes (enabled/disabled)
 add_action('redirection_redirect_enabled', 'write_redirects_js_file');
 add_action('redirection_redirect_disabled', 'write_redirects_js_file');
 
-// Fallback - regenerate on any redirect table changes
-add_action('redirection_flush_cache', 'write_redirects_js_file');
+// Both files are generated per server and gitignored, so a fresh deploy has neither
+// until this runs.
 add_action('admin_init', 'rmit_ll_maybe_generate_redirects_js_file');
 add_action('rmit_ll_nightly_export', 'rmit_ll_generate_netlify_redirects_file');
 
