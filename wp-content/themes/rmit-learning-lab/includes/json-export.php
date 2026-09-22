@@ -449,52 +449,7 @@ function export_json_page() {
     wp_localize_script($export_builder_handle, 'RMITExportIndex', $localized_data);
 
     if (!empty($success_exports)) {
-        $success_items = array();
-        foreach ($success_exports as $key => $path) {
-            $meta = $file_statuses[$key];
-            $recorded_time = isset($export_history[$key]['timestamp']) ? (int) $export_history[$key]['timestamp'] : null;
-            if (!$recorded_time && !is_wp_error($meta) && !empty($meta['modified'])) {
-                $recorded_time = (int) $meta['modified'];
-            }
-
-            if (is_wp_error($meta)) {
-                $success_items[] = array(
-                    'label' => $export_tasks[$key]['label'],
-                    'details' => 'File generated, but metadata is currently unavailable.',
-                    'url' => '',
-                );
-                continue;
-            }
-
-            $details = array();
-            if (!empty($meta['exists'])) {
-                if (!empty($recorded_time)) {
-                    $formatted_time = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $recorded_time);
-                    $details[] = sprintf('updated %s %s (%s ago)', $formatted_time, $timezone_label, human_time_diff($recorded_time, $current_gmt));
-                }
-                if (isset($meta['size'])) {
-                    $details[] = sprintf('size %s', size_format($meta['size']));
-                }
-            }
-
-            $success_items[] = array(
-                'label' => $meta['label'],
-                'details' => !empty($details) ? implode(', ', $details) : 'Export completed.',
-                'url' => $meta['url'],
-            );
-        }
-
-        if (!empty($success_items)) {
-            echo '<div class="notice notice-success"><p>Exports completed:</p><ul>';
-            foreach ($success_items as $item) {
-                echo '<li>' . esc_html($item['label']) . ' — ' . esc_html($item['details']);
-                if (!empty($item['url'])) {
-                    echo ' <a href="' . esc_url($item['url']) . '" target="_blank" rel="noopener">View file</a>';
-                }
-                echo '</li>';
-            }
-            echo '</ul></div>';
-        }
+        echo '<div class="notice notice-success"><p>Exports completed — see Dataset status below.</p></div>';
     }
 
     if (!empty($notices['errors'])) {
