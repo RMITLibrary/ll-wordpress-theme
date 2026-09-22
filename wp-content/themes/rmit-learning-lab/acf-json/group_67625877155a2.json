@@ -161,10 +161,10 @@
     "instruction_placement": "label",
     "hide_on_screen": "",
     "active": true,
-    "description": "",
+    "description": "End-of-section block for the Last content page template: a heading plus a left column and an optional right column.",
     "show_in_rest": 0,
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1740639307
+    "modified": 1790057694
 }

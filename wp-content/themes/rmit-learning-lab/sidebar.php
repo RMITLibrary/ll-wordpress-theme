@@ -112,8 +112,11 @@ function outputChildNav($parent_id, $thePost, $thePostParent = null)
 			
 			$post_url = get_permalink(get_the_ID());
 
-			// Retrieve the value of the 'nav-divider' select field
-			$nav_divider = get_field('nav-divider');
+			// The heading is opt-in per page: the toggle is off by default, and the
+			// label fields only appear in the editor once it is on. Any page can carry
+			// one — it used to require the nav-divider page template, which meant
+			// creating a page just to title a group of them.
+			$nav_divider = get_field('nav-divider-show') ? get_field('nav-divider') : '';
 
 			// Check if $nav_divider is set and not equal to 'Select'
 			if ($nav_divider && $nav_divider !== 'Select a divider label') {
