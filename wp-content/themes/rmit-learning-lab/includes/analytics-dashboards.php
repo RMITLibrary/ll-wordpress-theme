@@ -39,8 +39,11 @@ function rmit_ll_display_analytics_dashboards() {
                 echo '</div>';
 
                 echo '<div id="' . esc_attr($dashboard_id) . '-container" style="padding: 0;">';
-                echo '<div id="' . esc_attr($dashboard_id) . '-button" style="padding: 40px; text-align: center; background: #f8f9fa; cursor: pointer; border-bottom: 1px solid #eee;">';
-                echo '<button type="button" class="button button-primary" data-dashboard-id="' . esc_attr($dashboard_id) . '" data-dashboard-url="' . esc_attr($url) . '">📊 Load ' . $title . '</button>';
+                // The data attributes sit on the panel, not the button: it is styled
+                // cursor: pointer across all 40px of padding, so the caption and the
+                // whitespace have to load the dashboard too.
+                echo '<div id="' . esc_attr($dashboard_id) . '-button" style="padding: 40px; text-align: center; background: #f8f9fa; cursor: pointer; border-bottom: 1px solid #eee;" data-dashboard-id="' . esc_attr($dashboard_id) . '" data-dashboard-url="' . esc_attr($url) . '">';
+                echo '<button type="button" class="button button-primary">📊 Load ' . $title . '</button>';
                 echo '<p style="margin: 10px 0 0 0; color: #666; font-size: 12px;">Click to load dashboard</p>';
                 echo '</div>';
                 echo '<div id="' . esc_attr($dashboard_id) . '-iframe" style="display: none; position: relative; width: 100%; padding-bottom: 56.25%;">';
@@ -71,9 +74,10 @@ function rmit_ll_analytics_dashboard_scripts() {
     ?>
     <script>
     document.addEventListener('click', function(e) {
-        if (e.target && e.target.hasAttribute('data-dashboard-id')) {
-            const dashboardId = e.target.getAttribute('data-dashboard-id');
-            const url = e.target.getAttribute('data-dashboard-url');
+        const trigger = e.target.closest('[data-dashboard-id]');
+        if (trigger) {
+            const dashboardId = trigger.getAttribute('data-dashboard-id');
+            const url = trigger.getAttribute('data-dashboard-url');
             const button = document.getElementById(dashboardId + "-button");
             const iframe = document.getElementById(dashboardId + "-iframe");
             const iframeElement = iframe.querySelector("iframe");
