@@ -315,37 +315,67 @@ add_action('admin_menu', 'register_export_page');
 
 //	usage:			Triggered by form submission on the admin page
 
-function export_json_page() {
-    if (!current_user_can('manage_options')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
-    }
-
-    $export_tasks = array(
+/**
+ * The files this theme exports, and where each one lives.
+ *
+ * Read by the Export JSON screen, which renders a row per entry, and by the
+ * capture readiness dashboard widget. 'theme' files carry their own absolute
+ * path; the rest sit in uploads and are found by filename.
+ */
+function rmit_ll_export_tasks() {
+    // The Fuse index has no callback because it is built in the browser by
+    // js/export-index-builder.js and saved over AJAX. It is listed so its row renders
+    // like any other, and its key matches the history key rmit_ll_save_fuse_index()
+    // already stores.
+    return array(
         'pages' => array(
             'label' => 'Content dataset',
             'description' => 'Full page content used by Fuse search.',
             'filename' => 'pages.json',
+            'location' => 'uploads',
             'callback' => 'export_content_to_json',
         ),
         'urls' => array(
             'label' => 'URL index',
             'description' => 'Path-only list used to guard redirects and search UX.',
             'filename' => 'pages-urls.json',
+            'location' => 'uploads',
             'callback' => 'export_page_urls_to_json',
         ),
         'redirects' => array(
             'label' => 'Redirect map',
             'description' => 'Generated JavaScript map used by the static 404 redirect helper.',
             'filename' => 'redirects.js',
+            'note' => 'Stored in the active theme JS directory.',
+            'location' => 'theme',
+            'path' => rmit_ll_get_redirects_js_file_path(),
             'callback' => 'rmit_ll_generate_redirects_js_file',
         ),
         'netlify' => array(
             'label' => 'Redirects file',
             'description' => 'Server-side redirect rules served from the site root.',
             'filename' => '_redirects',
+            'location' => 'theme',
+            'path' => rmit_ll_get_netlify_redirects_file_path(),
             'callback' => 'rmit_ll_generate_netlify_redirects_file',
         ),
+        'fuse_index' => array(
+            'label' => 'Fuse.js index',
+            'description' => 'Precomputed search index consumed by the static site.',
+            'filename' => 'pages-index.json',
+            'location' => 'uploads',
+            'callback' => null,
+            'cell_attr' => 'data-fuse-index',
+        ),
     );
+}
+
+function export_json_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
+    }
+
+    $export_tasks = rmit_ll_export_tasks();
 
     $timezone_label = rmit_ll_get_timezone_label();
 
@@ -359,6 +389,10 @@ function export_json_page() {
         check_admin_referer('export_json_action', 'export_json_nonce');
 
         foreach ($export_tasks as $key => $task) {
+            if (empty($task['callback'])) {
+                continue;
+            }
+
             $result = call_user_func($task['callback']);
             if (is_wp_error($result)) {
                 $notices['errors'][] = sprintf('%s export failed: %s', $task['label'], $result->get_error_message());
@@ -373,13 +407,9 @@ function export_json_page() {
 
     $file_statuses = array();
     foreach ($export_tasks as $key => $task) {
-        if ('redirects' === $key) {
-            $meta = rmit_ll_get_theme_export_file_meta(rmit_ll_get_redirects_js_file_path(), $task['label']);
-        } elseif ('netlify' === $key) {
-            $meta = rmit_ll_get_theme_export_file_meta(rmit_ll_get_netlify_redirects_file_path(), $task['label']);
-        } else {
-            $meta = rmit_ll_get_export_file_meta($task['filename'], $task['label']);
-        }
+        $meta = 'theme' === $task['location']
+            ? rmit_ll_get_theme_export_file_meta($task['path'], $task['label'])
+            : rmit_ll_get_export_file_meta($task['filename'], $task['label']);
         $file_statuses[$key] = $meta;
 
         if (is_wp_error($meta)) {
@@ -390,11 +420,7 @@ function export_json_page() {
         }
     }
 
-    $fuse_index_meta = rmit_ll_get_export_file_meta('pages-index.json', 'Fuse.js index');
-    $fuse_index_recorded_time = isset($export_history['fuse_index']['timestamp']) ? (int) $export_history['fuse_index']['timestamp'] : null;
-    if (!$fuse_index_recorded_time && !is_wp_error($fuse_index_meta) && !empty($fuse_index_meta['modified'])) {
-        $fuse_index_recorded_time = (int) $fuse_index_meta['modified'];
-    }
+    $fuse_index_meta = $file_statuses['fuse_index'];
 
     $current_gmt = time();
 
@@ -449,52 +475,7 @@ function export_json_page() {
     wp_localize_script($export_builder_handle, 'RMITExportIndex', $localized_data);
 
     if (!empty($success_exports)) {
-        $success_items = array();
-        foreach ($success_exports as $key => $path) {
-            $meta = $file_statuses[$key];
-            $recorded_time = isset($export_history[$key]['timestamp']) ? (int) $export_history[$key]['timestamp'] : null;
-            if (!$recorded_time && !is_wp_error($meta) && !empty($meta['modified'])) {
-                $recorded_time = (int) $meta['modified'];
-            }
-
-            if (is_wp_error($meta)) {
-                $success_items[] = array(
-                    'label' => $export_tasks[$key]['label'],
-                    'details' => 'File generated, but metadata is currently unavailable.',
-                    'url' => '',
-                );
-                continue;
-            }
-
-            $details = array();
-            if (!empty($meta['exists'])) {
-                if (!empty($recorded_time)) {
-                    $formatted_time = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $recorded_time);
-                    $details[] = sprintf('updated %s %s (%s ago)', $formatted_time, $timezone_label, human_time_diff($recorded_time, $current_gmt));
-                }
-                if (isset($meta['size'])) {
-                    $details[] = sprintf('size %s', size_format($meta['size']));
-                }
-            }
-
-            $success_items[] = array(
-                'label' => $meta['label'],
-                'details' => !empty($details) ? implode(', ', $details) : 'Export completed.',
-                'url' => $meta['url'],
-            );
-        }
-
-        if (!empty($success_items)) {
-            echo '<div class="notice notice-success"><p>Exports completed:</p><ul>';
-            foreach ($success_items as $item) {
-                echo '<li>' . esc_html($item['label']) . ' — ' . esc_html($item['details']);
-                if (!empty($item['url'])) {
-                    echo ' <a href="' . esc_url($item['url']) . '" target="_blank" rel="noopener">View file</a>';
-                }
-                echo '</li>';
-            }
-            echo '</ul></div>';
-        }
+        echo '<div class="notice notice-success"><p>Exports completed — see Dataset status below.</p></div>';
     }
 
     if (!empty($notices['errors'])) {
@@ -534,6 +515,9 @@ function export_json_page() {
                 if (!$recorded_time && !is_wp_error($meta) && !empty($meta['modified'])) {
                     $recorded_time = (int) $meta['modified'];
                 }
+                // The Fuse index row is rewritten in place by export-index-builder.js once
+                // the browser has built and saved the index, so its cells are addressable.
+                $cell = !empty($task['cell_attr']) ? $task['cell_attr'] : '';
                 ?>
                 <tr>
                     <td>
@@ -542,11 +526,11 @@ function export_json_page() {
                     </td>
                     <td>
                         <?php echo esc_html($task['filename']); ?>
-                        <?php if ('redirects' === $key) : ?>
-                            <br><span class="description"><?php esc_html_e('Stored in the active theme JS directory.', 'rmit-learning-lab'); ?></span>
+                        <?php if (!empty($task['note'])) : ?>
+                            <br><span class="description"><?php echo esc_html($task['note']); ?></span>
                         <?php endif; ?>
                     </td>
-                    <td>
+                    <td<?php echo $cell ? ' ' . esc_attr($cell) . '="updated"' : ''; ?>>
                         <?php
                         if (is_wp_error($meta)) {
                             echo '<span class="error">' . esc_html($meta->get_error_message()) . '</span>';
@@ -559,21 +543,19 @@ function export_json_page() {
                         }
                         ?>
                     </td>
-                    <td>
+                    <td<?php echo $cell ? ' ' . esc_attr($cell) . '="size"' : ''; ?>>
                         <?php
-                        if (is_wp_error($meta)) {
-                            echo '—';
-                        } elseif (!empty($meta['exists']) && isset($meta['size'])) {
+                        if (!is_wp_error($meta) && !empty($meta['exists']) && isset($meta['size'])) {
                             echo esc_html(size_format($meta['size']));
                         } else {
                             echo '—';
                         }
                         ?>
                     </td>
-                    <td>
+                    <td<?php echo $cell ? ' ' . esc_attr($cell) . '="actions"' : ''; ?>>
                         <?php
                         if (!is_wp_error($meta) && !empty($meta['exists']) && !empty($meta['url'])) {
-                            $action_label = in_array($key, array('redirects', 'netlify'), true) ? __('View file', 'rmit-learning-lab') : __('View JSON', 'rmit-learning-lab');
+                            $action_label = 'theme' === $task['location'] ? __('View file', 'rmit-learning-lab') : __('View JSON', 'rmit-learning-lab');
                             echo '<a class="button" href="' . esc_url($meta['url']) . '" target="_blank" rel="noopener">' . esc_html($action_label) . '</a>';
                         } else {
                             echo '<span class="description">No file available</span>';
@@ -582,46 +564,6 @@ function export_json_page() {
                     </td>
                 </tr>
             <?php endforeach; ?>
-            <tr>
-                <td>
-                    <strong><?php esc_html_e('Fuse.js index', 'rmit-learning-lab'); ?></strong><br>
-                    <span class="description"><?php esc_html_e('Precomputed search index consumed by the static site.', 'rmit-learning-lab'); ?></span>
-                </td>
-                <td>pages-index.json</td>
-                <td data-fuse-index="updated">
-                    <?php
-                    if (is_wp_error($fuse_index_meta)) {
-                        echo '<span class="error">' . esc_html($fuse_index_meta->get_error_message()) . '</span>';
-                    } elseif (!empty($fuse_index_meta['exists']) && !empty($fuse_index_recorded_time)) {
-                        $formatted_time = wp_date(get_option('date_format') . ' ' . get_option('time_format'), $fuse_index_recorded_time);
-                        $relative = human_time_diff($fuse_index_recorded_time, $current_gmt);
-                        printf('%s <span class="description">%s • %s ago</span>', esc_html($formatted_time), esc_html($timezone_label), esc_html($relative));
-                    } else {
-                        echo '<span class="description">' . esc_html__('Not generated yet', 'rmit-learning-lab') . '</span>';
-                    }
-                    ?>
-                </td>
-                <td data-fuse-index="size">
-                    <?php
-                    if (is_wp_error($fuse_index_meta)) {
-                        echo '—';
-                    } elseif (!empty($fuse_index_meta['exists']) && isset($fuse_index_meta['size'])) {
-                        echo esc_html(size_format($fuse_index_meta['size']));
-                    } else {
-                        echo '—';
-                    }
-                    ?>
-                </td>
-                <td data-fuse-index="actions">
-                    <?php
-                    if (!is_wp_error($fuse_index_meta) && !empty($fuse_index_meta['exists']) && !empty($fuse_index_meta['url'])) {
-                        echo '<a class="button" href="' . esc_url($fuse_index_meta['url']) . '" target="_blank" rel="noopener">' . esc_html__('View JSON', 'rmit-learning-lab') . '</a>';
-                    } else {
-                        echo '<span class="description">' . esc_html__('No file available', 'rmit-learning-lab') . '</span>';
-                    }
-                    ?>
-                </td>
-            </tr>
             </tbody>
         </table>
     </div>
