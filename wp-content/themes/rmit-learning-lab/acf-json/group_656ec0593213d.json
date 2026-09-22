@@ -12,7 +12,7 @@
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
-                "width": "",
+                "width": "50",
                 "class": "",
                 "id": ""
             },
@@ -31,6 +31,7 @@
             "return_format": "id",
             "min": "",
             "max": 1,
+            "allow_in_bindings": 1,
             "elements": "",
             "bidirectional": 0,
             "bidirectional_target": []
@@ -45,7 +46,7 @@
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
-                "width": "",
+                "width": "50",
                 "class": "",
                 "id": ""
             },
@@ -64,6 +65,7 @@
             "return_format": "id",
             "min": "",
             "max": 1,
+            "allow_in_bindings": 1,
             "elements": "",
             "bidirectional": 0,
             "bidirectional_target": []
@@ -93,5 +95,8 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1702339548
+    "display_title": "",
+    "allow_ai_access": false,
+    "ai_description": "",
+    "modified": 1790056531
 }
