@@ -315,18 +315,19 @@ add_action('admin_menu', 'register_export_page');
 
 //	usage:			Triggered by form submission on the admin page
 
-function export_json_page() {
-    if (!current_user_can('manage_options')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
-    }
-
-    // Every row on this screen comes from this array. 'theme' files live in the theme
-    // directory and carry their own absolute path; the rest sit in uploads and are
-    // found by filename. The Fuse index has no callback because it is built in the
-    // browser by js/export-index-builder.js, which then writes it over AJAX — it is
-    // listed so its row renders like any other, and its key matches the history key
-    // rmit_ll_save_fuse_index() stores.
-    $export_tasks = array(
+/**
+ * The files this theme exports, and where each one lives.
+ *
+ * Read by the Export JSON screen, which renders a row per entry, and by the
+ * capture readiness dashboard widget. 'theme' files carry their own absolute
+ * path; the rest sit in uploads and are found by filename.
+ */
+function rmit_ll_export_tasks() {
+    // The Fuse index has no callback because it is built in the browser by
+    // js/export-index-builder.js and saved over AJAX. It is listed so its row renders
+    // like any other, and its key matches the history key rmit_ll_save_fuse_index()
+    // already stores.
+    return array(
         'pages' => array(
             'label' => 'Content dataset',
             'description' => 'Full page content used by Fuse search.',
@@ -367,6 +368,14 @@ function export_json_page() {
             'cell_attr' => 'data-fuse-index',
         ),
     );
+}
+
+function export_json_page() {
+    if (!current_user_can('manage_options')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
+    }
+
+    $export_tasks = rmit_ll_export_tasks();
 
     $timezone_label = rmit_ll_get_timezone_label();
 
