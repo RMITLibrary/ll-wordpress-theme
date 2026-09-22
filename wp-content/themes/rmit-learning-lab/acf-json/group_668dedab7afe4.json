@@ -59,12 +59,18 @@
     "style": "default",
     "label_placement": "top",
     "instruction_placement": "label",
-    "hide_on_screen": "",
+    "hide_on_screen": [
+        "discussion",
+        "comments",
+        "featured_image",
+        "categories",
+        "tags"
+    ],
     "active": true,
     "description": "Use html to add in additional resources under the prev and next buttons but before the taxonomy",
     "show_in_rest": 0,
     "display_title": "",
     "allow_ai_access": false,
     "ai_description": "",
-    "modified": 1790056616
+    "modified": 1790062409
 }
