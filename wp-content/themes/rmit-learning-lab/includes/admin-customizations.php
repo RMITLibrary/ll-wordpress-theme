@@ -151,6 +151,62 @@ function rmit_ll_render_capture_readiness() {
 }
 
 /**
+ * Keep the AIOSEO Settings metabox at the bottom of the editor.
+ *
+ * It registers in the 'normal' context at 'high' priority, so out of the box it sits
+ * above the fields the page is actually about.
+ *
+ * Two mechanisms decide where a box lands, and both have to be answered:
+ *
+ * - With no saved box order, registration priority decides. The plugin's own filter
+ *   covers that.
+ * - Once anyone has dragged a box, WordPress stores meta-box-order_<screen> per user,
+ *   and do_meta_boxes() re-adds every id it names into its saved context at priority
+ *   'sorted' — at render time, which beats anything done on add_meta_boxes. Four
+ *   editors here have aioseo-settings saved first. Rewriting that order is the only
+ *   thing it respects.
+ *
+ * The saved order sends it to 'advanced' rather than the end of 'normal', because
+ * WordPress appends boxes the order does not name after the ones it does, and that
+ * container always renders after 'normal'.
+ */
+add_filter('aioseo_post_metabox_priority', function () {
+    return 'low';
+});
+
+add_action('current_screen', function ($screen) {
+    if ('post' !== $screen->base) {
+        return;
+    }
+
+    // Registered per screen id so every post type is covered without listing them.
+    add_filter('get_user_option_meta-box-order_' . $screen->id, 'rmit_ll_aioseo_metabox_last');
+});
+
+function rmit_ll_aioseo_metabox_last($order)
+{
+    if (!is_array($order)) {
+        return $order;
+    }
+
+    foreach (array('normal', 'side', 'advanced') as $context) {
+        if (empty($order[$context])) {
+            continue;
+        }
+
+        $ids = array_filter(explode(',', $order[$context]));
+        $order[$context] = implode(',', array_diff($ids, array('aioseo-settings')));
+    }
+
+    $advanced   = array_filter(explode(',', isset($order['advanced']) ? $order['advanced'] : ''));
+    $advanced[] = 'aioseo-settings';
+
+    $order['advanced'] = implode(',', $advanced);
+
+    return $order;
+}
+
+/**
  * Close comments everywhere.
  *
  * The public site is the static export, which has no PHP to accept a comment, so
