@@ -1,0 +1,58 @@
+/* Standalone divider between the WordPress buttons and ours. Drawn as its own
+   element, not a border on the button, so it does not sit against the button edge. */
+#ed_toolbar .ll-sep {
+    display: inline-block;
+    width: 1px;
+    height: 20px;
+    margin: 0 10px -5px;
+    background: #c3c4c7;
+}
+.ll-panel {
+    position: absolute;
+    z-index: 100100;
+    background: #fff;
+    border: 1px solid #8c8f94;
+    border-radius: 3px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+    padding: 12px 14px;
+    font-size: 13px;
+}
+.ll-panel[hidden] { display: none !important; }
+.ll-panel label {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #1d2327;
+}
+.ll-panel select, .ll-panel input[type="text"] { width: 100%; margin-top: 3px; }
+.ll-panel label[hidden] { display: none !important; }
+.ll-panel .ll-check { display: flex; align-items: flex-start; gap: 6px; }
+.ll-panel .ll-check input { margin: 2px 0 0; }
+.ll-panel .ll-hint {
+    display: block;
+    margin: 1px 0 3px;
+    font-size: 12px;
+    line-height: 1.4;
+    font-weight: 400;
+    color: #646970;
+}
+.ll-panel .ll-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.ll-panel .ll-swatch-row { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+.ll-panel .ll-swatch-row select { margin-top: 0; }
+.ll-panel .ll-swatch {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 22px;
+    border: 1px solid #c3c4c7;
+    border-radius: 3px;
+    border-top-width: 4px;
+    background: #fff center/contain no-repeat;
+}
+.ll-panel .ll-swatch.ll-icon { width: 40px; height: 32px; border-top-width: 1px; }
+.ll-panel .ll-swatch.ll-fill { border-top-width: 1px; }
+.ll-panel .ll-swatch.ll-diagram {
+    width: 62px; height: 34px; border-top-width: 1px;
+    display: flex; gap: 2px; padding: 3px; background: #fff;
+}
+.ll-panel .ll-diagram i { display: block; background: #c3c4c7; border-radius: 1px; }
+.ll-panel .ll-diagram .ll-key { background: #fac800; }
