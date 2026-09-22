@@ -171,7 +171,7 @@ add_action('wp_before_admin_bar_render', function () {
 });
 
 /**
- * Remove Default Dashboard Widgets - Multiple Approaches for Reliability
+ * Remove the dashboard widgets nobody here uses.
  */
 add_action('wp_dashboard_setup', function() {
     // Remove WordPress default widgets
@@ -184,23 +184,22 @@ add_action('wp_dashboard_setup', function() {
     remove_meta_box('dashboard_plugins', 'dashboard', 'normal');      // Plugins
     remove_meta_box('dashboard_activity', 'dashboard', 'normal');     // Activity
 
-    // Remove AIOSEO widgets - try all possible IDs
-    remove_meta_box('aioseo-overview', 'dashboard', 'normal');        // AIOSEO Overview
-    remove_meta_box('aioseo-seo-news', 'dashboard', 'side');          // AIOSEO SEO News
-    remove_meta_box('aioseo-rss-feed', 'dashboard', 'side');          // AIOSEO RSS Feed
-    remove_meta_box('aioseo_rss_feed', 'dashboard', 'side');          // Alternative ID
-    remove_meta_box('aioseo-news', 'dashboard', 'side');              // Alternative ID
-
-    // Remove any widget with 'aioseo' in the ID
+    // AIOSEO registers aioseo-seo-setup, aioseo-seo-checklist, aioseo-overview and
+    // aioseo-rss-feed, all in the 'normal' context and all conditional, so naming them
+    // individually is what went wrong before: the ids were guessed, four were given the
+    // 'side' context they never use, and two did not exist. Matching on the prefix
+    // removes whichever ones the plugin decided to register today.
     global $wp_meta_boxes;
     if (isset($wp_meta_boxes['dashboard'])) {
-        foreach (['normal', 'side'] as $context) {
-            if (isset($wp_meta_boxes['dashboard'][$context])) {
-                foreach ($wp_meta_boxes['dashboard'][$context] as $priority => $widgets) {
-                    foreach ($widgets as $widget_id => $widget) {
-                        if (strpos($widget_id, 'aioseo') !== false) {
-                            remove_meta_box($widget_id, 'dashboard', $context);
-                        }
+        foreach (array('normal', 'side', 'advanced') as $context) {
+            if (!isset($wp_meta_boxes['dashboard'][$context])) {
+                continue;
+            }
+
+            foreach ($wp_meta_boxes['dashboard'][$context] as $widgets) {
+                foreach (array_keys($widgets) as $widget_id) {
+                    if (strpos($widget_id, 'aioseo') === 0) {
+                        remove_meta_box($widget_id, 'dashboard', $context);
                     }
                 }
             }
@@ -208,26 +207,9 @@ add_action('wp_dashboard_setup', function() {
     }
 }, 999);
 
-/**
- * Additional Removal Attempt with Different Hook
- */
-add_action('admin_init', function() {
-    remove_meta_box('aioseo-rss-feed', 'dashboard', 'side');
-    remove_meta_box('aioseo_rss_feed', 'dashboard', 'side');
-}, 9999);
-
-/**
- * CSS Approach as Fallback for Widget Removal
- */
 add_action('admin_head', function() {
     if (get_current_screen()->base === 'dashboard') {
         echo '<style>
-            #aioseo-rss-feed,
-            #aioseo_rss_feed,
-            .postbox[id*="aioseo"][id*="rss"],
-            .postbox[id*="aioseo"][id*="feed"] {
-                display: none !important;
-            }
             /* At a Glance hardcodes its comment counts, with no filter to drop them. */
             #dashboard_right_now li.comment-count,
             #dashboard_right_now li.comment-mod-count {
