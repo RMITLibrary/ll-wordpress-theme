@@ -195,7 +195,10 @@ function image_att ($atts, $content = null) {
         $loading_mode = 'lazy';
     }
 
-    $imageTag = '<img src="' . esc_url($a['url']) . '" alt="' . esc_attr($a['alt']) . '" loading="' . esc_attr($loading_mode) . '" decoding="async" />' . "\n";
+    $dimensions = ll_image_dimensions($a['url']);
+    $dimension_attrs = $dimensions ? ' width="' . $dimensions[0] . '" height="' . $dimensions[1] . '"' : '';
+
+    $imageTag = '<img src="' . esc_url($a['url']) . '" alt="' . esc_attr($a['alt']) . '"' . $dimension_attrs . ' loading="' . esc_attr($loading_mode) . '" decoding="async" />' . "\n";
 
     //Start output phase
     $output = '';
@@ -213,6 +216,31 @@ function image_att ($atts, $content = null) {
     $output .= '</figure>' . "\n";
 
     return $output;
+}
+
+// Without width/height a lazy image reserves no space until it loads, so the
+// page shifts under anchor jumps and the reader. The images live off-site, so
+// read the size from the start of the file once and cache it. A stale size is
+// harmless: the browser uses the real ratio as soon as the image loads.
+function ll_image_dimensions($url) {
+    if ($url === '') {
+        return null;
+    }
+
+    $key = 'll_img_dims_' . md5($url);
+    $cached = get_transient($key);
+    if ($cached !== false) {
+        return $cached ?: null;
+    }
+
+    $response = wp_remote_get($url, array('timeout' => 3, 'limit_response_size' => 65536));
+    $size = is_wp_error($response) ? false : @getimagesizefromstring(wp_remote_retrieve_body($response));
+    $dimensions = ($size && $size[0] && $size[1]) ? array((int) $size[0], (int) $size[1]) : array();
+
+    // ponytail: SVGs and failures cache as empty for a day, sizes for a year.
+    set_transient($key, $dimensions, $dimensions ? YEAR_IN_SECONDS : DAY_IN_SECONDS);
+
+    return $dimensions ?: null;
 }
 
 function addAttribution($input) {
