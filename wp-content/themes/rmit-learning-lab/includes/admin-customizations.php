@@ -766,7 +766,12 @@ function rmit_ll_search_synonyms_screen() {
                 }
                 echo implode(' &middot; ', $parts);
             ?></td>
-            <td><button type="button" class="button-link ll-remove" style="color:#b32d2e;">Remove</button></td>
+            <td style="white-space:nowrap;">
+                <?php if ('' !== $from) : ?>
+                    <a href="<?php echo esc_url(home_url('/search/?query=' . rawurlencode($from))); ?>" target="_blank" rel="noopener">Test search<span class="screen-reader-text"> for <?php echo esc_html($from); ?> (opens in a new tab)</span></a> &nbsp;
+                <?php endif; ?>
+                <button type="button" class="button-link ll-remove" style="color:#b32d2e;">Remove</button>
+            </td>
         </tr>
         <?php
     };
@@ -784,12 +789,12 @@ function rmit_ll_search_synonyms_screen() {
 
         <p style="max-width:760px;">When students search for a word the site doesn’t use, add it here so search finds the right pages. For example, someone searching <strong>stats</strong> should also see pages about <strong>statistics</strong>.</p>
         <?php if (!$index) : ?><div class="notice notice-info inline"><p>Page counts appear once the search index exists — run <strong>Export JSON</strong> once.</p></div><?php endif; ?>
-        <p class="description" style="max-width:760px;">Put several words in the second box separated by commas. Edition numbers are handled for you: “APA 7” already searches as APA.</p>
+        <p class="description" style="max-width:760px;"><strong>Test search</strong> opens the search page for that word, using the list as last saved — save first to test a change. Put several words in the second box separated by commas. Edition numbers are handled for you: “APA 7” already searches as APA.</p>
 
         <form method="post">
             <?php wp_nonce_field('rmit_ll_search_synonyms'); ?>
             <table class="widefat striped" id="ll-synonyms" style="max-width:960px;">
-                <thead><tr><th style="width:30%">When someone searches for</th><th style="width:34%">Also show results for</th><th>Pages found</th><th style="width:70px"></th></tr></thead>
+                <thead><tr><th style="width:30%">When someone searches for</th><th style="width:34%">Also show results for</th><th>Pages found</th><th style="width:150px"></th></tr></thead>
                 <tbody>
                 <?php foreach ($rows as $row) { $row_html($row['from'], $row['to'], $found($row['to'])); } ?>
                 <?php $row_html(); ?>
