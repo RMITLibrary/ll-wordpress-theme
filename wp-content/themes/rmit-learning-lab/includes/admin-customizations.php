@@ -729,9 +729,9 @@ function rmit_ll_search_synonyms_screen() {
 
     // Counted against pages.json, the search index itself: title, text without markup,
     // and keywords — exactly what search looks through — as whole words, so "cite" is
-    // not counted inside "excite". Per target, as search uses them: a phrase such as
-    // "artificial intelligence" is counted as the phrase, and a misspelt target shows
-    // on its own rather than inside a combined count.
+    // not counted inside "excite". Per word, as search uses them — search looks words up
+    // one at a time — so a misspelt word shows on its own rather than inside a combined
+    // count.
     $index = array();
     $index_path = rmit_ll_get_export_file_path('pages.json');
     if (!is_wp_error($index_path) && file_exists($index_path)) {
@@ -744,9 +744,11 @@ function rmit_ll_search_synonyms_screen() {
             return array();
         }
         $counts = array();
-        foreach (array_filter(array_map('trim', explode(',', strtolower($to)))) as $term) {
-            $re = '/\b' . str_replace('\ ', '\s+', preg_quote($term, '/')) . '\b/';
-            $counts[$term] = count(array_filter($index, function ($text) use ($re) { return preg_match($re, $text); }));
+        foreach (preg_split('/[^a-z0-9]+/', strtolower($to), -1, PREG_SPLIT_NO_EMPTY) as $word) {
+            if (strlen($word) > 1) {
+                $re = '/\b' . preg_quote($word, '/') . '\b/';
+                $counts[$word] = count(array_filter($index, function ($text) use ($re) { return preg_match($re, $text); }));
+            }
         }
         return $counts;
     };
