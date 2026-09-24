@@ -31,54 +31,51 @@
 //      </div>
 //  </div>
 
-function landing_banner_att($atts, $content = null) {
-    $default = array(
-        'caption' => 'Image by <a href="https://rmit.edu.au/">RMIT</a>, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>.',
-        'img' => 'https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-default.png',
-        'alt' => '',
-        'width' => '',
-        'height' => ''
-    );
-    $a = shortcode_atts($default, $atts);
-    $content = do_shortcode($content);
+function landing_banner_att($atts, $content = null)
+{
+  $default = array(
+    'caption' => 'Image by <a href="https://rmit.edu.au/">RMIT</a>, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>.',
+    'img' => 'https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-default.png',
+    'alt' => '',
+    'width' => '',
+    'height' => ''
+  );
+  $a = shortcode_atts($default, $atts);
+  $content = do_shortcode($content);
 
-    $output = '';
+  $output = '';
 
-    $output .= '<div class="landing-banner">' . "\n";
-    $output .= '<figure aria-labelledby="caption-text">' . "\n";
-    $image_width = absint($a['width']);
-    $image_height = absint($a['height']);
+  $output .= '<div class="landing-banner">' . "\n";
+  $output .= '<figure aria-labelledby="caption-text">' . "\n";
+  $image_width = absint($a['width']);
+  $image_height = absint($a['height']);
 
-    if ((0 === $image_width || 0 === $image_height) && ! empty($a['img'])) {
-        $attachment_id = attachment_url_to_postid($a['img']);
-        if ($attachment_id) {
-            $image_data = wp_get_attachment_image_src($attachment_id, 'full');
-            if ($image_data) {
-                if (0 === $image_width && ! empty($image_data[1])) {
-                    $image_width = absint($image_data[1]);
-                }
-                if (0 === $image_height && ! empty($image_data[2])) {
-                    $image_height = absint($image_data[2]);
-                }
-            }
-        }
+  if ((0 === $image_width || 0 === $image_height) && ! empty($a['img'])) {
+    $dimensions = ll_image_dimensions($a['img']);
+    if ($dimensions) {
+      if (0 === $image_width) {
+        $image_width = $dimensions[0];
+      }
+      if (0 === $image_height) {
+        $image_height = $dimensions[1];
+      }
     }
+  }
 
-    $width_attribute = $image_width > 0 ? ' width="' . $image_width . '"' : '';
-    $height_attribute = $image_height > 0 ? ' height="' . $image_height . '"' : '';
+  $width_attribute = $image_width > 0 ? ' width="' . $image_width . '"' : '';
+  $height_attribute = $image_height > 0 ? ' height="' . $image_height . '"' : '';
 
-    // Force eager loading for the hero image to protect LCP while still including decoding hints.
-    $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '" loading="eager" decoding="async"' . $width_attribute . $height_attribute . ' />' . "\n";
-    $output .= '</figure>' . "\n";
-    $output .= '<div class="landing-content">' . "\n";
-    $output .= '<div class="red-bar"></div>' . "\n";
-    $output .= '<h1>' . esc_html(get_the_title()) . '</h1>' . "\n";
-    $output .= '<p class="lead">' . wp_kses_post($content) . '</p>' . "\n";
-    $output .= '<p class="small" id="caption-text">' . wp_kses_post($a['caption']) . '</p>' . "\n";
-    $output .= '</div></div>';
+  // Force eager loading for the hero image to protect LCP while still including decoding hints.
+  $output .= '<img src="' . esc_url($a['img']) . '" alt="' . esc_attr($a['alt']) . '" loading="eager" decoding="async"' . $width_attribute . $height_attribute . ' />' . "\n";
+  $output .= '</figure>' . "\n";
+  $output .= '<div class="landing-content">' . "\n";
+  $output .= '<div class="red-bar"></div>' . "\n";
+  $output .= '<h1>' . esc_html(get_the_title()) . '</h1>' . "\n";
+  $output .= '<p class="lead">' . wp_kses_post($content) . '</p>' . "\n";
+  $output .= '<p class="small" id="caption-text">' . wp_kses_post($a['caption']) . '</p>' . "\n";
+  $output .= '</div></div>';
 
-    return $output;
-
+  return $output;
 }
 
 //-----------------------------
@@ -109,29 +106,30 @@ function landing_banner_att($atts, $content = null) {
 //    </ul>
 //</div>
 
-function landing_list_att($atts) {
-    $default = array(
-        'category' => ''
-    );
-    $a = shortcode_atts($default, $atts);
+function landing_list_att($atts)
+{
+  $default = array(
+    'category' => ''
+  );
+  $a = shortcode_atts($default, $atts);
 
-    //get the id ofthe page we are on
-    $pageId = get_the_ID();
+  //get the id ofthe page we are on
+  $pageId = get_the_ID();
 
-    $output = '';
-    $output .= '<div class="landing-list">' . "\n";
+  $output = '';
+  $output .= '<div class="landing-list">' . "\n";
 
-    //this won't ever get used as there's no way of differentiating
-    //category while still using page list :(
-    if($a['category'] != '') {
-        $output .= '<h2 class="h3">'. esc_html($a['category']) . '</h2>' . "\n";
-    }
+  //this won't ever get used as there's no way of differentiating
+  //category while still using page list :(
+  if ($a['category'] != '') {
+    $output .= '<h2 class="h3">' . esc_html($a['category']) . '</h2>' . "\n";
+  }
 
-    //doChildrenList() is defined in functions.php
-    $output .= '<ul class="link-list">'. doChildrenList($pageId) . '</ul>' . "\n";
-    $output .= '</div>';
+  //doChildrenList() is defined in functions.php
+  $output .= '<ul class="link-list">' . doChildrenList($pageId) . '</ul>' . "\n";
+  $output .= '</div>';
 
-    return $output;
+  return $output;
 }
 
 //-----------------------------
@@ -159,51 +157,51 @@ function landing_list_att($atts) {
 //     <p>Description</p>
 // </a>
 
-function home_panel_atts($atts, $content = null) {
-    // Extract attributes passed to the shortcode
-    $atts = shortcode_atts(
-        array(
-            'link' => '#',
-            'title' => '',
-            'img' => '',
-            'loading' => 'lazy',
-        ),
-        $atts,
-        'home-panel'
-    );
+function home_panel_atts($atts, $content = null)
+{
+  // Extract attributes passed to the shortcode
+  $atts = shortcode_atts(
+    array(
+      'link' => '#',
+      'title' => '',
+      'img' => '',
+      'loading' => 'lazy',
+    ),
+    $atts,
+    'home-panel'
+  );
 
-    // Determine the class based on whether an image is provided
-    $class = 'home-panel';
-    if (empty($atts['img'])) {
-        $class = 'home-panel-no-img';
+  // Determine the class based on whether an image is provided
+  $class = 'home-panel';
+  if (empty($atts['img'])) {
+    $class = 'home-panel-no-img';
+  }
+
+  // Build the HTML output for a single home panel
+  $output = '<a href="' . esc_url($atts['link']) . '" class="' . esc_attr($class) . '">';
+  if (!empty($atts['img'])) {
+    $dimensions = ll_image_dimensions($atts['img']);
+    $width_attr = '';
+    $height_attr = '';
+
+    if ($dimensions) {
+      $width_attr = ' width="' . $dimensions[0] . '"';
+      $height_attr = ' height="' . $dimensions[1] . '"';
     }
 
-    // Build the HTML output for a single home panel
-    $output = '<a href="' . esc_url($atts['link']) . '" class="' . esc_attr($class) . '">';
-    if (!empty($atts['img'])) {
-        // Get image dimensions using WordPress function
-        $image_data = wp_get_attachment_image_src(attachment_url_to_postid($atts['img']), 'full');
-        $width_attr = '';
-        $height_attr = '';
-
-        if ($image_data) {
-            $width_attr = ' width="' . $image_data[1] . '"';
-            $height_attr = ' height="' . $image_data[2] . '"';
-        }
-
-        $loading_mode = strtolower($atts['loading']);
-        $allowed_loading_modes = array('lazy', 'eager', 'auto');
-        if (!in_array($loading_mode, $allowed_loading_modes, true)) {
-            $loading_mode = 'lazy';
-        }
-
-        $output .= '<img src="' . esc_url($atts['img']) . '" alt="" loading="' . esc_attr($loading_mode) . '" decoding="async"' . $width_attr . $height_attr . '>';
+    $loading_mode = strtolower($atts['loading']);
+    $allowed_loading_modes = array('lazy', 'eager', 'auto');
+    if (!in_array($loading_mode, $allowed_loading_modes, true)) {
+      $loading_mode = 'lazy';
     }
-    $output .= '<h2 class="link-large">' . esc_html($atts['title']) . '</h2>';
-    $output .= '<p>' . do_shortcode($content) . '</p>';
-    $output .= '</a>';
 
-    return $output;
+    $output .= '<img src="' . esc_url($atts['img']) . '" alt="" loading="' . esc_attr($loading_mode) . '" decoding="async"' . $width_attr . $height_attr . '>';
+  }
+  $output .= '<h2 class="link-large">' . esc_html($atts['title']) . '</h2>';
+  $output .= '<p>' . do_shortcode($content) . '</p>';
+  $output .= '</a>';
+
+  return $output;
 }
 
 //-----------------------------
@@ -224,113 +222,114 @@ function home_panel_atts($atts, $content = null) {
 // ..Series of home-panels
 // </div>
 
-function home_panel_container_atts($atts, $content = null) {
+function home_panel_container_atts($atts, $content = null)
+{
 
-    $default = array(
-        '4-column' => ''
-    );
-    $a = shortcode_atts($default, $atts);
+  $default = array(
+    '4-column' => ''
+  );
+  $a = shortcode_atts($default, $atts);
 
-    // Build the HTML output for the container
-    $output = '<div class="home-panel-container">' . "\n";
+  // Build the HTML output for the container
+  $output = '<div class="home-panel-container">' . "\n";
 
-    if($a['4-column'] == 'true') {
-        $output =  '<div class="home-panel-container panel-4up">' . "\n";
-    }
+  if ($a['4-column'] == 'true') {
+    $output =  '<div class="home-panel-container panel-4up">' . "\n";
+  }
 
-    $output .= do_shortcode($content);
-    $output .= '</div>';
+  $output .= do_shortcode($content);
+  $output .= '</div>';
 
-    return $output;
+  return $output;
 }
 
 //-----------------------------
 //	display_landing_columns
 
-function display_landing_columns() {
-    ob_start(); // Start output buffering
+function display_landing_columns()
+{
+  ob_start(); // Start output buffering
 
-    // Get the ID of the current page
-    $current_page_id = get_the_ID();
+  // Get the ID of the current page
+  $current_page_id = get_the_ID();
 
-    // Get the children of the current page
-    $child_pages = get_pages(array(
-        'child_of' => $current_page_id,
-        'sort_column' => 'menu_order'
+  // Get the children of the current page
+  $child_pages = get_pages(array(
+    'child_of' => $current_page_id,
+    'sort_column' => 'menu_order'
+  ));
+
+  echo '<nav class="landing-column-container">';
+
+  $column_tag = '<div class="landing-column">' . "\n" . '<div class="landing-column-inner divider">';
+
+  //used to close lists
+  $end_list_tag = '';
+
+  foreach ($child_pages as $key => $child_page) {
+
+    // Get grandchildren of the current child page
+    $grandchild_pages = get_pages(array(
+      'child_of' => $child_page->ID,
+      'sort_column' => 'menu_order'
     ));
 
-    echo '<nav class="landing-column-container">';
-
-    $column_tag = '<div class="landing-column">' . "\n" . '<div class="landing-column-inner divider">';
-
-    //used to close lists
-    $end_list_tag = '';
-
-    foreach ($child_pages as $key => $child_page) {
-
-        // Get grandchildren of the current child page
-        $grandchild_pages = get_pages(array(
-            'child_of' => $child_page->ID,
-            'sort_column' => 'menu_order'
-        ));
-
-        // A child starts a new column when it carries a section heading. Same rule as
-        // sidebar.php: the Show custom sidebar heading toggle, plus a real label. It
-        // used to key off the nav-divider.php page template, which no longer exists —
-        // the toggle replaced it, so switching a page to Default must not drop its column.
-        $nav_divider_name = get_field('nav-divider-show', $child_page->ID) ? get_field('nav-divider', $child_page->ID) : '';
-        if ($nav_divider_name === 'Other') {
-            $nav_divider_name = get_field('nav-divider-other', $child_page->ID);
-        }
-
-        if ($nav_divider_name && $nav_divider_name !== 'Select a divider label') {
-
-            //close the previous column's open list before starting a new column
-            echo $end_list_tag;
-            echo $column_tag;
-
-            //update column tag to close of previous column divs
-            $column_tag = '</div>' . "\n". '</div>' . "\n" . '<div class="landing-column">' . "\n" . '<div class="landing-column-inner divider">';
-
-            echo '<h2>' . esc_html($nav_divider_name) . '</h2>';
-
-            //if only child pages, start the list
-            if (empty($grandchild_pages)) {
-                echo '<ul class="link-list">';
-                $end_list_tag = '</ul>';
-            } else {
-                $end_list_tag = '';
-            }
-        }
-
-        //If there are grandchildren
-        if (!empty($grandchild_pages)) {
-            //close the previous list if it exists
-            echo $end_list_tag;
-            echo '<h3>' . esc_html($child_page->post_title) . '</h3>';
-            echo '<ul class="link-list">';
-
-            //set var to close list tag, required if we have more than one grandchild list
-            $end_list_tag = '</ul>';
-        }
-        else {
-            //Wordpress pumps out a link regardless of child or grandchild. Thanks wordpress
-            echo '<li><a href="' . esc_url(get_permalink($child_page->ID)) . '">' . esc_html($child_page->post_title) . '</a></li>';
-        }
-
-        // Check if this is the last element
-        if ($key === array_key_last($child_pages)) {
-
-            echo $end_list_tag;
-
-            echo '</div>'; // Close landing-column-inner
-            echo '</div>'; // Close landing-column
-        }
+    // A child starts a new column when it carries a section heading. Same rule as
+    // sidebar.php: the Show custom sidebar heading toggle, plus a real label. It
+    // used to key off the nav-divider.php page template, which no longer exists —
+    // the toggle replaced it, so switching a page to Default must not drop its column.
+    $nav_divider_name = get_field('nav-divider-show', $child_page->ID) ? get_field('nav-divider', $child_page->ID) : '';
+    if ($nav_divider_name === 'Other') {
+      $nav_divider_name = get_field('nav-divider-other', $child_page->ID);
     }
 
-    echo '</nav>';
+    if ($nav_divider_name && $nav_divider_name !== 'Select a divider label') {
 
-    return ob_get_clean(); // Return the buffered content
+      //close the previous column's open list before starting a new column
+      echo $end_list_tag;
+      echo $column_tag;
+
+      //update column tag to close of previous column divs
+      $column_tag = '</div>' . "\n" . '</div>' . "\n" . '<div class="landing-column">' . "\n" . '<div class="landing-column-inner divider">';
+
+      echo '<h2>' . esc_html($nav_divider_name) . '</h2>';
+
+      //if only child pages, start the list
+      if (empty($grandchild_pages)) {
+        echo '<ul class="link-list">';
+        $end_list_tag = '</ul>';
+      } else {
+        $end_list_tag = '';
+      }
+    }
+
+    //If there are grandchildren
+    if (!empty($grandchild_pages)) {
+      //close the previous list if it exists
+      echo $end_list_tag;
+      echo '<h3>' . esc_html($child_page->post_title) . '</h3>';
+      echo '<ul class="link-list">';
+
+      //set var to close list tag, required if we have more than one grandchild list
+      $end_list_tag = '</ul>';
+    } else {
+      //Wordpress pumps out a link regardless of child or grandchild. Thanks wordpress
+      echo '<li><a href="' . esc_url(get_permalink($child_page->ID)) . '">' . esc_html($child_page->post_title) . '</a></li>';
+    }
+
+    // Check if this is the last element
+    if ($key === array_key_last($child_pages)) {
+
+      echo $end_list_tag;
+
+      echo '</div>'; // Close landing-column-inner
+      echo '</div>'; // Close landing-column
+    }
+  }
+
+  echo '</nav>';
+
+  return ob_get_clean(); // Return the buffered content
 }
 ll_add_shortcode('landing-banner', 'landing_banner_att');
 ll_add_shortcode('landing-list', 'landing_list_att');
