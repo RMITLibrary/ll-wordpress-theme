@@ -235,39 +235,12 @@
         return String(item.keywords || '').toLowerCase();
     }
 
-    // What students type, mapped to what the site calls it. The keyword taxonomy is a
-    // controlled vocabulary, so this covers the gap without adding terms to it — and
-    // several of these (RMIT Harvard, APA, AGLC4) exist as terms but are on no page.
-    var PHRASE_SYNONYMS = {
-        'sig figs': 'significant figures',
-        'group assignment': 'group work',
-        'lit review': 'literature review',
-        'reference list': 'referencing',
-        'reading list': 'referencing'
-    };
-
-    var WORD_SYNONYMS = {
-        harvard: ['referencing', 'cite'],
-        apa: ['referencing', 'cite'],
-        vancouver: ['referencing', 'cite'],
-        ieee: ['referencing', 'cite'],
-        chicago: ['referencing', 'cite'],
-        aglc: ['referencing', 'legal'],
-        aglc4: ['referencing', 'legal'],
-        footnote: ['citation'],
-        footnotes: ['citation'],
-        endnote: ['referencing', 'cite'],
-        zotero: ['referencing', 'cite'],
-        mendeley: ['referencing', 'cite'],
-        powerpoint: ['presentation'],
-        slides: ['presentation'],
-        slideshow: ['presentation'],
-        stats: ['statistics'],
-        sigfigs: ['significant', 'figures'],
-        ai: ['artificial', 'intelligence'],
-        chatgpt: ['artificial', 'intelligence'],
-        copilot: ['artificial', 'intelligence']
-    };
+    // What students type, mapped to what the site calls it. Edited by content editors
+    // at Pages > Search synonyms and printed by page-search.php. The keyword taxonomy
+    // is a controlled vocabulary, so this covers the gap without adding terms to it.
+    var SYNONYMS = window.LL_SEARCH_SYNONYMS || {};
+    var PHRASE_SYNONYMS = SYNONYMS.phrases || {};
+    var WORD_SYNONYMS = SYNONYMS.words || {};
 
     // Citation styles carry an edition number that changes: APA 7 becomes APA 8, AGLC4
     // becomes AGLC5. Strip it so a new edition needs no code change — "apa7", "apa 7",
