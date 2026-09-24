@@ -210,5 +210,12 @@ window.LL_FUSE_URL = <?php echo wp_json_encode( rmit_ll_fuse_url() ); ?>;
 window.LL_SEARCH_EXCLUSIONS = <?php echo wp_json_encode( rmit_ll_search_exclusions() ); ?>;
 window.LL_SEARCH_SYNONYMS = <?php $ll_synonyms = rmit_ll_parse_search_synonyms( rmit_ll_search_synonyms_text() ); echo wp_json_encode( array( 'phrases' => (object) $ll_synonyms['phrases'], 'words' => (object) $ll_synonyms['words'] ) ); ?>;
 </script>
+<?php
+// Fuse is loaded with a plain tag rather than injected by search.js at runtime: the
+// static capture only downloads files it can see linked, so a script added from JS
+// was never exported and search failed with "Failed to load Fuse.js". search.js
+// skips its own loader when Fuse is already defined.
+?>
+<script type="text/javascript" src="<?php echo esc_url( rmit_ll_fuse_url() ); ?>"></script>
 <script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() ); ?>/js/search.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/search.js' ) ); ?>"></script>
 <?php get_footer();
