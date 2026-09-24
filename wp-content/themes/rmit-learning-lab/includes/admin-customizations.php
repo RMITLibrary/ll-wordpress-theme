@@ -667,9 +667,10 @@ add_action('admin_enqueue_scripts', function ($hook) {
 /**
  * Pages > Search synonyms: the editor for rmit_ll_search_synonyms (see helper-utils.php).
  *
- * Open to editors as well as admins, since the people who notice what students search
- * for are the ones writing content. After saving, each line is shown as it was read,
- * with a count of pages containing the words it points at — a typo shows up as 0.
+ * Built for non-technical editors: a table with two plain fields per row and a Remove
+ * button on each, so there is no syntax to learn and no single box to wipe. Rows are
+ * saved back as the plain-text list the parser reads. Each save keeps the previous
+ * list, and "Undo last save" swaps it back. Open to editors as well as admins.
  */
 add_action('admin_menu', function () {
     add_submenu_page('edit.php?post_type=page', 'Search synonyms', 'Search synonyms', 'edit_pages', 'search-synonyms', 'rmit_ll_search_synonyms_screen');
@@ -680,15 +681,51 @@ function rmit_ll_search_synonyms_screen() {
         return;
     }
 
-    $saved = false;
-    if (isset($_POST['rmit_ll_search_synonyms'])) {
+    $notice = '';
+    $error  = '';
+    $incomplete = array();
+
+    if (isset($_POST['rmit_ll_synonyms_action'])) {
         check_admin_referer('rmit_ll_search_synonyms');
-        update_option('rmit_ll_search_synonyms', sanitize_textarea_field(wp_unslash($_POST['rmit_ll_search_synonyms'])), false);
-        $saved = true;
+        $current = rmit_ll_search_synonyms_text();
+
+        if ('undo' === $_POST['rmit_ll_synonyms_action']) {
+            $previous = get_option('rmit_ll_search_synonyms_previous');
+            if (false !== $previous) {
+                update_option('rmit_ll_search_synonyms', $previous, false);
+                update_option('rmit_ll_search_synonyms_previous', $current, false);
+                $notice = 'Your last save has been undone.';
+            }
+        } else {
+            $from  = array_map('sanitize_text_field', wp_unslash((array) ($_POST['from'] ?? array())));
+            $to    = array_map('sanitize_text_field', wp_unslash((array) ($_POST['to'] ?? array())));
+            $lines = array();
+            foreach ($from as $i => $f) {
+                $f = trim($f);
+                $t = trim($to[$i] ?? '');
+                if ('' === $f && '' === $t) {
+                    continue;
+                }
+                if ('' === $f || '' === $t) {
+                    $incomplete[] = array('from' => $f, 'to' => $t);
+                    continue;
+                }
+                $lines[] = $f . ' = ' . $t;
+            }
+
+            if (!$lines) {
+                $error = 'Nothing was saved: the list can’t be empty. Your synonyms are unchanged.';
+            } else {
+                update_option('rmit_ll_search_synonyms_previous', $current, false);
+                update_option('rmit_ll_search_synonyms', implode("\n", $lines), false);
+                $notice = 'Saved. Search on this site uses the new list now; the public site picks it up at the next export.';
+            }
+        }
     }
 
-    $text   = rmit_ll_search_synonyms_text();
-    $parsed = rmit_ll_parse_search_synonyms($text);
+    $rows   = rmit_ll_search_synonym_rows(rmit_ll_search_synonyms_text());
+    $parsed = rmit_ll_parse_search_synonyms(rmit_ll_search_synonyms_text());
+    $can_undo = false !== get_option('rmit_ll_search_synonyms_previous');
 
     global $wpdb;
     $pages_with = function ($words) use ($wpdb) {
@@ -702,39 +739,77 @@ function rmit_ll_search_synonyms_screen() {
         }
         return (int) $wpdb->get_var($wpdb->prepare($sql, $args));
     };
+    $found = function ($from) use ($parsed, $pages_with) {
+        if (isset($parsed['phrases'][$from])) {
+            return $pages_with(array($parsed['phrases'][$from]));
+        }
+        return isset($parsed['words'][$from]) ? $pages_with($parsed['words'][$from]) : null;
+    };
+    $row_html = function ($from = '', $to = '', $count = null) {
+        ?>
+        <tr>
+            <td><input type="text" name="from[]" value="<?php echo esc_attr($from); ?>" class="widefat" placeholder="e.g. stats" aria-label="When someone searches for"></td>
+            <td><input type="text" name="to[]" value="<?php echo esc_attr($to); ?>" class="widefat" placeholder="e.g. statistics" aria-label="Also show results for"></td>
+            <td class="ll-found"><?php
+                if (null === $count) {
+                    echo '';
+                } elseif ($count) {
+                    echo 'Found on ' . (int) $count . ' ' . (1 === $count ? 'page' : 'pages');
+                } else {
+                    echo '<strong style="color:#b32d2e;">Not found on any page — check the spelling</strong>';
+                }
+            ?></td>
+            <td><button type="button" class="button-link ll-remove" style="color:#b32d2e;">Remove</button></td>
+        </tr>
+        <?php
+    };
     ?>
+    <style>#ll-synonyms td { vertical-align: middle; }</style>
     <div class="wrap">
         <h1>Search synonyms</h1>
-        <?php if ($saved) : ?>
-            <div class="notice notice-success"><p>Saved. Search on this site uses the new list now; the public site picks it up at the next export.</p></div>
-        <?php endif; ?>
-        <p style="max-width:720px;">Use this when students search for a word the site doesn't use. Write one per line: <strong>what people type</strong>, an equals sign, then <strong>what the site calls it</strong>. Separate several with commas.</p>
-        <p style="max-width:720px;"><code>stats = statistics</code> &nbsp; <code>lit review = literature review</code> &nbsp; <code>apa = referencing, cite</code></p>
-        <p class="description" style="max-width:720px;">A single word on the left adds the words on the right to the search. Several words on the left are swapped for the words on the right. Edition numbers are handled for you: "APA 7" already searches as APA.</p>
-        <form method="post">
-            <?php wp_nonce_field('rmit_ll_search_synonyms'); ?>
-            <textarea name="rmit_ll_search_synonyms" rows="18" class="large-text code" style="max-width:720px;"><?php echo esc_textarea($text); ?></textarea>
-            <?php submit_button('Save synonyms'); ?>
-        </form>
-
-        <?php if ($parsed['rejected']) : ?>
-            <div class="notice notice-error inline"><p><strong>These lines were not understood</strong> — each needs an equals sign with words on both sides:</p><ul style="list-style:disc;margin-left:20px;">
-            <?php foreach ($parsed['rejected'] as $line) : ?><li><code><?php echo esc_html($line); ?></code></li><?php endforeach; ?>
+        <?php if ($notice) : ?><div class="notice notice-success"><p><?php echo esc_html($notice); ?></p></div><?php endif; ?>
+        <?php if ($error) : ?><div class="notice notice-error"><p><?php echo esc_html($error); ?></p></div><?php endif; ?>
+        <?php if ($incomplete) : ?>
+            <div class="notice notice-warning"><p>These rows were left out because one box was empty:</p><ul style="list-style:disc;margin-left:20px;">
+            <?php foreach ($incomplete as $row) : ?><li><?php echo esc_html(('' !== $row['from'] ? $row['from'] : '(blank)') . ' → ' . ('' !== $row['to'] ? $row['to'] : '(blank)')); ?></li><?php endforeach; ?>
             </ul></div>
         <?php endif; ?>
 
-        <h2>How search reads the list</h2>
-        <table class="widefat striped" style="max-width:720px;">
-            <thead><tr><th>When someone searches for</th><th>Search also looks for</th><th>Pages with those words</th></tr></thead>
-            <tbody>
-            <?php foreach ($parsed['phrases'] as $from => $to) : $n = $pages_with(array($to)); ?>
-                <tr><td><?php echo esc_html($from); ?></td><td><?php echo esc_html($to); ?> <span class="description">(replaces the phrase)</span></td><td><?php echo $n ? (int) $n : '<strong style="color:#b32d2e;">0 — check the spelling</strong>'; ?></td></tr>
-            <?php endforeach; ?>
-            <?php foreach ($parsed['words'] as $from => $to) : $n = $pages_with($to); ?>
-                <tr><td><?php echo esc_html($from); ?></td><td><?php echo esc_html(implode(', ', $to)); ?></td><td><?php echo $n ? (int) $n : '<strong style="color:#b32d2e;">0 — check the spelling</strong>'; ?></td></tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+        <p style="max-width:760px;">When students search for a word the site doesn’t use, add it here so search finds the right pages. For example, someone searching <strong>stats</strong> should also see pages about <strong>statistics</strong>.</p>
+        <p class="description" style="max-width:760px;">Put several words in the second box separated by commas. Edition numbers are handled for you: “APA 7” already searches as APA.</p>
+
+        <form method="post">
+            <?php wp_nonce_field('rmit_ll_search_synonyms'); ?>
+            <table class="widefat striped" id="ll-synonyms" style="max-width:960px;">
+                <thead><tr><th style="width:30%">When someone searches for</th><th style="width:34%">Also show results for</th><th>Check</th><th style="width:70px"></th></tr></thead>
+                <tbody>
+                <?php foreach ($rows as $row) { $row_html($row['from'], $row['to'], $found($row['from'])); } ?>
+                <?php $row_html(); ?>
+                </tbody>
+            </table>
+            <p><button type="button" class="button" id="ll-add-row">+ Add another</button></p>
+            <p class="submit">
+                <button type="submit" name="rmit_ll_synonyms_action" value="save" class="button button-primary">Save synonyms</button>
+                <?php if ($can_undo) : ?>
+                    <button type="submit" name="rmit_ll_synonyms_action" value="undo" class="button" style="margin-left:8px;">Undo last save</button>
+                <?php endif; ?>
+            </p>
+        </form>
+        <template id="ll-synonym-row"><?php $row_html(); ?></template>
     </div>
+    <script>
+    (function () {
+        var body = document.querySelector('#ll-synonyms tbody');
+        document.getElementById('ll-add-row').addEventListener('click', function () {
+            body.insertAdjacentHTML('beforeend', document.getElementById('ll-synonym-row').innerHTML);
+            body.lastElementChild.querySelector('input').focus();
+        });
+        body.addEventListener('click', function (e) {
+            if (e.target.classList.contains('ll-remove')) {
+                e.target.closest('tr').remove();
+            }
+        });
+    })();
+    </script>
     <?php
 }

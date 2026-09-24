@@ -174,21 +174,36 @@ function rmit_ll_search_synonyms_text() {
 }
 
 /**
- * Parse the text into what search.js needs, plus the lines it could not read.
+ * The stored text as editor rows: array( array( 'from' => ..., 'to' => ... ), ... ).
+ * Lines missing either side come back with the empty side, so the screen can flag them.
  */
-function rmit_ll_parse_search_synonyms($text) {
-    $out = array('phrases' => array(), 'words' => array(), 'rejected' => array());
-
+function rmit_ll_search_synonym_rows($text) {
+    $rows = array();
     foreach (preg_split('/\r\n|\r|\n/', $text) as $line) {
         $line = trim($line);
         if ('' === $line || 0 === strpos($line, '#')) {
             continue;
         }
-        $parts = preg_split('/\s*=>?\s*/', $line, 2);
-        $from  = strtolower(trim(preg_replace('/\s+/', ' ', $parts[0] ?? '')));
-        $to    = array_values(array_filter(array_map('trim', explode(',', strtolower($parts[1] ?? '')))));
+        $parts  = preg_split('/\s*=>?\s*/', $line, 2);
+        $rows[] = array(
+            'from' => strtolower(trim(preg_replace('/\s+/', ' ', $parts[0] ?? ''))),
+            'to'   => implode(', ', array_filter(array_map('trim', explode(',', strtolower($parts[1] ?? ''))))),
+        );
+    }
+    return $rows;
+}
+
+/**
+ * Parse the text into what search.js needs, plus the rows it could not use.
+ */
+function rmit_ll_parse_search_synonyms($text) {
+    $out = array('phrases' => array(), 'words' => array(), 'rejected' => array());
+
+    foreach (rmit_ll_search_synonym_rows($text) as $row) {
+        $from = $row['from'];
+        $to   = array_values(array_filter(array_map('trim', explode(',', $row['to']))));
         if ('' === $from || !$to) {
-            $out['rejected'][] = $line;
+            $out['rejected'][] = $row;
             continue;
         }
 
