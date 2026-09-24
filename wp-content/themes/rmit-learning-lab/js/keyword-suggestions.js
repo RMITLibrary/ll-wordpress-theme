@@ -73,7 +73,7 @@
         if (!list.length) { return; }
         var label = document.createElement('span');
         label.className = 'description';
-        label.textContent = 'Suggested:';
+        label.textContent = 'Suggested existing keywords:';
         box.appendChild(label);
         list.forEach(function (term) {
             var b = document.createElement('button');
