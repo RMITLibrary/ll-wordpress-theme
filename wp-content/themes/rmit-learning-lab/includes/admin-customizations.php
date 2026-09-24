@@ -545,3 +545,14 @@ add_action('widgets_init', function () {
         unregister_sidebar($area);
     }
 }, 11);
+
+/**
+ * Hide picostrap's "Page with Sidebar on the Right" from the Template dropdown.
+ *
+ * It comes from the parent theme, no page uses it, and it lays a page out differently
+ * from every template here, so offering it only invites a page that looks wrong.
+ */
+add_filter('theme_page_templates', function ($templates) {
+    unset($templates['page-templates/page-sidebar-right.php']);
+    return $templates;
+});
