@@ -88,7 +88,10 @@ function doChildrenList($pageId) {
  * different versions — an index built by one is read by the other.
  */
 function rmit_ll_fuse_url() {
-    return trailingslashit( get_stylesheet_directory_uri() ) . 'js/fuse/fuse.min.js?v='
+    // Root-relative, not absolute: the static capture rewrites hosts, and an absolute
+    // URL sent Fuse requests to the public domain, where the file 404s. Same fault as
+    // MathJax's font path in 2.0.54.
+    return wp_make_link_relative( trailingslashit( get_stylesheet_directory_uri() ) ) . 'js/fuse/fuse.min.js?v='
         . rmit_learning_lab_asset_version( 'js/fuse/fuse.min.js' );
 }
 
