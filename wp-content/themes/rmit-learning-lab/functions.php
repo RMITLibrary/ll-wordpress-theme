@@ -112,7 +112,6 @@ require_once $theme_includes_dir . 'helper-utils.php';           // Common utili
 require_once $theme_includes_dir . 'admin-customizations.php';   // WordPress admin customizations
 require_once $theme_includes_dir . 'breadcrumbs-navigation.php'; // Breadcrumbs and navigation functions
 require_once $theme_includes_dir . 'content-filters.php';        // Content filtering and query modifications
-require_once $theme_includes_dir . 'custom-taxonomy.php';        // Custom taxonomy registration and ACF filters
 require_once $theme_includes_dir . 'custom-shortcodes.php';      // Custom shortcodes manager - auto-discovers shortcode files
 require_once $theme_includes_dir . 'editor-shortcode-buttons.php'; // Shortcode buttons in the Text editor toolbar
 require_once $theme_includes_dir . 'news-post-type.php';       // "What's new" announcements post type
