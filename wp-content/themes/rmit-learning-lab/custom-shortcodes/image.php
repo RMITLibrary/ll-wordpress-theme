@@ -245,7 +245,7 @@ function ll_image_dimensions($url) {
 
 function addAttribution($input) {
     // Define the attribution string
-    $attribution = ", by <a href='https://rmit.edu.au/'>RMIT</a>, licensed under <a href='https://creativecommons.org/licenses/by/4.0/'>CC BY-NC 4.0</a>";
+    $attribution = ", by <a href='https://rmit.edu.au/'>RMIT</a>, licensed under <a href='https://creativecommons.org/licenses/by-nc/4.0/'>CC BY-NC 4.0</a>";
 
     // Check if the input string contains "|attrib"
     if (strpos($input, '|attrib') !== false) {

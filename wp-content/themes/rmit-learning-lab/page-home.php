@@ -1,8 +1,10 @@
 <?php
 /**
- * Template Name: Home Page
- *
  * Template for displaying the home page.
+ *
+ * No "Template Name" header: WordPress picks this file for the page with slug
+ * "home" through the template hierarchy, so it doesn't need to be offered in the
+ * Template dropdown, where it would put the home banner on any page.
  * This template is specifically for the page with slug "home".
  *
  * Template Hierarchy:
@@ -37,7 +39,7 @@ get_header();
             printf(
                 __('Image by <a href="%1$s">RMIT</a>, licensed under <a href="%2$s">CC BY-NC 4.0</a>.', 'rmit-learning-lab'),
                 esc_url('https://rmit.edu.au/'),
-                esc_url('https://creativecommons.org/licenses/by/4.0/')
+                esc_url('https://creativecommons.org/licenses/by-nc/4.0/')
             );
             ?>
         </p>
