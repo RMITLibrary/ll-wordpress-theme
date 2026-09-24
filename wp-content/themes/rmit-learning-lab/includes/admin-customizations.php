@@ -572,3 +572,27 @@ add_filter('theme_page_templates', function ($templates) {
     unset($templates['page-templates/page-sidebar-right.php']);
     return $templates;
 });
+
+/**
+ * Hide the Media Library.
+ *
+ * Images and files live on the CDN (rmitlibrary.github.io/cdn), not in uploads — no
+ * page has a featured image and nothing has been uploaded since 2025-09-19. This only
+ * removes the ways in; the 37 existing files stay, and the three pages that link one
+ * keep working. Delete this block to bring it back.
+ */
+add_action('admin_menu', function () {
+    remove_menu_page('upload.php');
+});
+
+add_action('admin_bar_menu', function ($bar) {
+    $bar->remove_node('new-media');
+}, 999);
+
+add_action('admin_init', function () {
+    remove_action('media_buttons', 'media_buttons');
+});
+
+add_action('add_meta_boxes_page', function () {
+    remove_meta_box('postimagediv', 'page', 'side');
+}, 100);
