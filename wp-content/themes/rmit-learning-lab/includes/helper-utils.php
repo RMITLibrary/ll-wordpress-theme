@@ -128,3 +128,80 @@ function rmit_ll_is_excluded_path( $url ) {
 
     return false;
 }
+
+/**
+ * Search synonyms, edited by content editors at Pages > Search synonyms.
+ *
+ * Stored as plain text, one "what people type = what the site calls it" per line. A
+ * multi-word left side replaces that phrase in the search; a single word adds the
+ * right-hand words to it. Until someone saves the screen, the list below is used, so
+ * it doubles as the starting content of the box. search.js reads the parsed result
+ * from window.LL_SEARCH_SYNONYMS, which page-search.php prints — so on the static site
+ * a change reaches search at the next export.
+ */
+function rmit_ll_default_search_synonyms() {
+    return implode("\n", array(
+        'sig figs = significant figures',
+        'group assignment = group work',
+        'lit review = literature review',
+        'reference list = referencing',
+        'reading list = referencing',
+        'harvard = referencing, cite',
+        'apa = referencing, cite',
+        'vancouver = referencing, cite',
+        'ieee = referencing, cite',
+        'chicago = referencing, cite',
+        'aglc = referencing, legal',
+        'aglc4 = referencing, legal',
+        'footnote = citation',
+        'footnotes = citation',
+        'endnote = referencing, cite',
+        'zotero = referencing, cite',
+        'mendeley = referencing, cite',
+        'powerpoint = presentation',
+        'slides = presentation',
+        'slideshow = presentation',
+        'stats = statistics',
+        'sigfigs = significant figures',
+        'ai = artificial intelligence',
+        'chatgpt = artificial intelligence',
+        'copilot = artificial intelligence',
+    ));
+}
+
+function rmit_ll_search_synonyms_text() {
+    return get_option('rmit_ll_search_synonyms', rmit_ll_default_search_synonyms());
+}
+
+/**
+ * Parse the text into what search.js needs, plus the lines it could not read.
+ */
+function rmit_ll_parse_search_synonyms($text) {
+    $out = array('phrases' => array(), 'words' => array(), 'rejected' => array());
+
+    foreach (preg_split('/\r\n|\r|\n/', $text) as $line) {
+        $line = trim($line);
+        if ('' === $line || 0 === strpos($line, '#')) {
+            continue;
+        }
+        $parts = preg_split('/\s*=>?\s*/', $line, 2);
+        $from  = strtolower(trim(preg_replace('/\s+/', ' ', $parts[0] ?? '')));
+        $to    = array_values(array_filter(array_map('trim', explode(',', strtolower($parts[1] ?? '')))));
+        if ('' === $from || !$to) {
+            $out['rejected'][] = $line;
+            continue;
+        }
+
+        if (false !== strpos($from, ' ')) {
+            $out['phrases'][$from] = implode(' ', $to);
+        } else {
+            $words = array();
+            foreach ($to as $item) {
+                $words = array_merge($words, preg_split('/[^a-z0-9]+/', $item, -1, PREG_SPLIT_NO_EMPTY));
+            }
+            $out['words'][$from] = array_values(array_unique($words));
+        }
+    }
+
+    return $out;
+}

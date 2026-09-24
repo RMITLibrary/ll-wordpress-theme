@@ -663,3 +663,78 @@ add_action('admin_enqueue_scripts', function ($hook) {
         'ambiguous'  => array('Law', 'Design', 'Analysis', 'Matter'),
     ));
 });
+
+/**
+ * Pages > Search synonyms: the editor for rmit_ll_search_synonyms (see helper-utils.php).
+ *
+ * Open to editors as well as admins, since the people who notice what students search
+ * for are the ones writing content. After saving, each line is shown as it was read,
+ * with a count of pages containing the words it points at — a typo shows up as 0.
+ */
+add_action('admin_menu', function () {
+    add_submenu_page('edit.php?post_type=page', 'Search synonyms', 'Search synonyms', 'edit_pages', 'search-synonyms', 'rmit_ll_search_synonyms_screen');
+});
+
+function rmit_ll_search_synonyms_screen() {
+    if (!current_user_can('edit_pages')) {
+        return;
+    }
+
+    $saved = false;
+    if (isset($_POST['rmit_ll_search_synonyms'])) {
+        check_admin_referer('rmit_ll_search_synonyms');
+        update_option('rmit_ll_search_synonyms', sanitize_textarea_field(wp_unslash($_POST['rmit_ll_search_synonyms'])), false);
+        $saved = true;
+    }
+
+    $text   = rmit_ll_search_synonyms_text();
+    $parsed = rmit_ll_parse_search_synonyms($text);
+
+    global $wpdb;
+    $pages_with = function ($words) use ($wpdb) {
+        $sql  = "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'page' AND post_status = 'publish'";
+        $args = array();
+        foreach ((array) $words as $word) {
+            $like   = '%' . $wpdb->esc_like($word) . '%';
+            $sql   .= ' AND (post_title LIKE %s OR post_content LIKE %s)';
+            $args[] = $like;
+            $args[] = $like;
+        }
+        return (int) $wpdb->get_var($wpdb->prepare($sql, $args));
+    };
+    ?>
+    <div class="wrap">
+        <h1>Search synonyms</h1>
+        <?php if ($saved) : ?>
+            <div class="notice notice-success"><p>Saved. Search on this site uses the new list now; the public site picks it up at the next export.</p></div>
+        <?php endif; ?>
+        <p style="max-width:720px;">Use this when students search for a word the site doesn't use. Write one per line: <strong>what people type</strong>, an equals sign, then <strong>what the site calls it</strong>. Separate several with commas.</p>
+        <p style="max-width:720px;"><code>stats = statistics</code> &nbsp; <code>lit review = literature review</code> &nbsp; <code>apa = referencing, cite</code></p>
+        <p class="description" style="max-width:720px;">A single word on the left adds the words on the right to the search. Several words on the left are swapped for the words on the right. Edition numbers are handled for you: "APA 7" already searches as APA.</p>
+        <form method="post">
+            <?php wp_nonce_field('rmit_ll_search_synonyms'); ?>
+            <textarea name="rmit_ll_search_synonyms" rows="18" class="large-text code" style="max-width:720px;"><?php echo esc_textarea($text); ?></textarea>
+            <?php submit_button('Save synonyms'); ?>
+        </form>
+
+        <?php if ($parsed['rejected']) : ?>
+            <div class="notice notice-error inline"><p><strong>These lines were not understood</strong> — each needs an equals sign with words on both sides:</p><ul style="list-style:disc;margin-left:20px;">
+            <?php foreach ($parsed['rejected'] as $line) : ?><li><code><?php echo esc_html($line); ?></code></li><?php endforeach; ?>
+            </ul></div>
+        <?php endif; ?>
+
+        <h2>How search reads the list</h2>
+        <table class="widefat striped" style="max-width:720px;">
+            <thead><tr><th>When someone searches for</th><th>Search also looks for</th><th>Pages with those words</th></tr></thead>
+            <tbody>
+            <?php foreach ($parsed['phrases'] as $from => $to) : $n = $pages_with(array($to)); ?>
+                <tr><td><?php echo esc_html($from); ?></td><td><?php echo esc_html($to); ?> <span class="description">(replaces the phrase)</span></td><td><?php echo $n ? (int) $n : '<strong style="color:#b32d2e;">0 — check the spelling</strong>'; ?></td></tr>
+            <?php endforeach; ?>
+            <?php foreach ($parsed['words'] as $from => $to) : $n = $pages_with($to); ?>
+                <tr><td><?php echo esc_html($from); ?></td><td><?php echo esc_html(implode(', ', $to)); ?></td><td><?php echo $n ? (int) $n : '<strong style="color:#b32d2e;">0 — check the spelling</strong>'; ?></td></tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
+}

@@ -208,6 +208,7 @@ window.LL_SEARCH_VERSION = <?php
 ?>;
 window.LL_FUSE_URL = <?php echo wp_json_encode( rmit_ll_fuse_url() ); ?>;
 window.LL_SEARCH_EXCLUSIONS = <?php echo wp_json_encode( rmit_ll_search_exclusions() ); ?>;
+window.LL_SEARCH_SYNONYMS = <?php $ll_synonyms = rmit_ll_parse_search_synonyms( rmit_ll_search_synonyms_text() ); echo wp_json_encode( array( 'phrases' => (object) $ll_synonyms['phrases'], 'words' => (object) $ll_synonyms['words'] ) ); ?>;
 </script>
 <script type="text/javascript" src="<?php echo esc_url( get_stylesheet_directory_uri() ); ?>/js/search.js?v=<?php echo esc_attr( rmit_learning_lab_asset_version( 'js/search.js' ) ); ?>"></script>
 <?php get_footer();
