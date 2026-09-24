@@ -251,12 +251,16 @@
         return text.replace(VERSIONED_STYLES, '$1');
     }
 
+    // Synonym targets are searched whole, so "artificial intelligence" is one phrase,
+    // not two words that each match on their own.
     function expandQuery(query) {
         var text = normaliseStyles(query.toLowerCase());
+        var extra = [];
 
         Object.keys(PHRASE_SYNONYMS).forEach(function(phrase) {
             if (text.indexOf(phrase) !== -1) {
-                text = text.split(phrase).join(PHRASE_SYNONYMS[phrase]);
+                text = text.split(phrase).join(' ');
+                extra = extra.concat(PHRASE_SYNONYMS[phrase]);
             }
         });
 
@@ -264,11 +268,13 @@
         var expanded = words.slice();
 
         words.forEach(function(word) {
-            (WORD_SYNONYMS[word] || []).forEach(function(alias) {
-                if (expanded.indexOf(alias) === -1) {
-                    expanded.push(alias);
-                }
-            });
+            extra = extra.concat(WORD_SYNONYMS[word] || []);
+        });
+
+        extra.forEach(function(term) {
+            if (expanded.indexOf(term) === -1) {
+                expanded.push(term);
+            }
         });
 
         return expanded;

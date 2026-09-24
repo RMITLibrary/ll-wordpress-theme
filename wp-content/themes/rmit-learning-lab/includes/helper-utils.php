@@ -134,7 +134,7 @@ function rmit_ll_is_excluded_path( $url ) {
  *
  * Stored as plain text, one "what people type = what the site calls it" per line. A
  * multi-word left side replaces that phrase in the search; a single word adds the
- * right-hand words to it. Until someone saves the screen, the list below is used, so
+ * targets to it. Each comma-separated target is searched whole, phrases included. Until someone saves the screen, the list below is used, so
  * it doubles as the starting content of the box. search.js reads the parsed result
  * from window.LL_SEARCH_SYNONYMS, which page-search.php prints — so on the static site
  * a change reaches search at the next export.
@@ -207,14 +207,14 @@ function rmit_ll_parse_search_synonyms($text) {
             continue;
         }
 
+        // Targets stay as entered, so a multi-word one is searched as a phrase:
+        // "ai = artificial intelligence" must not match every page that says
+        // "intelligence". A multi-word left side is taken out of the query and
+        // replaced by the targets; a single word keeps itself and adds them.
         if (false !== strpos($from, ' ')) {
-            $out['phrases'][$from] = implode(' ', $to);
+            $out['phrases'][$from] = $to;
         } else {
-            $words = array();
-            foreach ($to as $item) {
-                $words = array_merge($words, preg_split('/[^a-z0-9]+/', $item, -1, PREG_SPLIT_NO_EMPTY));
-            }
-            $out['words'][$from] = array_values(array_unique($words));
+            $out['words'][$from] = $to;
         }
     }
 
