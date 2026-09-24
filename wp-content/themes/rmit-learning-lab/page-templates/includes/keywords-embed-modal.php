@@ -1,12 +1,5 @@
 
 
-<?php //set variables for easy application later on - field keys are difficult to remember what they apply to when you're writing code
-//essential
-$llkeywords = get_field( "field_6527440d6f9a2" );
-$llcategory = get_field("field_65275ce3c7e36");
-?>
-
-
 <!-- keywords echo - https://www.advancedcustomfields.com/resources/taxonomy/ -->      
 
 
