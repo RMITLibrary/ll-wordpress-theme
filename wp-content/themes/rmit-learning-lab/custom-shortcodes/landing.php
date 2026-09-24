@@ -274,13 +274,16 @@ function display_landing_columns() {
             'sort_column' => 'menu_order'
         ));
 
-        //if nav divider template is present, output divider name
-        if (get_page_template_slug($child_page->ID) == 'page-templates/nav-divider.php') {
+        // A child starts a new column when it carries a section heading. Same rule as
+        // sidebar.php: the Show custom sidebar heading toggle, plus a real label. It
+        // used to key off the nav-divider.php page template, which no longer exists —
+        // the toggle replaced it, so switching a page to Default must not drop its column.
+        $nav_divider_name = get_field('nav-divider-show', $child_page->ID) ? get_field('nav-divider', $child_page->ID) : '';
+        if ($nav_divider_name === 'Other') {
+            $nav_divider_name = get_field('nav-divider-other', $child_page->ID);
+        }
 
-            $nav_divider_name = get_field('nav-divider', $child_page->ID);
-            if($nav_divider_name === 'Other') {
-                $nav_divider_name = get_field('nav-divider-other', $child_page->ID);
-            }
+        if ($nav_divider_name && $nav_divider_name !== 'Select a divider label') {
 
             //close the previous column's open list before starting a new column
             echo $end_list_tag;
