@@ -312,13 +312,33 @@ function rmit_ll_aioseo_metabox_last($order)
 }
 
 /**
- * The ACF taxonomy fields are the single editor for these terms.
+ * The ACF Keywords field is the single editor for keyword terms.
  */
 add_action('add_meta_boxes_page', function () {
-    remove_meta_box('tagsdiv-taxonomy', 'page', 'side');
     remove_meta_box('tagsdiv-keyword', 'page', 'side');
-    remove_meta_box('tagsdiv-subject-area', 'page', 'side');
 }, 100);
+
+/**
+ * Subject areas: kept, not shown.
+ *
+ * 547 pages carry subject-area terms but nothing on the site displays them — the only
+ * reader fetched the field and discarded it. The terms stay attached so the work isn't
+ * lost; the editor field, the Pages > Subjects screen and the missing-terms warning go.
+ * ACF leaves a field alone on save when it isn't rendered, so saving a page keeps its
+ * terms. To bring it back, delete these two filters.
+ */
+add_filter('acf/prepare_field/key=field_65275ce3c7e36', '__return_false');
+
+add_filter('register_taxonomy_args', function ($args, $taxonomy) {
+    if ('subject-area' === $taxonomy) {
+        $args['show_ui']            = false;
+        $args['show_in_menu']       = false;
+        $args['show_in_nav_menus']  = false;
+        $args['show_in_quick_edit'] = false;
+        $args['show_admin_column']  = false;
+    }
+    return $args;
+}, 10, 2);
 
 /**
  * Surface publishing details that are otherwise easy to miss in the editor.
@@ -356,10 +376,6 @@ add_action('post_submitbox_misc_actions', function ($post) {
 
         if (!has_term('', 'keyword', $post)) {
             $missing[] = __('Keywords', 'rmit-learning-lab');
-        }
-
-        if (!has_term('', 'subject-area', $post)) {
-            $missing[] = __('Subject areas', 'rmit-learning-lab');
         }
 
         if ($missing) {
