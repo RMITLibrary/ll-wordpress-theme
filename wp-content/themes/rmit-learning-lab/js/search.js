@@ -251,16 +251,16 @@
         return text.replace(VERSIONED_STYLES, '$1');
     }
 
-    // Synonym targets are searched whole, so "artificial intelligence" is one phrase,
-    // not two words that each match on their own.
+    // A synonym searches exactly as typing its target does: "sig figs" gives the same
+    // results as "significant figures". Targets are split into words like any query,
+    // since search looks words up one at a time. Searching them as whole phrases was
+    // tried in 2.0.94 and made a synonym stricter than the term it stands for.
     function expandQuery(query) {
         var text = normaliseStyles(query.toLowerCase());
-        var extra = [];
 
         Object.keys(PHRASE_SYNONYMS).forEach(function(phrase) {
             if (text.indexOf(phrase) !== -1) {
-                text = text.split(phrase).join(' ');
-                extra = extra.concat(PHRASE_SYNONYMS[phrase]);
+                text = text.split(phrase).join(' ' + [].concat(PHRASE_SYNONYMS[phrase]).join(' ') + ' ');
             }
         });
 
@@ -268,13 +268,13 @@
         var expanded = words.slice();
 
         words.forEach(function(word) {
-            extra = extra.concat(WORD_SYNONYMS[word] || []);
-        });
-
-        extra.forEach(function(term) {
-            if (expanded.indexOf(term) === -1) {
-                expanded.push(term);
-            }
+            [].concat(WORD_SYNONYMS[word] || []).forEach(function(target) {
+                meaningfulWords(target).forEach(function(alias) {
+                    if (expanded.indexOf(alias) === -1) {
+                        expanded.push(alias);
+                    }
+                });
+            });
         });
 
         return expanded;
