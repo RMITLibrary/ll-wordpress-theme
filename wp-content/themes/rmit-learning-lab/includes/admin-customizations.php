@@ -727,37 +727,44 @@ function rmit_ll_search_synonyms_screen() {
     $parsed = rmit_ll_parse_search_synonyms(rmit_ll_search_synonyms_text());
     $can_undo = false !== get_option('rmit_ll_search_synonyms_previous');
 
-    global $wpdb;
-    $pages_with = function ($words) use ($wpdb) {
-        $sql  = "SELECT COUNT(*) FROM $wpdb->posts WHERE post_type = 'page' AND post_status = 'publish'";
-        $args = array();
-        foreach ((array) $words as $word) {
-            $like   = '%' . $wpdb->esc_like($word) . '%';
-            $sql   .= ' AND (post_title LIKE %s OR post_content LIKE %s)';
-            $args[] = $like;
-            $args[] = $like;
+    // Counted against pages.json, the search index itself: title, text without markup,
+    // and keywords — exactly what search looks through — as whole words, so "cite" is
+    // not counted inside "excite". Per word, because search splits even a phrase into
+    // words before searching, and a combined count would hide one misspelt word.
+    $index = array();
+    $index_path = rmit_ll_get_export_file_path('pages.json');
+    if (!is_wp_error($index_path) && file_exists($index_path)) {
+        foreach ((array) json_decode(file_get_contents($index_path), true) as $page) {
+            $index[] = strtolower(($page['title'] ?? '') . ' ' . ($page['content'] ?? '') . ' ' . implode(' ', (array) ($page['keywords'] ?? array())));
         }
-        return (int) $wpdb->get_var($wpdb->prepare($sql, $args));
-    };
-    $found = function ($from) use ($parsed, $pages_with) {
-        if (isset($parsed['phrases'][$from])) {
-            return $pages_with(array($parsed['phrases'][$from]));
+    }
+    $found = function ($to) use ($index) {
+        if (!$index) {
+            return array();
         }
-        return isset($parsed['words'][$from]) ? $pages_with($parsed['words'][$from]) : null;
+        $counts = array();
+        foreach (preg_split('/[^a-z0-9]+/', strtolower($to), -1, PREG_SPLIT_NO_EMPTY) as $word) {
+            if (strlen($word) > 1) {
+                $re = '/\b' . preg_quote($word, '/') . '\b/';
+                $counts[$word] = count(array_filter($index, function ($text) use ($re) { return preg_match($re, $text); }));
+            }
+        }
+        return $counts;
     };
+
     $row_html = function ($from = '', $to = '', $count = null) {
         ?>
         <tr>
             <td><input type="text" name="from[]" value="<?php echo esc_attr($from); ?>" class="widefat" placeholder="e.g. stats" aria-label="When someone searches for"></td>
             <td><input type="text" name="to[]" value="<?php echo esc_attr($to); ?>" class="widefat" placeholder="e.g. statistics" aria-label="Also show results for"></td>
             <td class="ll-found"><?php
-                if (null === $count) {
-                    echo '';
-                } elseif ($count) {
-                    echo 'Found on ' . (int) $count . ' ' . (1 === $count ? 'page' : 'pages');
-                } else {
-                    echo '<strong style="color:#b32d2e;">Not found on any page — check the spelling</strong>';
+                $parts = array();
+                foreach ((array) $count as $word => $n) {
+                    $parts[] = $n
+                        ? esc_html($word) . ': ' . (int) $n
+                        : '<strong style="color:#b32d2e;">' . esc_html($word) . ': not on any page — check the spelling</strong>';
                 }
+                echo implode(' &middot; ', $parts);
             ?></td>
             <td><button type="button" class="button-link ll-remove" style="color:#b32d2e;">Remove</button></td>
         </tr>
@@ -776,14 +783,15 @@ function rmit_ll_search_synonyms_screen() {
         <?php endif; ?>
 
         <p style="max-width:760px;">When students search for a word the site doesn’t use, add it here so search finds the right pages. For example, someone searching <strong>stats</strong> should also see pages about <strong>statistics</strong>.</p>
+        <?php if (!$index) : ?><div class="notice notice-info inline"><p>Page counts appear once the search index exists — run <strong>Export JSON</strong> once.</p></div><?php endif; ?>
         <p class="description" style="max-width:760px;">Put several words in the second box separated by commas. Edition numbers are handled for you: “APA 7” already searches as APA.</p>
 
         <form method="post">
             <?php wp_nonce_field('rmit_ll_search_synonyms'); ?>
             <table class="widefat striped" id="ll-synonyms" style="max-width:960px;">
-                <thead><tr><th style="width:30%">When someone searches for</th><th style="width:34%">Also show results for</th><th>Check</th><th style="width:70px"></th></tr></thead>
+                <thead><tr><th style="width:30%">When someone searches for</th><th style="width:34%">Also show results for</th><th>Pages found</th><th style="width:70px"></th></tr></thead>
                 <tbody>
-                <?php foreach ($rows as $row) { $row_html($row['from'], $row['to'], $found($row['from'])); } ?>
+                <?php foreach ($rows as $row) { $row_html($row['from'], $row['to'], $found($row['to'])); } ?>
                 <?php $row_html(); ?>
                 </tbody>
             </table>
