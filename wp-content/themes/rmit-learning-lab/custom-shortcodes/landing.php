@@ -33,7 +33,7 @@
 
 function landing_banner_att($atts, $content = null) {
     $default = array(
-        'caption' => 'Image by <a href="https://rmit.edu.au/">RMIT</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY-NC 4.0</a>.',
+        'caption' => 'Image by <a href="https://rmit.edu.au/">RMIT</a>, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</a>.',
         'img' => 'https://rmitlibrary.github.io/cdn/learninglab/illustration/landing/home-default.png',
         'alt' => '',
         'width' => '',
