@@ -21,51 +21,15 @@ jobs:
         with:
           fetch-depth: 0  # ensure previous commit is available for diff checks
 
-      # Detect lockfile location (root vs theme). If neither exists, no cache.
-      - name: Detect lockfile
-        id: detect_lockfile
-        run: |
-          if [ -f "package-lock.json" ]; then
-            echo "LOCKFILE=package-lock.json" >> $GITHUB_ENV
-            echo "has_lock=true" >> $GITHUB_OUTPUT
-          elif [ -f "${THEME_DIR}/package-lock.json" ]; then
-            echo "LOCKFILE=${THEME_DIR}/package-lock.json" >> $GITHUB_ENV
-            echo "has_lock=true" >> $GITHUB_OUTPUT
-          else
-            echo "LOCKFILE=" >> $GITHUB_ENV
-            echo "has_lock=false" >> $GITHUB_OUTPUT
-          fi
-
-      # Use cache only if we actually found a lockfile
-      - name: Setup Node (cached)
-        if: steps.detect_lockfile.outputs.has_lock == 'true'
+      # package.json and package-lock.json live at the repo root only.
+      - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: '22.18'
           cache: 'npm'
-          cache-dependency-path: ${{ env.LOCKFILE }}
 
-      - name: Setup Node (no cache)
-        if: steps.detect_lockfile.outputs.has_lock != 'true'
-        uses: actions/setup-node@v5
-        with:
-          node-version: '22.18'
-
-      # Install deps where the lockfile (or package.json) actually is
       - name: Install deps
-        run: |
-          if [ -f "package.json" ] && [ -f "package-lock.json" ]; then
-            npm ci
-            WORKDIR="."
-          elif [ -f "${THEME_DIR}/package.json" ]; then
-            cd "${THEME_DIR}"
-            if [ -f "package-lock.json" ]; then npm ci; else npm i; fi
-            WORKDIR="${THEME_DIR}"
-          else
-            echo "No package.json found at root or ${THEME_DIR}" >&2
-            exit 1
-          fi
-          echo "WORKDIR=${WORKDIR}" >> $GITHUB_ENV
+        run: npm ci
 
       # Sanity check: ensure your theme's vendor/rfs exists (no npm bootstrap)
       - name: Verify theme vendor/rfs
@@ -94,30 +58,9 @@ jobs:
             exit 65
           }
 
-      # Build CSS using ONLY your theme sources. Add include paths to theme sass dirs.
+      # Same command as local builds, so CI and a local `npm run build` cannot drift.
       - name: Build CSS
-        working-directory: ${{ env.WORKDIR }}
-        run: |
-          # figure out source & out based on where we installed
-          if [ -f "sass/main.scss" ]; then
-            SRC="sass/main.scss"
-            OUT="css-output/bundle.css"
-            mkdir -p css-output
-            INCLUDE1="sass"
-            INCLUDE2="sass/bootstrap5"
-          else
-            SRC="${THEME_DIR}/sass/main.scss"
-            OUT="${THEME_DIR}/css-output/bundle.css"
-            mkdir -p "${THEME_DIR}/css-output"
-            INCLUDE1="${THEME_DIR}/sass"
-            INCLUDE2="${THEME_DIR}/sass/bootstrap5"
-          fi
-
-          npx sass \
-            --load-path="${INCLUDE1}" \
-            --load-path="${INCLUDE2}" \
-            "${SRC}" "${OUT}" \
-            --style=compressed --source-map
+        run: npm run build
 
       - name: Select WP Engine env
         run: |
